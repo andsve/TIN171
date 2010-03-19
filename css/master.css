@@ -41,6 +41,7 @@ a {
 .external {
   color: #000;
   text-decoration: none;
+  font-style: italic;
 }
 
 .external:after {
