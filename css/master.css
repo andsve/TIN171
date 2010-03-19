@@ -1,0 +1,68 @@
+@charset "utf-8";
+/*
+ * Basic tags
+ */
+
+* {
+	padding: 0;
+	margin: 0;
+	font-family: Arial, Verdana, Tahoma;
+}
+
+html, body {
+  background-color: #fff;
+  font-family: Arial, Verdana, Tahoma;
+}
+
+body {
+  padding: 10px;
+  margin: auto;
+  margin-top: 20px;
+  width: 80%;
+}
+
+h1, h2, h3 { padding-top: 20px; }
+h2 { padding-left: 20px; }
+
+a {
+  color: #c73e3e;
+  font-weight: bold;
+}
+
+/*
+ * Generic classes
+ */
+
+.block {
+  width: 80%;
+  margin: auto;
+}
+
+.external {
+  color: #000;
+  text-decoration: none;
+}
+
+.external:after {
+  content: ' ' url(../img/external_red.png);
+}
+
+/*
+ * Specific IDs
+ */
+
+#news {
+  list-style: none;
+}
+
+#news li {
+  padding-top: 10px;
+  font-size: 1.2em;
+}
+
+#news h3 {
+  font-size: 1em;
+  color: #3e85c7;
+  display: inline;
+  font-weight: bold;
+}
