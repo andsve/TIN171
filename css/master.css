@@ -48,6 +48,10 @@ a {
   content: ' ' url(../img/external_red.png);
 }
 
+.quote {
+	font-style: italic;
+}
+
 /*
  * Specific IDs
  */
