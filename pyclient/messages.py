@@ -74,8 +74,115 @@ class Message:
     CREATEACCOUNT = 1070 
     UPDATEROBOTPARAMS = 1071 
     SERVERPING = 9999 
-        
-        
+
+"""Board-Layout-array*:
+[0] = 17
+[1] = 39
+[2] = 5b
+[3] = 7d
+[4] = 15
+[5] = 37
+[6] = 59
+[7] = 7b
+[8] = 9d
+[9] = 13
+[10] = 35
+[11] = 57
+[12] = 79
+[13] = 9b
+[14] = bd
+[15] = 11
+[16] = 33
+[17] = 55
+[18] = 77
+[19] = 99
+[20] = bb
+[21] = dd
+[22] = 31
+[23] = 53
+[24] = 75
+[25] = 97
+[26] = b9
+[27] = db
+[28] = 51
+[29] = 73
+[30] = 95
+[31] = b7
+[32] = d9
+[33] = 71
+[34] = 93
+[35] = b5
+[36] = d7
+
+* Same for Number-array
+
+Board-indicators:
+0 = Desert
+1 = Clay
+2 = Ore
+3 = Sheep
+4 = Grain
+5 = Lumber
+6 = EmptySea
+
+7 = 3For1
+8 = 3For1
+9 = 3For1
+10 = 3For1
+11 = 3For1
+12 = 3For1
+
+17 = ClayHarbor
+18 = OreHarbor
+19 = SheepHarbor
+20 = GrainHarbor
+21 = LumberHarbor
+
+33 = ClayHarbor
+34 = OreHarbor
+35 = SheepHarbor
+36 = GrainHarbor
+37 = LumberHarbor
+
+49 = ClayHarbor
+50 = OreHarbor
+51 = SheepHarbor
+52 = GrainHarbor
+53 = LumberHarbor
+
+65 = ClayHarbor
+66 = OreHarbor
+67 = SheepHarbor
+68 = GrainHarbor
+69 = LumberHarbor
+
+81 = ClayHarbor
+82 = OreHarbor
+83 = SheepHarbor
+84 = GrainHarbor
+85 = LumberHarbor
+
+97 = ClayHarbor
+98 = OreHarbor
+99 = SheepHarbor
+100 = GrainHarbor
+101 = LumberHarbor
+
+Number-indicators:
+-1 = Empty
+0 = 2
+1 = 3
+2 = 4
+3 = 5
+4 = 6
+5 = 8
+6 = 9
+7 = 10
+8 = 11
+9 = 12
+
+"""
+
 def ToMessage(raw_msg):
     msg = raw_msg.decode('utf8')
     
