@@ -77,7 +77,7 @@ class Message:
         
         
 def ToMessage(raw_msg):
-    msg = raw_msg.decode('ascii')
+    msg = raw_msg.decode('utf8')
     
     try:
         sep = msg.find(Sep.SEP1)
@@ -87,6 +87,10 @@ def ToMessage(raw_msg):
     except:
         return None
 
+def MakeMessage(raw_msg):
+    highByte = chr(len(raw_msg) / 256)
+    lowByte = chr(len(raw_msg) % 256)
+    return highByte + lowByte + raw_msg
 
 """
        try
