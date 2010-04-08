@@ -52,6 +52,12 @@ a {
 	font-style: italic;
 }
 
+.note {
+	margin: 5px 5px 5px 15px;
+	font-size: 0.8em;
+	color: #666;
+}
+
 /*
  * Specific IDs
  */
