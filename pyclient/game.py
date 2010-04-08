@@ -1,8 +1,14 @@
 import pdb
 
 class Game:
-    def __init__(self):
-        pass
+    def __init__(self, gameboard):
+        self.gameboard = gameboard # save raw gameboad
+        self.parse_board()         # parse gameboard and create internal representation
+    
+    def parse_board(self):
+        for elt in self.gameboard:
+            print(elt)
+            #pass # TODO: parse the gameboard information sent by the server
 
 
 class Message:
