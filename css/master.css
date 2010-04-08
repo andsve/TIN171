@@ -71,3 +71,15 @@ a {
   display: inline;
   font-weight: bold;
 }
+
+#contact_box {
+	background-color: #DDD;
+	padding: 30px;
+	margin: 20px;
+	text-align: center;
+}
+
+#contact_box ul {
+	list-style: none;
+	font-style: italic;
+}
