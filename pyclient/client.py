@@ -1,4 +1,5 @@
 import socket
+import game
 
 from messages import ToMessage
 from messages import MakeMessage
@@ -54,6 +55,10 @@ class Client:
                 print("Starting game...")
                 send_msg = MakeMessage("1018|game")
                 self.client.send(send_msg)
+            
+            """ We received gameboard information, pass it along to the Game-class. """
+            if msg[0:4] == "1014":
+                honker = game.Game(msg[10:].split(","))
 
             """Game has STARTED! We get information about board layout, resources, starting player, etc"""
                         
