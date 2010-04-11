@@ -5,6 +5,9 @@ class Game:
         self.gameboard = gameboard # save raw gameboad
         self.parse_board()         # parse gameboard and create internal representation
     
+    def toCmd(self):
+		return "1000|NOT_IMPLEMENTED"
+    
     def parse_board(self):
         for elt in self.gameboard:
             print(elt)
@@ -129,32 +132,58 @@ class LeaveGameMessage(Message):
     def parse(text):
         pass
 
-class SitdownMessage(Message):
+class SitDownMessage(Message):
     id = 1012
-    def __init__(self):
-        pass
+    def __init__(self, gamename, nickname, playernum, isrobot):
+        self.gamename = gamename
+        self.nickname = nickname
+        self.playernum = playernum
+        self.isrobot = isrobot
+        
+    def toCmd(self):
+		return "{0}|{1},{2},{3},{4}".format(self.id, self.gamename, self.nickname
+										,self.playernum, str(self.isrobot).lower())
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        gn = data[0]
+        nn = data[1]
+        pn = data[2]
+        robotflag = False if isrobot == "false" else True
+        return SitdownMessage(gn, nn, pn, robotflag)
 
 class JoinGameMessage(Message):
     id = 1013
-    def __init__(self):
-        pass
+    def __init__(self, nickname, password, host, gamename):
+        self.nickname = nickname
+        self.password = password
+        self.host = host
+        self.gamename = gamename
+        
+    def toCmd(self):
+		pwd = "\t" if self.password == "" else self.password
+		return "{0}|{1},{2},{3},{4}".format(self.id, self.nickname, pwd
+		                                   ,self.host, self.gamename)
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        data[1] = "" if data[1] == "\t" else ""
+        return JoinGameMessage(*data)
 
 class BoardLayoutMessage(Message):
     id = 1014
-    def __init__(self):
-        pass
+    def __init__(self, board):
+        self.board = boardarr
+        
+    def toCmd(self):
+		return "{0}|{1}".format(self.id, ",".join(self.board))
         
     @staticmethod
     def parse(text):
-        pass
+        board = text.split(",")
+        return BoardLayoutMessage(board)
 
 class DeleteGameMessage(Message):
     id = 1015
@@ -163,7 +192,7 @@ class DeleteGameMessage(Message):
        
     @staticmethod 
     def parse(text):
-        pass
+		pass
 
 
 class NewGameMessage(Message):
@@ -186,12 +215,15 @@ class GameMembersMessage(Message):
 
 class StartGameMessage(Message):
     id = 1018
-    def __init__(self):
-        pass
+    def __init__(self, gamename):
+        self.gamename = gamename
+        
+    def toCmd(self):
+		return "{0}|{1}".format(self.id, self.gamename)
         
     @staticmethod
     def parse(text):
-        pass
+        return StartGameMessage(text)
 
 # Done
 class GamesMessage(Message):
@@ -675,7 +707,7 @@ def test():
     print i
 #    pdb.set_trace()
 
-test()
+#test()
 
 
 

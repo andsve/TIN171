@@ -4,6 +4,8 @@ import game
 from messages import ToMessage
 from messages import MakeMessage
 
+import game
+
 class Client:
     def __init__(self):
         self.socket = None
@@ -15,6 +17,10 @@ class Client:
         except:
             return False
         return True
+          
+    def sendMsg(self, msg):
+		print("Sending: {0}".format(msg.toCmd()))
+		self.client.send(MakeMessage(msg.toCmd()))
             
     def run(self):
         gamejoined = False
@@ -37,28 +43,31 @@ class Client:
             if msg[0:4] == "1019" and not gamejoined:
                 gamejoined = True
                 print("Making new game...")
-                send_msg = MakeMessage("1013|aiBot,\t,dummyhost,game")
-                self.client.send(send_msg)
+                m = game.JoinGameMessage("aiBot", "", socket.gethostname(), "game")
+                self.sendMsg(m)
 
             """We receive confirmation of a game created, available seats, etc"""
             """SITDOWN sep game sep2 nickname sep2 playerNumber sep2 robotFlag"""    
             if msg[0:4] == "1013" and not satdown:
                 satdown = True
                 print("Sitting down...")
-                send_msg = MakeMessage("1012|game,aiBot,0,false")
-                self.client.send(send_msg)
+                m = game.SitDownMessage("game", "aiBot", 1, False)
+                self.sendMsg(m)
+                
 
             """We receive starting values, 0 of each resource, game state and game face"""
             """STARTGAME sep game"""
             if msg[0:4] == "1058" and not gamestarted:
                 gamestarted = True
                 print("Starting game...")
-                send_msg = MakeMessage("1018|game")
-                self.client.send(send_msg)
+                m = game.StartGameMessage("game")
+                self.sendMsg(m)
+                
             
             """ We received gameboard information, pass it along to the Game-class. """
             if msg[0:4] == "1014":
                 honker = game.Game(msg[10:].split(","))
+                #m = game.ParseMsg(msg)
 
             """Game has STARTED! We get information about board layout, resources, starting player, etc"""
                         
