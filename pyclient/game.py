@@ -5,9 +5,6 @@ class Game:
         self.gameboard = gameboard # save raw gameboad
         self.parse_board()         # parse gameboard and create internal representation
     
-    def toCmd(self):
-		return "1000|NOT_IMPLEMENTED"
-    
     def parse_board(self):
         for elt in self.gameboard:
             print(elt)
@@ -18,6 +15,9 @@ class Message:
     def __init__(self):
         pass
         
+    def toCmd(self):
+		pass
+        
     @staticmethod
     def parse(text):
         return None
@@ -26,6 +26,9 @@ class NullMessage(Message):
     id = 1000
     def __init__(self):
         pass
+
+	def toCmd(self):
+		return "{0}|".format(self.id)        
         
     @staticmethod
     def parse(text):
@@ -33,104 +36,168 @@ class NullMessage(Message):
 
 class NewChannelMessage(Message):
     id = 1001
-    def __init__(self):
-        pass
+    def __init__(self, channel):
+        self.channel = channel
+         
+    def toCmd(self):
+		return "{0}|{1}".format(self.id, self.channel)
          
     @staticmethod
     def parse(text):
-        pass
+        return NewChannelMessage(text)
        
 class MembersMessage(Message):
     id = 1002
-    def __init__(self):
-        pass
-        
+    def __init__(self, channel, members):
+        self.channel = channel
+        self.members = members
+    
+    def toCmd(self):
+		return "{0}|{1},{2}".format(self.id, self.channel
+								   ,",".join(self.members))
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        ch, mem = data[0], data[1:]
+        return MembersMessage(ch, mem)
 
-# Done
 class ChannelsMessage(Message):
     id = 1003
-    def __init__(self):
-        self.channels = []
+    def __init__(self, channels):
+        self.channels = channels
             
     @staticmethod
     def parse(text):
         self.channels = text.split(",")
-        return self
+        return ChannelsMessage(self.channels)
 
 class JoinMessage(Message):
     id = 1004
-    def __init__(self):
-        pass
+    def __init__(self, nickname, password, host, gamename):
+        self.nickname = nickname
+        self.password = password
+        self.host = host
+        self.gamename = gamename
+        
+    def toCmd(self):
+		pwd = "\t" if self.password == "" else self.password
+		return "{0}|{1},{2},{3},{4}".format(self.id, self.nickname, pwd
+		                                   ,self.host, self.gamename)
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        data[1] = "" if data[1] == "\t" else ""
+        return JoinMessage(*data)
  
 class TextMsgMessage(Message):
     id = 1005
-    def __init__(self):
-        pass
+    def __init__(self, channel, nickname, textmessage):
+        self.channel = channel
+        self.nickname = nickname
+        self.message = textmessage
+        
+    def toCmd(self):
+		return "{0}|{1}\0{2}\0{3}".format(self.id, self.channel
+										 ,self.nickname, self.message)
         
     @staticmethod
     def parse(text):
-        pass
+		# private static String sep2 = "" + (char) 0; // why?
+        data = text.split("\0")
+        return TextMsgMessage(data[0], data[1], data[2])
+        
 
 class LeaveMessage(Message):
     id = 1006
-    def __init__(self):
-        pass
+    def __init__(self, nickname, hostname, channel):
+        self.nickname = nickname
+        self.hostname = hostname
+        self.channel = channel
+        
+    def toCmd(self):
+		return "{0}|{1}{2}{3}".format(self.id, self.nickname
+									 ,self.hostname, self.channel)
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        return LeaveMessage(data[0], data[1], data[2])
 
 class DeleteChannelMessage(Message):
     id = 1007
-    def __init__(self):
-        pass
+    def __init__(self, channel):
+        self.channel = channel
+        
+    def toCmd(self):
+		return "{0}|{1}".format(self.id, self.channel)
         
     @staticmethod
     def parse(text):
-        pass
+        return DeleteChannelMessage(text)
 
 class LeaveAllMessage(Message):
     id = 1008
     def __init__(self):
-        pass
+		pass
+        
+    def toCmd(self):
+		return "{0}".format(self.id)
         
     @staticmethod
     def parse(text):
-        pass
+        return LeaveAllMessage()
 
 class PutPieceMessage(Message):
     id = 1009
-    def __init__(self):
-        pass
+    def __init__(self, game, piecetype, playernum, coords):
+        self.game = game
+        self.piecetype = piecetype
+        self.playernum = playernum
+        self.coords = coords
+        
+	def toCmd(self):
+		return "{0}|{1},{2},{3},{4}".format(self.id, self.game
+										   ,self.piecetype, self.playernum
+										   ,self.coords)
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        return PutPieceMessage(data[0], data[1], data[2], data[3])
 
 class GameTextMsgMessage(Message):
     id = 1010
-    def __init__(self):
-        pass
+    def __init__(self, game, nickname, textmessage):
+        self.game = game
+        self.nickname = nickname
+        self.message = textmessage
+        
+    def toCmd(self):
+		return "{0}|{1}\0{2}\0{3}".format(self.id, self.game
+										 ,self.nickname, self.message)
         
     @staticmethod
     def parse(text):
-        pass
+		# private static String sep2 = "" + (char) 0; // why?
+        data = text.split("\0")
+        return GameTextMsgMessage(data[0], data[1], data[2])
 
 class LeaveGameMessage(Message):
     id = 1011
-    def __init__(self):
-        pass
+    def __init__(self, nickname, hostname, game):
+        self.nickname = nickname
+        self.hostname = hostname
+        self.game = game
+        
+    def toCmd(self):
+		return "{0}|{1}{2}{3}".format(self.id, self.nickname
+									 ,self.hostname, self.channel)
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        return LeaveGameMessage(data[0], data[1], data[2])
 
 class SitDownMessage(Message):
     id = 1012
@@ -202,7 +269,7 @@ class NewGameMessage(Message):
         
     @staticmethod
     def parse(text):
-        return NewGameMessage
+        pass
 
 class GameMembersMessage(Message):
     id = 1017
@@ -702,10 +769,8 @@ def test():
     for g in globals():
         cg = globals()[g]
         if str(g).endswith("Message") and hasattr(cg, "id"):
-            print globals()[g].id
-            i += 1
-    print i
-#    pdb.set_trace()
+            print(globals()[g].id)
+#    pdb.set_trace() 
 
 #test()
 
