@@ -1,13 +1,13 @@
 import socket
 import game
 
-from messages import ToMessage
 from messages import MakeMessage
 
 import game
 
 class Client:
     def __init__(self):
+        self.game = game.Game()
         self.socket = None
         
     def connect(self, server):
@@ -17,10 +17,15 @@ class Client:
         except:
             return False
         return True
+    
+    def make_message(self, raw_msg):
+        highByte = chr(len(raw_msg) / 256)
+        lowByte = chr(len(raw_msg) % 256)
+        return highByte + lowByte + raw_msg
           
-    def sendMsg(self, msg):
-		print("Sending: {0}".format(msg.toCmd()))
-		self.client.send(MakeMessage(msg.toCmd()))
+    def send_msg(self, msg):
+        print("Sending: {0}".format(msg.to_cmd()))
+        self.client.send(self.make_message(msg.to_cmd()))
             
     def run(self):
         gamejoined = False
@@ -36,38 +41,50 @@ class Client:
             """Calculate length of the rest of the message and receive"""
             transLength = highByte * 256 + lowByte
             msg = self.client.recv(transLength)
-            print(msg)
+            
+            parsed = self.game.parse_message(msg)
+            if parsed == None:
+                print "Message not supported -- {0}".format(msg)
+                continue
+            else:
+                (msg, message) = parsed
+                
+                if message == None:
+                    print "{0} - NOT SUPPORTED".format(msg)
+                    continue
+                
+                r = message.to_cmd()
+                print "[{0}] {1}".format(msg, "to_cmd() NOT IMPLEMENTED"if r == None else r)
 
             """We receive a channel list and a game list"""
             """JOINGAME sep nickname sep2 password sep2 host sep2 game"""
-            if msg[0:4] == "1019" and not gamejoined:
+            if msg == "GamesMessage" and not gamejoined:
                 gamejoined = True
                 print("Making new game...")
                 m = game.JoinGameMessage("aiBot", "", socket.gethostname(), "game")
-                self.sendMsg(m)
+                self.send_msg(m)
 
             """We receive confirmation of a game created, available seats, etc"""
             """SITDOWN sep game sep2 nickname sep2 playerNumber sep2 robotFlag"""    
-            if msg[0:4] == "1013" and not satdown:
+            if msg == "JoinGameMessage" and not satdown:
                 satdown = True
                 print("Sitting down...")
                 m = game.SitDownMessage("game", "aiBot", 1, False)
-                self.sendMsg(m)
+                self.send_msg(m)
                 
 
             """We receive starting values, 0 of each resource, game state and game face"""
             """STARTGAME sep game"""
-            if msg[0:4] == "1058" and not gamestarted:
+            if msg == "ChangeFaceMessage" and not gamestarted:
                 gamestarted = True
                 print("Starting game...")
                 m = game.StartGameMessage("game")
-                self.sendMsg(m)
+                self.send_msg(m)
                 
             
             """ We received gameboard information, pass it along to the Game-class. """
-            if msg[0:4] == "1014":
-                honker = game.Game(msg[10:].split(","))
-                #m = game.ParseMsg(msg)
+            if msg == "BoardLayoutMessage":
+                print message.board
 
             """Game has STARTED! We get information about board layout, resources, starting player, etc"""
                         
