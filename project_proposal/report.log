@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2010.2.7)  13 APR 2010 11:45
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2010.2.7)  13 APR 2010 12:00
 entering extended mode
  file:line:error style messages enabled.
  %&-line parsing enabled.
@@ -571,25 +571,25 @@ File: upsy.fd 2001/06/04 font definitions for U/psy.
 )) (./report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 57.
-LaTeX Font Info:    ... okay on input line 57.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 57.
-LaTeX Font Info:    ... okay on input line 57.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 57.
-LaTeX Font Info:    ... okay on input line 57.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 57.
-LaTeX Font Info:    ... okay on input line 57.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 57.
-LaTeX Font Info:    ... okay on input line 57.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 57.
-LaTeX Font Info:    ... okay on input line 57.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 57.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 57.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 58.
+LaTeX Font Info:    ... okay on input line 58.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 58.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 58.
 
 (/usr/local/texlive/2009/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 57.
+LaTeX Font Info:    ... okay on input line 58.
 
 (/usr/local/texlive/2009/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -616,18 +616,18 @@ LaTeX Font Info:    ... okay on input line 57.
 
 ] (./tex/main.tex [1]) (./report.aux) ) 
 Here is how much of TeX's memory you used:
- 4366 strings out of 493848
- 56441 string characters out of 3149208
- 109075 words of memory out of 3000000
- 7562 multiletter control sequences out of 15000+200000
- 22833 words of font info for 51 fonts, out of 3000000 for 9000
+ 4372 strings out of 493848
+ 56493 string characters out of 3149208
+ 109092 words of memory out of 3000000
+ 7563 multiletter control sequences out of 15000+200000
+ 25979 words of font info for 57 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
  28i,6n,32p,217b,219s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/local/texlive/2009/texmf-dist/font
 s/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2009/texmf-dist/fonts
 /type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2009/texmf-dist/fonts/t
 ype1/public/amsfonts/cm/cmr17.pfb>
-Output written on report.pdf (3 pages, 37980 bytes).
+Output written on report.pdf (3 pages, 39842 bytes).
 PDF statistics:
  24 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
