@@ -534,48 +534,81 @@ class EndTurnMessage(Message):
 
 class DiscardMessage(Message):
     id = 1033
-    def __init__(self):
-        pass
-        
-    @staticmethod
-    def parse(text):
-        pass
-
-class MoveRobberMessage(Message):
-    id = 1034
-    def __init__(self):
-        pass
+    def __init__(self, game, clay, ore, sheep, wheat, wood, unknown):
+        self.game = game
+        self.clay = clay
+        self.sheep = sheep
+        self.wheat = wheat
+        self.wood = wood
+        self.unknown = unknown
+    
+    def to_cmd(self):
+        return "{0}|{1},{2},{3},{4},{5},{6}".format(self.game, self.clay, self.sheep
+                                                    ,self.wheat, self.wood, self.unknown)
     
     @staticmethod
     def parse(text):
-        pass
+        g, c, s, wh, wo, u = map(int, text.split(","))
+        return DiscardMessage(g, c, s, wh, wo, u)
+        
+class MoveRobberMessage(Message):
+    id = 1034
+    def __init__(self, game, playernum, coords):
+        self.game = game
+        self.playernum = playernum
+        self.coords = coords
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game, self.playernum, self.coords)
+    
+    @staticmethod
+    def parse(text):
+        g, pn, coords = text.split(",")
+        return MoveRobberMessage(g, int(pn), coords)
  
 class ChoosePlayerMessage(Message):
     id = 1035  
-    def __init__(self):
-        pass    
+    def __init__(self, game, choice):
+        self.game = game
+        self.choice = choice
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.choice)
              
     @staticmethod
     def parse(text):
-        pass
+        game, choice = text.split(",")
+        return ChoosePlayerMessage(game, int(choice))
    
 class ChoosePlayerRequestMessage(Message):
     id = 1036
-    def __init__(self):
-        pass
+    def __init__(self, game, choices):
+        self.game = game
+        self.choices = choices
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game
+                                    ,",".join(self.choices))
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        game, choices = data[0], data[1:]
+        return ChoosePlayerRequestMessage(game, choices)
 
 class RejectOfferMessage(Message):
     id = 1037
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.playernum)
         
     @staticmethod
     def parse(text):
-        pass
+        g, pn = text.split(",")
+        return RejectOfferMessage(g, int(pn))
 
 class ClearOfferMessage(Message):
     id = 1038  
