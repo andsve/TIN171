@@ -741,17 +741,19 @@ class PotentialSettlementsMessage(Message):
 
 class ChangeFaceMessage(Message):
     id = 1058
-    def __init__(self, playernum, faceid):
+    def __init__(self, game, playernum, faceid):
+        self.game = game
         self.playernum = playernum
         self.faceid = faceid
         
     def to_cmd(self):
-        return "{0}|{1},{2}".format(self.playernum, self.faceid)
+        return "{0}|{1},{2},{3}".format(self.id, self.game, self.playernum, self.faceid)
         
     @staticmethod
     def parse(text):
-        pn, fi = text.split(",")
-        return ChangeFaceMessage(pn, fi)
+        print text
+        g, pn, fi = text.split(",")
+        return ChangeFaceMessage(g, pn, fi)
 
 class RejectConnectionMessage(Message):
     id = 1059
