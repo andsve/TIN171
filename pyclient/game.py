@@ -199,7 +199,6 @@ class GameTextMsgMessage(Message):
     def parse(text):
         # private static String sep2 = "" + (char) 0; // why?
         data = text.split("\xc0\x80")
-        print data
         return GameTextMsgMessage(data[0], data[1], data[2])
 
 class LeaveGameMessage(Message):
@@ -612,25 +611,38 @@ class RejectOfferMessage(Message):
 
 class ClearOfferMessage(Message):
     id = 1038  
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
         
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.playernum)
+    
     @staticmethod
     def parse(text):
-        pass
+        game, playernum = text.split(",")
+        return ClearOfferMessage(game, int(playernum))
 
 class AcceptOfferMessage(Message):
     id = 1039 
-    def __init__(self):
-        pass
+    def __init__(self, game, acc_player, off_player):
+        self.game = game
+        self.accepting = acc_player
+        self.offering = off_player
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game
+                                        ,self.accepting, self.offering)
         
     @staticmethod
     def parse(text):
-        pass
+        game, accept, offer = text.split(",")
+        return AcceptOfferMessage(game, int(accept), int(offer))
 
 class BankTradeMessage(Message):
     id = 1040
-    def __init__(self):
+    def __init__(self, game, give, get):
+        # TODO
         pass
         
     @staticmethod
@@ -784,7 +796,6 @@ class ChangeFaceMessage(Message):
         
     @staticmethod
     def parse(text):
-        print text
         g, pn, fi = text.split(",")
         return ChangeFaceMessage(g, pn, fi)
 
