@@ -91,16 +91,16 @@ class ChannelsMessage(Message):
 
 class JoinMessage(Message):
     id = 1004
-    def __init__(self, nickname, password, host, gamename):
+    def __init__(self, nickname, password, host, game):
         self.nickname = nickname
         self.password = password
         self.host = host
-        self.gamename = gamename
+        self.game = game
         
     def to_cmd(self):
         pwd = "\t" if self.password == "" else self.password
         return "{0}|{1},{2},{3},{4}".format(self.id, self.nickname, pwd
-                                            ,self.host, self.gamename)
+                                            ,self.host, self.game)
         
     @staticmethod
     def parse(text):
@@ -220,14 +220,14 @@ class LeaveGameMessage(Message):
 
 class SitDownMessage(Message):
     id = 1012
-    def __init__(self, gamename, nickname, playernum, isrobot):
-        self.gamename = gamename
+    def __init__(self, game, nickname, playernum, isrobot):
+        self.game = game
         self.nickname = nickname
         self.playernum = playernum
         self.isrobot = isrobot
         
     def to_cmd(self):
-        return "{0}|{1},{2},{3},{4}".format(self.id, self.gamename, self.nickname
+        return "{0}|{1},{2},{3},{4}".format(self.id, self.game, self.nickname
                                        ,self.playernum, str(self.isrobot).lower())
         
     @staticmethod
@@ -241,16 +241,16 @@ class SitDownMessage(Message):
 
 class JoinGameMessage(Message):
     id = 1013
-    def __init__(self, nickname, password, host, gamename):
+    def __init__(self, nickname, password, host, game):
         self.nickname = nickname
         self.password = password
         self.host = host
-        self.gamename = gamename
+        self.game = game
         
     def to_cmd(self):
         pwd = "\t" if self.password == "" else self.password
         return "{0}|{1},{2},{3},{4}".format(self.id, self.nickname, pwd
-                                        ,self.host, self.gamename)
+                                        ,self.host, self.game)
         
     @staticmethod
     def parse(text):
@@ -273,27 +273,38 @@ class BoardLayoutMessage(Message):
 
 class DeleteGameMessage(Message):
     id = 1015
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
        
     @staticmethod 
     def parse(text):
-        pass
+        return DeleteGameMessage(text)
 
 
 class NewGameMessage(Message):
     id = 1016
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
         
-    @staticmethod
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
+       
+    @staticmethod 
     def parse(text):
-        pass
+        return NewGameMessage(text)
 
 class GameMembersMessage(Message):
     id = 1017
-    def __init__(self):
-        pass
+    def __init__(self, game, members):
+        self.game = game
+        self.members = members
+        
+    def to_cmd(self):
+        members = ",".join(self.members)
+        return "{0}|{1},{2}".format(self.id, self.game, members)
         
     @staticmethod
     def parse(text):
@@ -301,11 +312,11 @@ class GameMembersMessage(Message):
 
 class StartGameMessage(Message):
     id = 1018
-    def __init__(self, gamename):
-        self.gamename = gamename
+    def __init__(self, game):
+        self.game = game
         
     def to_cmd(self):
-        return "{0}|{1}".format(self.id, self.gamename)
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
@@ -326,120 +337,200 @@ class GamesMessage(Message):
 
 class JoinAuthMessage(Message):
     id = 1020
-    def __init__(self):
-        pass
+    def __init__(self, nick, channel):
+        self.nickname = nickname
+        self.channel = channel
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.nickname, self.channel)
         
     @staticmethod
     def parse(text):
-        pass
+        nickname, channel = text.split(",")
+        return JoinAuthMessage(nickname, channel)
 
 class JoinGameAuthMessage(Message):
     id = 1021
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+       
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
-        pass
+        return JoinGameAuthMessage(text)
 
 class ImARobotMessage(Message):
     id = 1022
-    def __init__(self):
-        pass
+    def __init__(self, nickname):
+        self.nickname = nickname
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.nickname)
         
     @staticmethod
     def parse(text):
-        pass
+        return ImARobotMessage(text)
 
 class JoinGameRequestMessage(Message):
     id = 1023
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
+    
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.game, self.playernum)
         
     @staticmethod
     def parse(text):
-        pass
+        game, playernum = text.split(",")
+        return JoinGameRequestMessage(game, playernum)
 
 class PlayerElementMessage(Message):
     id = 1024
-    def __init__(self):
-        pass
+    etype = {
+            '1': 'CLAY',
+            '2': 'ORE',
+            '3': 'SHEEP',
+            '4': 'WHEAT',
+            '5': 'WOOD',
+            '6': 'UNKNOWN',
+            '10': 'ROADS',
+            '11': 'SETTLEMENTS',
+            '12': 'CITIES',
+            '15': 'NUMKNIGHTS',
+            '100': 'SET',
+            '101': 'GAIN',
+            '102': 'LOSE' 
+    }
+    def __init__(self, game, playernum, action, element, value):
+        self.game = game
+        self.playernum = playernum
+        self.action = action
+        self.element = element
+        self.value = value
+        
+    def to_cmd(self):
+        for i, v in self.etype.items():
+            if self.action == v:
+                ac = i
+            elif self.element == v:
+                el = i
+        return "{0}|{1},{2},{3},{4},{5}".format(self.id, self.game, self.playernum, ac, el, self.value)
         
     @staticmethod
     def parse(text):
-        pass
+        game, playernum, action, element, value = text.split(',')
+        ac = PlayerElementMessage.etype[action]
+        el = PlayerElementMessage.etype[element]
+        return PlayerElementMessage(game, playernum
+                                    , ac, el
+                                    , int(value))
 
 class GameStateMessage(Message):
     id = 1025
-    def __init__(self):
-        pass
+    def __init__(self, game, state):
+        self.game = game
+        self.state = state
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.state)
         
     @staticmethod
     def parse(text):
-        pass
+        g, s = text.split(",")
+        return GameStateMessage(g, s)
 
 class TurnMessage(Message):
     id = 1026
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.playernum)
         
     @staticmethod
     def parse(text):
-        pass
+        gn, pn = text.split(",")
+        return TurnMessage(gn, pn)
 
 class SetupDoneMessage(Message):
     id = 1027
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
-        pass
+        return SetupDoneMessage(text)
 
 class DiceResultMessage(Message):
     id = 1028
-    def __init__(self):
-        pass
+    def __init__(self, game, result):
+        self.game = game
+        self.result = result
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.result)
         
     @staticmethod
     def parse(text):
-        pass
+        game, result = text.split(",")
+        return DiceResultMessage(game, int(result))
 
 class DiscardRequestMessage(Message):
     id = 1029
-    def __init__(self):
-        pass
+    def __init__(self, game, numcards):
+        self.game = game
+        self.numcards = numcards
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.numcards)
         
     @staticmethod
     def parse(text):
-        pass
+        game, numcards = text.split(",")
+        return DiscardRequestMessage(game, int(numcards))
 
 class RollDiceRequestMessage(Message):
     id = 1030
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
-        pass
+        return RollDiceRequestMessage(text)
 
 class RollDiceMessage(Message):
     id = 1031
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
-        pass
+        return RollDiceMessage(text)
 
 class EndTurnMessage(Message):
     id = 1032
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
-        pass
+        return EndTurnMessage(text)
 
 class DiscardMessage(Message):
     id = 1033
@@ -650,12 +741,17 @@ class PotentialSettlementsMessage(Message):
 
 class ChangeFaceMessage(Message):
     id = 1058
-    def __init__(self):
-        pass
+    def __init__(self, playernum, faceid):
+        self.playernum = playernum
+        self.faceid = faceid
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.playernum, self.faceid)
         
     @staticmethod
     def parse(text):
-        pass
+        pn, fi = text.split(",")
+        return ChangeFaceMessage(pn, fi)
 
 class RejectConnectionMessage(Message):
     id = 1059
