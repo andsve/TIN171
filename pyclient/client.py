@@ -1,10 +1,6 @@
 import socket
 import game
 
-from messages import MakeMessage
-
-import game
-
 class Client:
     def __init__(self):
         self.game = game.Game()
