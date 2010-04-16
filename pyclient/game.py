@@ -9,6 +9,7 @@ class Game:
         self.init_parser()
     
     def init_parser(self):
+        """ Create a LUT for message id => message instance """
         self.messagetbl = {}
         for g in globals():
             cg = globals()[g]
@@ -16,9 +17,23 @@ class Game:
                 self.messagetbl[str(cg.id)] = (cg, g)
     
     def parse_message(self, msg):
+        """ Create a message from recieved data """
         id, txt = msg[:4], msg[5:]
-        message_class, name = self.messagetbl[id] 
-        return (name, message_class.parse(txt))
+        message_class, name = self.messagetbl[id]
+        inst = message_class.parse(txt)
+        self.update_game(name, inst)
+        return (name, inst)
+        
+    def update_game(self, id, message):
+        """ Update game state """
+        
+        if id == "BoardLayoutMessage":
+            # Set game board
+            pass
+        elif id == "PlayerElementMessage":
+            # Update resources
+            pass
+            
     
     def parse_board(self):
         for elt in self.gameboard:
