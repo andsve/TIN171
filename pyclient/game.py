@@ -33,7 +33,19 @@ class Game:
         
         if id == "BoardLayoutMessage":
             # Set game board
-            pass
+            self.boardLayout = BoardLayout()
+
+            # Add resource to all neighbours
+            if message.board[5] != 0:
+             """self.boardLayout[ord('\x27')].addResource(message.board[5])
+                self.boardLayout[ord('\x36')].addResource(message.board[5])
+                self.boardLayout[ord('\x38')].addResource(message.board[5])
+                self.boardLayout[ord('\x47')].addResource(message.board[5])
+                self.boardLayout[ord('\x49')].addResource(message.board[5])
+                self.boardLayout[ord('\x58')].addResource(message.board[5])"""
+            
+            pass               
+            
         elif id == "PlayerElementMessage":
             # Update resources
             pass
@@ -1057,3 +1069,165 @@ class ServerPingMessage(Message):
     @staticmethod
     def parse(text):
         pass
+
+class BoardLayout:
+
+    roadList = []
+    nodeList = []
+    def __init__(self):
+        """roadList[ord('\x22')] = RoadNode('\x22','\x23','\x32')
+        roadList[ord('\x23')] = RoadNode('\x23','\x23','\x34')
+        roadList[ord('\x24')] = RoadNode('\x24','\x25','\x34')
+        roadList[ord('\x25')] = RoadNode('\x25','\x25','\x36')
+        roadList[ord('\x26')] = RoadNode('\x26','\x27','\x36')
+        roadList[ord('\x27')] = RoadNode('\x27','\x27','\x38')
+        roadList[ord('\x32')] = RoadNode('\x32','\x32','\x43')
+        roadList[ord('\x34')] = RoadNode('\x34','\x34','\x45')
+        roadList[ord('\x36')] = RoadNode('\x36','\x36','\x47')
+        roadList[ord('\x38')] = RoadNode('\x38','\x38','\x49')
+        roadList[ord('\x42')] = RoadNode('\x42','\x43','\x52')
+        roadList[ord('\x43')] = RoadNode('\x43','\x43','\x54')
+        roadList[ord('\x44')] = RoadNode('\x44','\x45','\x54')
+        roadList[ord('\x45')] = RoadNode('\x45','\x45','\x56')
+        roadList[ord('\x46')] = RoadNode('\x46','\x47','\x56')
+        roadList[ord('\x47')] = RoadNode('\x47','\x47','\x58')
+        roadList[ord('\x48')] = RoadNode('\x48','\x49','\x58')
+        roadList[ord('\x49')] = RoadNode('\x49','\x49','\x5a')
+        roadList[ord('\x52')] = RoadNode('\x52','\x52','\x63')
+        roadList[ord('\x54')] = RoadNode('\x54','\x54','\x65')
+        roadList[ord('\x56')] = RoadNode('\x56','\x56','\x67')
+        roadList[ord('\x58')] = RoadNode('\x58','\x58','\x69')
+        roadList[ord('\x5a')] = RoadNode('\x5a','\x5a','\x6b')
+        roadList[ord('\x62')] = RoadNode('\x62','\x63','\x72')
+        roadList[ord('\x63')] = RoadNode('\x63','\x63','\x74')
+        roadList[ord('\x64')] = RoadNode('\x64','\x65','\x74')
+        roadList[ord('\x65')] = RoadNode('\x65','\x65','\x76')
+        roadList[ord('\x66')] = RoadNode('\x66','\x67','\x76')
+        roadList[ord('\x67')] = RoadNode('\x67','\x67','\x78')
+        roadList[ord('\x68')] = RoadNode('\x68','\x69','\x78')
+        roadList[ord('\x69')] = RoadNode('\x69','\x69','\x7a')
+        roadList[ord('\x6a')] = RoadNode('\x6a','\x6b','\x7a')
+        roadList[ord('\x6b')] = RoadNode('\x6b','\x6b','\x7c')
+        roadList[ord('\x72')] = RoadNode('\x72','\x72','\x83')
+        roadList[ord('\x74')] = RoadNode('\x74','\x74','\x85')
+        roadList[ord('\x76')] = RoadNode('\x76','\x76','\x87')
+        roadList[ord('\x78')] = RoadNode('\x78','\x78','\x89')
+        roadList[ord('\x7a')] = RoadNode('\x7a','\x7a','\x8b')
+        roadList[ord('\x7c')] = RoadNode('\x7c','\x7c','\x8d')
+        roadList[ord('\x83')] = RoadNode('\x83','\x83','\x94')
+        roadList[ord('\x84')] = RoadNode('\x84','\x85','\x94')
+        roadList[ord('\x85')] = RoadNode('\x85','\x85','\x96')
+        roadList[ord('\x86')] = RoadNode('\x86','\x87','\x96')
+        roadList[ord('\x87')] = RoadNode('\x87','\x87','\x98')
+        roadList[ord('\x88')] = RoadNode('\x88','\x89','\x98')
+        roadList[ord('\x89')] = RoadNode('\x89','\x89','\x9a')
+        roadList[ord('\x8a')] = RoadNode('\x8a','\x8b','\x9a')
+        roadList[ord('\x8b')] = RoadNode('\x8b','\x8b','\x9c')
+        roadList[ord('\x8c')] = RoadNode('\x8c','\x8d','\x9c')
+        roadList[ord('\x94')] = RoadNode('\x94','\x94','\xa5')
+        roadList[ord('\x96')] = RoadNode('\x96','\x96','\xa7')
+        roadList[ord('\x98')] = RoadNode('\x98','\x98','\xa9')
+        roadList[ord('\x9a')] = RoadNode('\x9a','\x9a','\xab')
+        roadList[ord('\x9c')] = RoadNode('\x9c','\x9c','\xad')
+        roadList[ord('\xa5')] = RoadNode('\xa5','\xa5','\xb6')
+        roadList[ord('\xa6')] = RoadNode('\xa6','\xa7','\xb6')
+        roadList[ord('\xa7')] = RoadNode('\xa7','\xa7','\xb8')
+        roadList[ord('\xa8')] = RoadNode('\xa8','\xa9','\xb8')
+        roadList[ord('\xa9')] = RoadNode('\xa9','\xa9','\xba')
+        roadList[ord('\xaa')] = RoadNode('\xaa','\xab','\xba')
+        roadList[ord('\xab')] = RoadNode('\xab','\xab','\xbc')
+        roadList[ord('\xac')] = RoadNode('\xac','\xad','\xbc')
+        roadList[ord('\xb6')] = RoadNode('\xb6','\xb6','\xc7')
+        roadList[ord('\xb8')] = RoadNode('\xb8','\xb8','\xc9')
+        roadList[ord('\xba')] = RoadNode('\xba','\xba','\xcb')
+        roadList[ord('\xbc')] = RoadNode('\xbc','\xbc','\xcd')
+        roadList[ord('\xc7')] = RoadNode('\xc7','\xc7','\xd8')
+        roadList[ord('\xc8')] = RoadNode('\xc8','\xc9','\xd8')
+        roadList[ord('\xc9')] = RoadNode('\xc9','\xc9','\xda')
+        roadList[ord('\xca')] = RoadNode('\xca','\xcb','\xda')
+        roadList[ord('\xcb')] = RoadNode('\xcb','\xcb','\xdc')
+        roadList[ord('\xcc')] = RoadNode('\xcc','\xcd','\xdc')
+        
+        nodeList[ord('\x23')] = BoardNode('\x23','\x22','\x23',None)
+        nodeList[ord('\x25')] = BoardNode('\x25','\x24','\x25',None)
+        nodeList[ord('\x27')] = BoardNode('\x27','\x26','\x27',None)
+        nodeList[ord('\x32')] = BoardNode('\x32','\x22','\x32',None)
+        nodeList[ord('\x34')] = BoardNode('\x34','\x23','\x24','\x34')
+        nodeList[ord('\x36')] = BoardNode('\x36','\x25','\x26','\x36')
+        nodeList[ord('\x38')] = BoardNode('\x38','\x27','\x38',None)
+        nodeList[ord('\x43')] = BoardNode('\x43','\x32','\x42','\x43')
+        nodeList[ord('\x45')] = BoardNode('\x45','\x34','\x44','\x45')
+        nodeList[ord('\x47')] = BoardNode('\x47','\x36','\x46','\x47')
+        nodeList[ord('\x49')] = BoardNode('\x49','\x38','\x48','\x49')
+        nodeList[ord('\x52')] = BoardNode('\x52','\x42','\x52',None)
+        nodeList[ord('\x54')] = BoardNode('\x54','\x43','\x44','\x54')
+        nodeList[ord('\x56')] = BoardNode('\x56','\x45','\x46','\x56')
+        nodeList[ord('\x58')] = BoardNode('\x58','\x47','\x48','\x58')
+        nodeList[ord('\x5a')] = BoardNode('\x5a','\x49','\x5a',None)
+        nodeList[ord('\x63')] = BoardNode('\x63','\x52','\x62','\x63')
+        nodeList[ord('\x65')] = BoardNode('\x65','\x54','\x64','\x65')
+        nodeList[ord('\x67')] = BoardNode('\x67','\x56','\x66','\x67')
+        nodeList[ord('\x69')] = BoardNode('\x69','\x58','\x68','\x69')
+        nodeList[ord('\x6b')] = BoardNode('\x6b','\x5a','\x6a','\x6b')
+        nodeList[ord('\x72')] = BoardNode('\x72','\x62','\x72',None)
+        nodeList[ord('\x74')] = BoardNode('\x74','\x63','\x64','\x74')
+        nodeList[ord('\x76')] = BoardNode('\x76','\x65','\x66','\x76')
+        nodeList[ord('\x78')] = BoardNode('\x78','\x67','\x68','\x78')
+        nodeList[ord('\x7a')] = BoardNode('\x7a','\x69','\x6a','\x7a')
+        nodeList[ord('\x7c')] = BoardNode('\x7c','\x6b','\x7c',None)
+        nodeList[ord('\x83')] = BoardNode('\x83','\x72','\x83',None)
+        nodeList[ord('\x85')] = BoardNode('\x85','\x74','\x84','\x85')
+        nodeList[ord('\x87')] = BoardNode('\x87','\x76','\x86','\x87')
+        nodeList[ord('\x89')] = BoardNode('\x89','\x78','\x88','\x89')
+        nodeList[ord('\x8b')] = BoardNode('\x8b','\x7a','\x8a','\x8b')
+        nodeList[ord('\x8d')] = BoardNode('\x8d','\x7c','\x8c',None)
+        nodeList[ord('\x94')] = BoardNode('\x94','\x83','\x84','\x94')
+        nodeList[ord('\x96')] = BoardNode('\x96','\x85','\x86','\x96')
+        nodeList[ord('\x98')] = BoardNode('\x98','\x87','\x88','\x98')
+        nodeList[ord('\x9a')] = BoardNode('\x9a','\x89','\x8a','\x9a')
+        nodeList[ord('\x9c')] = BoardNode('\x9c','\x8b','\x8c','\x9c')
+        nodeList[ord('\xa5')] = BoardNode('\xa5','\x94','\xa5',None)
+        nodeList[ord('\xa7')] = BoardNode('\xa7','\x96','\xa6','\xa7')
+        nodeList[ord('\xa9')] = BoardNode('\xa9','\x98','\xa8','\xa9')
+        nodeList[ord('\xab')] = BoardNode('\xab','\x9a','\xaa','\xab')
+        nodeList[ord('\xad')] = BoardNode('\xad','\x9c','\xac',None)
+        nodeList[ord('\xb6')] = BoardNode('\xb6','\xa5','\xa6','\xb6')
+        nodeList[ord('\xb8')] = BoardNode('\xb8','\xa7','\xa8','\xb8')
+        nodeList[ord('\xba')] = BoardNode('\xba','\xa9','\xaa','\xba')
+        nodeList[ord('\xbc')] = BoardNode('\xbc','\xab','\xac','\xbc')
+        nodeList[ord('\xc7')] = BoardNode('\xc7','\xb6','\xc7',None)
+        nodeList[ord('\xc9')] = BoardNode('\xc9','\xb8','\xc8','\xc9')
+        nodeList[ord('\xcb')] = BoardNode('\xcb','\xba','\xca','\xcb')
+        nodeList[ord('\xcd')] = BoardNode('\xcd','\xbc','\xcc',None)
+        nodeList[ord('\xd8')] = BoardNode('\xd8','\xc7','\xc8',None)
+        nodeList[ord('\xda')] = BoardNode('\xda','\xc9','\xca',None)
+        nodeList[ord('\xdc')] = BoardNode('\xdc','\xcb','\xcc',None)"""       
+
+
+class RoadNode:
+
+    id = None
+    n1 = None
+    n2 = None
+    owner = None
+    def __init__(self, name, neighbour1, neighbour2):
+        id = name
+        n1 = neighbour1
+        n2 = neighbour2
+
+class BoardNode:
+
+    id = None
+    n1 = None
+    n2 = None
+    n3 = None
+    harbor = None
+    resource1 = None
+    resource2 = None
+    resource3 = None
+    
+    def __init__(self, name, neighbour1, neighbour2, neighbour3):
+        id = name
+        n1 = neighbour1
+        n2 = neighbour2
+        n3 = neighbour3
