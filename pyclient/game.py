@@ -27,6 +27,10 @@ class Game:
     def update_game(self, id, message):
         """ Update game state """
         
+        # Look up how the data is exposed by matching the id with the
+        # message-classes listed below. Some of them will need some tweaking
+        # (i.e.BankTradeMessage - must map Jsettlers resource id -> resource name)
+        
         if id == "BoardLayoutMessage":
             # Set game board
             pass
