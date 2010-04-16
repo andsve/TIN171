@@ -29,7 +29,6 @@ class Client:
         gamestarted = False
         
         while True:
-            print("waiting to receive")
             """Receive high byte"""
             highByte = ord(self.client.recv(1))
             """Receive low byte"""

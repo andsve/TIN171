@@ -654,16 +654,28 @@ class AcceptOfferMessage(Message):
         game, accept, offer = text.split(",")
         return AcceptOfferMessage(game, int(accept), int(offer))
 
+# TODO: See SOCResourceConstants.java for value order
 class BankTradeMessage(Message):
     id = 1040
     def __init__(self, game, give, get):
-        # TODO
-        pass
+        self.game = game
+        self.give = give
+        self.get = get
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game
+                                        ,','.join(self.give)
+                                        ,','.join(self.get))
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        game = data[0]
+        give = map(int, data[1:6])
+        got = map(int, data[6:11])
+        return BankTradeMessage(game, give, get)
 
+# TODO: Implement if needed
 class MakeOfferMessage(Message):
     id = 1041
     def __init__(self):
@@ -675,76 +687,123 @@ class MakeOfferMessage(Message):
 
 class ClearTradeMsgMessage(Message):
     id = 1042
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.playernum)
         
     @staticmethod
     def parse(text):
-        pass
+        game, player = text.split(",")
+        return ClearTradeMsgMessage(game, int(player))
 
 class BuildRequestMessage(Message):
     id = 1043
-    def __init__(self):
-        pass
+    def __init__(self, game, piecetype):
+        self.game = game
+        self.piecetype = piecetype
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.piecetype)
         
     @staticmethod
     def parse(text):
-        pass
+        game, pt = text.split(",")
+        return BuildRequestMessage(game, int(pt))
 
 class CancelBuildRequestMessage(Message):
     id = 1044 
-    def __init__(self):
-        pass
+    def __init__(self, game, piecetype):
+        self.game = game
+        self.piecetype = piecetype
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.piecetype)
         
     @staticmethod
     def parse(text):
-        pass
+        game, pt = text.split(",")
+        return CancelBuildRequestMessage(game, int(pt))
 
 class BuyCardRequestMessage(Message):
     id = 1045  
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
         
     @staticmethod
     def parse(text):
-        pass
+        return BuyCardRequestMessage(text)
 
+# TODO: See SOCDevCard.java
 class DevCardMessage(Message):
     id = 1046
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum, action, cardtype):
+        self.game = game
+        self.playernum = playernum
+        self.action = action
+        self.cardtype = cardtype
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3},{4}".format(self.id, self.game
+                                            ,self.playernum, self.action
+                                            ,self.cardtype)
               
     @staticmethod
     def parse(text):
-        pass
+        g, pn, ac, ct = text.split(",")
+        return DevCardmessage(g, int(pn), int(ac), int(ct))
    
 class DevCardCountMessage(Message):
     id = 1047
-    def __init__(self):
-        pass
-        
+    def __init__(self, game, count):
+        self.game = game
+        self.count = count
+     
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.count)
+     
     @staticmethod
     def parse(text):
-        pass
+        game, count = text.split(",")
+        return DevCardCountMessage(game, int(count))
 
 class SetPlayedDevCardMessage(Message):
     id = 1048
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum, cardflag):
+        self.game = game
+        self.playernum = playernum
+        self.cardflag = cardflag
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game, self.playernum, str(self.cardflag).lower())
         
     @staticmethod
     def parse(text):
-        pass
+        g, p, c = text.split(",")
+        cf = True if c.lower() == "true" else False
+        return SetPlayedDevCardMessage(g, p, cf)
 
+# TODO: Lookup how cards are represented
 class PlayDevCardRequestMessage(Message):
     id = 1049
-    def __init__(self):
-        pass
+    def __init__(self, game, card):
+        self.game = game
+        self.card = card       
+    
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.card)
               
     @staticmethod
     def parse(text):
-        pass
+        g, c = text.split(",")
+        return PlayDevCardRequestMessage(g, c)
    
+# TODO: Not needed yet.
 class DiscoveryPickMessage(Message):
     id = 1052
     def __init__(self):
@@ -754,6 +813,7 @@ class DiscoveryPickMessage(Message):
     def parse(text):
         pass
 
+# TODO: Not needed yet.
 class MonopolyPickMessage(Message):
     id = 1053
     def __init__(self):
@@ -765,39 +825,62 @@ class MonopolyPickMessage(Message):
 
 class FirstPlayerMessage(Message):
     id = 1054
-    def __init__(self):
-        pass
+    def __init__(self, game, seatnum):
+        self.game = game
+        self.seatnum = seatnum
+                 
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.seatnum)
                  
     @staticmethod
     def parse(text):
-        pass
+        game, seat = text.split(",")
+        return FirstPlayerMessage(game, int(seat))
 
 class SetTurnMessage(Message):
     id = 1055
-    def __init__(self):
-        pass
-        
-    @staticmethod
-    def parse(text):
-        pass
-
-class RobotDismissMessage(Message):
-    id = 1056
-    def __init__(self):
-        pass
-        
-    @staticmethod
-    def parse(text):
-        pass
-
-class PotentialSettlementsMessage(Message):
-    id = 1057
-    def __init__(self):
-        pass
+    def __init__(self, game, seatnum):
+        self.game = game
+        self.seatnum = seatnum
+                 
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.seatnum)
                  
     @staticmethod
     def parse(text):
-        pass
+        game, seat = text.split(",")
+        return SetTurnMessage(game, int(seat))
+
+class RobotDismissMessage(Message):
+    id = 1056
+    def __init__(self, game):
+        self.game = game
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.game)
+        
+    @staticmethod
+    def parse(text):
+        return RobotDismissMessage(text)
+
+class PotentialSettlementsMessage(Message):
+    id = 1057
+    def __init__(self, game, playernum, settlements):
+        self.game = game
+        self.playernum = playernum
+        self.settlements = settlements
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game, self.playernum
+                                        ,','.join(self.settlements))
+                 
+    @staticmethod
+    def parse(text):
+        data = text.split(",")
+        game, pn = data[0], data[1]
+        settlements = map(int, data[2:])
+        return PotentialSettlementsMessage(game, int(pn), settlements)
+        
 
 class ChangeFaceMessage(Message):
     id = 1058
@@ -814,6 +897,7 @@ class ChangeFaceMessage(Message):
         g, pn, fi = text.split(",")
         return ChangeFaceMessage(g, pn, fi)
 
+# TODO
 class RejectConnectionMessage(Message):
     id = 1059
     def __init__(self):
@@ -825,13 +909,21 @@ class RejectConnectionMessage(Message):
 
 class LastSettlementMessage(Message):
     id = 1060
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum, coords):
+        self.game = game
+        self.playernum = playernum
+        self.coords = coords
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game
+                                        ,self.playernum, self.coords)
         
     @staticmethod
     def parse(text):
-        pass
+        g, pn, co = text.split(",")
+        return LastSettlementMessage(g, int(pn), int(co))
 
+# TODO: 
 class GameStatsMessage(Message):
     id = 1061
     def __init__(self):
@@ -841,6 +933,7 @@ class GameStatsMessage(Message):
     def parse(text):
         pass
 
+# TODO: 
 class BCastTextMsgMessage(Message):
     id = 1062
     def __init__(self):
@@ -852,13 +945,21 @@ class BCastTextMsgMessage(Message):
 
 class ResourceCountMessage(Message):
     id = 1063
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum, count):
+        self.game = game
+        self.playernum = playernum
+        self.count = count
+        
+    def to_cmd(self):
+        return "{0}|{1},{2},{3}".format(self.id, self.game, self.playernum
+                                        ,self.count)
                 
     @staticmethod
     def parse(text):
-        pass
+        g, pn, c = text.split(",")
+        return ResourceCountMessage(g, int(pn), int(c))
 
+# TODO: Fix later
 class AdminPingMessage(Message):
     id = 1064
     def __init__(self):
@@ -868,6 +969,7 @@ class AdminPingMessage(Message):
     def parse(text):
         pass
 
+# TODO: Fix later
 class AdminResetMessage(Message):
     id = 1065
     def __init__(self):
@@ -879,22 +981,33 @@ class AdminResetMessage(Message):
 
 class LongestRoadMessage(Message):
     id = 1066
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.playernum)
         
     @staticmethod
     def parse(text):
-        pass
+        game, pn = text.split(",")
+        return LongestRoadMessage(game, int(pn))
 
 class LargestArmyMessage(Message):
     id = 1067
-    def __init__(self):
-        pass
+    def __init__(self, game, playernum):
+        self.game = game
+        self.playernum = playernum
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.playernum)
         
     @staticmethod
     def parse(text):
-        pass
+        game, pn = text.split(",")
+        return LargestArmyMessage(game, int(pn))
 
+# TODO: Fix later
 class SetSeatLockMessage(Message):
     id = 1068
     def __init__(self):
@@ -931,6 +1044,7 @@ class UpdateRobotParamsMessage(Message):
     def parse(text):
         pass
 
+# TODO: Fix later/ignore
 class ServerPingMessage(Message):
     id = 9999  
     def __init__(self):
