@@ -14,8 +14,26 @@ straight_edges = [0x06, 0x28, 0x4a, 0x6c, 0x8e
                  ,0x40, 0x62, 0x84, 0xa6, 0xc8, 0xea
                  ,0x60, 0x82, 0xa4, 0xc6, 0xe8]
 
-def road_to_neighbour_nodes(r):
-    pass
+# Does not work correctly for all cases
+def road_to_nodes(r):
+    cs = hex(r)[2:]
+    if len(cs) == 1:
+        cs = '0' + cs[0]
+    c1, c2 = cs
+    c1e = int(c1, 16) % 2 == 0
+    c2e = int(c2, 16) % 2 == 0
+    
+    print c1e, c2e
+    
+    if c1e and c2e:
+        n1 = r + 0x01
+        n2 = r + 0x10 
+    else:
+        n1 = r
+        n2 = r + 0x11
+
+    return [n1, n2]
+
 
 def roads_around_hex(n):
     # / \   n1 n2
@@ -29,7 +47,7 @@ def roads_around_hex(n):
             , n + 0x11 - 0x01
             ]
             
-def roads_from_node(n):
+def node_to_roads(n):
     if n % 2 == 0:
         #   |    r1
         #  / \ r2  r3
