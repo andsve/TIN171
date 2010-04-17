@@ -56,6 +56,24 @@ class Game:
             print(elt)
             #pass # TODO: parse the gameboard information sent by the server
 
+class RoadNode:
+    def __init__(self, name, neighbour1, neighbour2):
+        self.id = name
+        self.n1 = neighbour1
+        self.n2 = neighbour2
+        self.owner = None
+
+class BoardNode:
+    def __init__(self, name, neighbour1, neighbour2, neighbour3):
+        self.id = name
+        self.n1 = neighbour1
+        self.n2 = neighbour2
+        self.n3 = neighbour3
+        self.harbor = None
+        self.resource1 = None
+        self.resource2 = None
+        self.resource3 = None
+
 class BoardLayout:
     # Static look-up tables
     roadLUT = {
@@ -131,8 +149,7 @@ class BoardLayout:
         ,'\xca': RoadNode('\xca','\xcb','\xda')
         ,'\xcb': RoadNode('\xcb','\xcb','\xdc')
         ,'\xcc': RoadNode('\xcc','\xcd','\xdc')}
-        
-        nodeLUT = {
+    nodeLUT = {
          '\x23': BoardNode('\x23','\x22','\x23',None)
         ,'\x25': BoardNode('\x25','\x24','\x25',None)
         ,'\x27': BoardNode('\x27','\x26','\x27',None)
@@ -190,22 +207,3 @@ class BoardLayout:
         
     def __init__(self):
         pass
-
-
-class RoadNode:
-    def __init__(self, name, neighbour1, neighbour2):
-        self.id = name
-        self.n1 = neighbour1
-        self.n2 = neighbour2
-        self.owner = None
-
-class BoardNode:
-    def __init__(self, name, neighbour1, neighbour2, neighbour3):
-        self.id = name
-        self.n1 = neighbour1
-        self.n2 = neighbour2
-        self.n3 = neighbour3
-        self.harbor = None
-        self.resource1 = None
-        self.resource2 = None
-        self.resource3 = None
