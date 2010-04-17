@@ -5,6 +5,13 @@ class Message:
     def to_cmd(self):
         pass
         
+    def values(self):
+        vars = filter(lambda x: x not in [
+                                "__doc__", "__init__", "__module__"
+                              , "to_cmd", "parse", "values"]
+                     , dir(self))
+        return dict([(name, getattr(self, name)) for name in vars])
+        
     @staticmethod
     def parse(text):
         return None

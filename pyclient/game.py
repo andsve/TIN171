@@ -1,4 +1,5 @@
 from messages import *
+import pdb
 
 class Game:
     def __init__(self):
@@ -21,7 +22,8 @@ class Game:
         id, txt = msg[:4], msg[5:]
         message_class, name = self.messagetbl[id]
         inst = message_class.parse(txt)
-        self.update_game(name, inst)
+        if inst:
+            self.update_game(name, inst)
         return (name, inst)
         
     def update_game(self, id, message):
