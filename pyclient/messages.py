@@ -161,7 +161,8 @@ class PutPieceMessage(Message):
     @staticmethod
     def parse(text):
         data = text.split(",")
-        return PutPieceMessage(data[0], data[1], data[2], data[3])
+        return PutPieceMessage(data[0], int(data[1])
+                              ,int(data[2]), int(data[3]))
 
 class GameTextMsgMessage(Message):
     id = 1010
@@ -542,7 +543,7 @@ class MoveRobberMessage(Message):
     @staticmethod
     def parse(text):
         g, pn, coords = text.split(",")
-        return MoveRobberMessage(g, int(pn), coords)
+        return MoveRobberMessage(g, int(pn), int(coords))
  
 class ChoosePlayerMessage(Message):
     id = 1035  
