@@ -14,6 +14,9 @@ straight_edges = [0x06, 0x28, 0x4a, 0x6c, 0x8e
                  ,0x40, 0x62, 0x84, 0xa6, 0xc8, 0xea
                  ,0x60, 0x82, 0xa4, 0xc6, 0xe8]
 
+
+
+# This does not work, hmz
 def road_to_nodes(r):
     cs = hex(r)[2:]
     if len(cs) == 1:
@@ -21,8 +24,6 @@ def road_to_nodes(r):
     c1, c2 = cs
     c1e = int(c1, 16) % 2 == 0
     c2e = int(c2, 16) % 2 == 0
-    
-    print c1e, c2e
     
     if c1e and c2e:
         n1 = r + 0x01
@@ -36,7 +37,9 @@ def road_to_nodes(r):
 
     return [n1, n2]
 
-
+def nodes_around_hex(n):
+    return [n + v for v in [0x01, 0x12, 0x21, 0x10, -0x01, -0x10]]
+    
 def roads_around_hex(n):
     # / \   n1 n2
     # | |  n0   n3
