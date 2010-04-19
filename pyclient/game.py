@@ -1,5 +1,4 @@
 from messages import *
-import pdb
 
 class Game:
     def __init__(self):
@@ -8,6 +7,7 @@ class Game:
         #self.parse_board()         # parse gameboard and create internal representation
         self.messagetbl = {}
         self.init_parser()
+        
     
     def init_parser(self):
         """ Create a LUT for message id => message instance """
@@ -26,6 +26,20 @@ class Game:
             self.update_game(name, inst)
         return (name, inst)
         
+    def create_graph(self):
+        import jsettlers_utils as soc
+        
+        for hex in soc.hex_grid:
+            # All nodes surrounding hex
+            nodes = soc.nodes_around_hex(hex)
+            
+            for node in nodes:
+                # All roads going out from node
+                r = soc.node_to_roads(node_to_roads)
+            
+            # All roads around hex
+            roads = soc.roads_around_hex(hex)
+            
     def update_game(self, id, message):
         """ Update game state """
         
