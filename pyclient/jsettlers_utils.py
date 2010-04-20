@@ -14,6 +14,14 @@ straight_edges = [0x06, 0x28, 0x4a, 0x6c, 0x8e
                  ,0x40, 0x62, 0x84, 0xa6, 0xc8, 0xea
                  ,0x60, 0x82, 0xa4, 0xc6, 0xe8]
 
+harbors = {
+'3for1': [7, 8, 9, 10, 11, 12],
+'clay': [17, 49, 65, 81, 97],
+'ore' : [18, 50, 66, 82, 98],
+'sheep': [19, 51, 67, 83, 99],
+'grain': [20, 52, 68, 84, 100],
+'lumber': [21, 53, 69, 85 ,101]
+}
 
 
 # This does not work, hmz
@@ -51,16 +59,19 @@ def roads_around_hex(n):
             , n + 0x11 + 0x10
             , n + 0x11 - 0x01
             ]
-"""
-def adjacent_tiles(node):
+
+def adjacent_tiles(n):
     if n % 2 == 0:
         t1 = n - 0x21
-        t2 = 
-        t3 = 
+        t2 = n + 0x01
+        t3 = n - 0x01
     else:
+        t1 = n - 0x10
+        t2 = n - 0x12
+        t3 = n + 0x10
     
     return [t1, t2, t3]
-"""
+
 def node_to_roads(n):
     if n % 2 == 0:
         #   |    r1
@@ -77,6 +88,8 @@ def node_to_roads(n):
     return [ r1 if 0x0 < r1 < 0xff else None
            , r2 if 0x0 < r2 < 0xff else None
            , r3 if 0x0 < r3 < 0xff else None]
+
+
 
 # Node -> Road LUT
 roadLUT = {

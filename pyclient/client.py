@@ -2,6 +2,9 @@ import socket
 import game
 import agent
 
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US.ISO8859-1')
+
 class Client:
     def __init__(self):
         self.game = game.Game()
@@ -43,6 +46,7 @@ class Client:
             lowByte = ord(self.client.recv(1))
             """Calculate length of the rest of the message and receive"""
             transLength = highByte * 256 + lowByte
+            print "highByte: {0}, lowByte: {1}".format(highByte, lowByte)
             msg = self.client.recv(transLength)
             
             parsed = self.game.parse_message(msg)
@@ -76,7 +80,6 @@ class Client:
             elif msg == "BoardLayoutMessage":
                 # We received gameboard information, pass it along to the Game-class.
                 print "Got game board"
-                print message.board
             
             elif msg == "GameTextMsgMessage":
                 print "[GameTextMsgMessage] {0}".format(message.message)

@@ -4,24 +4,33 @@ class Agent:
         self.game = game
         self.nickname = nickname
         
+        self.output_prefix = "[DEBUG] agent.py ->"
+    
+    def debug_print(self, msg):
+        print "{0} {1}".format(self.output_prefix, msg)
+    
+    
     # incomming messages from the message handler
     #  (i.e. alarms/signals/events from the game the agent needs to act on)
     def handle_message(self, name, message):
         
         if (name == "SitDownMessage" and message.nickname == self.nickname):
-            print "THIS IS MEEEEEEEEEEEEE!"
+            # This is us sitting down, store the playernum!
+            self.playernum = message.playernum
+            self.debug_print("I am player number: {0}".format(self.playernum))
         
         #if self.gamestate == 0:
-        #    print "Game has not started yet, don't know what to do!"
-        #elif self.gamestate == 1:
+            #print "Game has not started yet, don't know what to do!"
+        if self.gamestate == 1:
             # Setup state
-            #aoe
+            print "SETUPS!!" #aoe
         #else:
             # Game is running!
-        #    print "LETS PLAY!"
+            #print "LETS PLAY!"
         
-        if message:
-            print "Agent: {0} - {1}".format(name, message.values())
+        # DEBUG: 
+        #if message:
+        #    print "Agent: {0} - {1}".format(name, message.values())
     
     
     #
