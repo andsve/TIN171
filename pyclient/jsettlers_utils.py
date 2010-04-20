@@ -14,6 +14,13 @@ straight_edges = [0x06, 0x28, 0x4a, 0x6c, 0x8e
                  ,0x40, 0x62, 0x84, 0xa6, 0xc8, 0xea
                  ,0x60, 0x82, 0xa4, 0xc6, 0xe8]
 
+harbors = {
+'clay':[17, 49, 65, 81, 97],
+'ore' :[18, 50, 66, 82, 98],
+'sheep': [19, 51, 67, 83, 99],
+'grain': [20, 52, 68, 84, 100],
+'lumber': [21, 53, 69, 85 ,101]
+}
 
 
 # This does not work, hmz
