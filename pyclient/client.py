@@ -1,10 +1,13 @@
 import socket
 import game
+import agent
 
 class Client:
     def __init__(self):
         self.game = game.Game()
         self.socket = None
+        self.agent = agent.Agent(self.game)
+        
         
     def connect(self, server):
         try:
@@ -43,6 +46,7 @@ class Client:
                 continue
             else:
                 (msg, message) = parsed
+            
                 
             if msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
@@ -82,6 +86,9 @@ class Client:
                 r = message.to_cmd()
                 print "[{0}] {1}".format(msg, "to_cmd() NOT IMPLEMENTED"if r == None else r)
 
+            # Dispatch message to agent
+            self.agent.handle_message(msg, message)
+            
 
             """Game has STARTED! We get information about board layout, resources, starting player, etc"""
                         

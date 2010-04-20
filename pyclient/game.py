@@ -14,7 +14,7 @@ class Game:
         self.messagetbl = {}
         for g in globals():
             cg = globals()[g]
-            if str(g).endswith("Message") and hasattr(cg, "id"):
+            if g.endswith("Message") and hasattr(cg, "id"):
                 self.messagetbl[str(cg.id)] = (cg, g)
     
     def parse_message(self, msg):
@@ -29,9 +29,14 @@ class Game:
     def create_graph(self):
         import jsettlers_utils as soc
         
+        all_hexes = {}
+        all_roads = {}
+        all_nodes = {}
+        
         for hex in soc.hex_grid:
             # All nodes surrounding hex
             nodes = soc.nodes_around_hex(hex)
+            all_hexes[hex] = nodes
             
             for node in nodes:
                 # All roads going out from node
