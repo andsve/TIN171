@@ -287,7 +287,8 @@ class BoardNode:
         self.owner = None    
 
 class TileNode:
-    def __init__(self, name, neighbour1, neighbour2, neighbour3):
+    def __init__(self, name, neighbour1, neighbour2
+                  , neighbour3, neighbour4, neighbour5, neighbour6):
         #static layout-info
         self.id = name
         self.n1 = neighbour1
@@ -312,3 +313,16 @@ class BoardLayout:
         self.nodes = {}
         for k, v in soc.nodeLUT.items():
             self.nodes[k] = BoardNode(*v)
+            
+        self.tiles = {}
+        for tile in soc.hex_grid:
+            if tile in [0x11, 0x13, 0x15, 0x17
+                            ,0x39, 0x5b, 0x7d, 0x9d
+                            ,0xbd, 0xdd, 0xdb, 0xd9
+                            ,0xd7, 0xb5, 0x93, 0x71
+                            ,0x51, 0x31]:
+                continue
+            nodes = soc.nodes_around_hex(tile)
+            self.tiles[tile] = TileNode(tile, *nodes)
+            
+        
