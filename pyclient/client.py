@@ -75,7 +75,6 @@ class Client:
             elif msg == "BoardLayoutMessage":
                 # We received gameboard information, pass it along to the Game-class.
                 print "Got game board"
-                print message.board
             
             elif msg == "GameTextMsgMessage":
                 print "[GameTextMsgMessage] {0}".format(message.message)

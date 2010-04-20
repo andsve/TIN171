@@ -8,7 +8,7 @@ class Message:
     def values(self):
         vars = filter(lambda x: x not in [
                                 "__doc__", "__init__", "__module__"
-                              , "to_cmd", "parse", "values"]
+                              , "to_cmd", "parse", "values", "id"]
                      , dir(self))
         return dict([(name, getattr(self, name)) for name in vars])
         
@@ -239,16 +239,26 @@ class JoinGameMessage(Message):
 
 class BoardLayoutMessage(Message):
     id = 1014
-    def __init__(self, board):
-        self.board = board
+    def __init__(self, game, hexes, numbers, robberpos):
+        self.game = game
+        self.hexes = hexes
+        self.numbers = numbers
+        self.robberpos = robberpos
         
     def to_cmd(self):
-        return "{0}|{1}".format(self.id, ",".join(self.board))
+        return "{0}|{1},{2},{3},{4}".format(self.id, self.game
+                                            ,",".join(self.hexes)
+                                            ,",".join(self.numbers)
+                                            ,robberpos)
         
     @staticmethod
     def parse(text):
-        board = text.split(",")
-        return BoardLayoutMessage(board)
+        data = text.split(",")
+        game = data[0]
+        hexes = map(int, data[1:38])
+        numbers = map(int, data[39:39+37])
+        robberpos = int(data[-1])
+        return BoardLayoutMessage(game, hexes, numbers, robberpos)
 
 class DeleteGameMessage(Message):
     id = 1015
