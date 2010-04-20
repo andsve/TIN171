@@ -51,7 +51,16 @@ def roads_around_hex(n):
             , n + 0x11 + 0x10
             , n + 0x11 - 0x01
             ]
-            
+"""
+def adjacent_tiles(node):
+    if n % 2 == 0:
+        t1 = n - 0x21
+        t2 = 
+        t3 = 
+    else:
+    
+    return [t1, t2, t3]
+"""
 def node_to_roads(n):
     if n % 2 == 0:
         #   |    r1
@@ -69,9 +78,6 @@ def node_to_roads(n):
            , r2 if 0x0 < r2 < 0xff else None
            , r3 if 0x0 < r3 < 0xff else None]
 
-
-
-"""
 # Node -> Road LUT
 roadLUT = {
      0x22: (0x22,0x23,0x32)
