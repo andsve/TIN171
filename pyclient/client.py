@@ -31,6 +31,10 @@ class Client:
         satdown = False
         gamestarted = False
         
+        nickname = "aiBot[{0}]".format(socket.gethostname())
+        gamename = "game[{0}]".format(socket.gethostname())
+        
+        
         while True:
             """Receive high byte"""
             highByte = ord(self.client.recv(1))
@@ -47,26 +51,25 @@ class Client:
             else:
                 (msg, message) = parsed
             
-                
             if msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
                 gamejoined = True
                 print("Making new game...")
-                m = game.JoinGameMessage("aiBot", "", socket.gethostname(), "game")
+                m = game.JoinGameMessage(nickname, "", socket.gethostname(), gamename)
                 self.send_msg(m)
 
             elif msg == "JoinGameMessage" and not satdown:
                 # We receive confirmation of a game created, available seats, etc
                 satdown = True
                 print("Sitting down...")
-                m = game.SitDownMessage("game", "aiBot", 1, False)
+                m = game.SitDownMessage(gamename, nickname, 1, False)
                 self.send_msg(m)
                 
             elif msg == "ChangeFaceMessage" and not gamestarted:
                 # We receive starting values, 0 of each resource, game state and game face
                 gamestarted = True
                 print("Starting game...")
-                m = game.StartGameMessage("game")
+                m = game.StartGameMessage(gamename)
                 self.send_msg(m)
                 
             elif msg == "BoardLayoutMessage":
