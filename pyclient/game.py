@@ -20,6 +20,11 @@ class Game:
     def parse_message(self, msg):
         """ Create a message from recieved data """
         id, txt = msg[:4], msg[5:]
+        
+        if not id in self.messagetbl:
+            print "ERROR: can not parse '{0}'".format(msg)
+            return
+        
         message_class, name = self.messagetbl[id]
         inst = message_class.parse(txt)
         if inst:
