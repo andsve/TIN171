@@ -62,8 +62,49 @@ class Game:
             # Set game board
             self.boardLayout = BoardLayout()
 
-            # Add resource to all tiles
             import jsettlers_utils as soc
+
+            # Add resources and numbers to all tiles
+            self.tiles[0x37].resource = message.hexes[5]
+            self.tiles[0x37].number = soc.number_dict[message.numbers[5]]
+            self.tiles[0x59].resource = message.hexes[6]
+            self.tiles[0x59].number = soc.number_dict[message.numbers[6]]
+            self.tiles[0x7b].resource = message.hexes[7]
+            self.tiles[0x7b].number = soc.number_dict[message.numbers[7]]
+            self.tiles[0x35].resource = message.hexes[10]
+            self.tiles[0x35].number = soc.number_dict[message.numbers[10]]
+            self.tiles[0x57].resource = message.hexes[11]
+            self.tiles[0x57].number = soc.number_dict[message.numbers[11]]
+            self.tiles[0x79].resource = message.hexes[12]
+            self.tiles[0x79].number = soc.number_dict[message.numbers[12]]
+            self.tiles[0x9b].resource = message.hexes[13]
+            self.tiles[0x9b].number = soc.number_dict[message.numbers[13]]
+            self.tiles[0x33].resource = message.hexes[16]
+            self.tiles[0x33].number = soc.number_dict[message.numbers[16]]
+            self.tiles[0x55].resource = message.hexes[17]
+            self.tiles[0x55].number = soc.number_dict[message.numbers[17]]
+            self.tiles[0x77].resource = message.hexes[18]
+            self.tiles[0x77].number = soc.number_dict[message.numbers[18]]
+            self.tiles[0x99].resource = message.hexes[19]
+            self.tiles[0x99].number = soc.number_dict[message.numbers[19]]
+            self.tiles[0xbb].resource = message.hexes[20]
+            self.tiles[0xbb].number = soc.number_dict[message.numbers[20]]
+            self.tiles[0x53].resource = message.hexes[23]
+            self.tiles[0x53].number = soc.number_dict[message.numbers[23]]
+            self.tiles[0x75].resource = message.hexes[24]
+            self.tiles[0x75].number = soc.number_dict[message.numbers[24]]
+            self.tiles[0x97].resource = message.hexes[25]
+            self.tiles[0x97].number = soc.number_dict[message.numbers[25]]
+            self.tiles[0xb9].resource = message.hexes[26]
+            self.tiles[0xb9].number = soc.number_dict[message.numbers[26]]
+            self.tiles[0x73].resource = message.hexes[29]
+            self.tiles[0x73].number = soc.number_dict[message.numbers[29]] 
+            self.tiles[0x95].resource = message.hexes[30]
+            self.tiles[0x95].number = soc.number_dict[message.numbers[30]]
+            self.tiles[0xb7].resource = message.hexes[31]
+            self.tiles[0xb7].number = soc.number_dict[message.numbers[31]]
+
+            #fix harbors
 
             #first harbor (0x17)
             if message.hexes[0] in soc.harbors['clay']:

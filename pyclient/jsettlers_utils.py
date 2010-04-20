@@ -23,6 +23,20 @@ harbors = {
 'lumber': [21, 53, 69, 85 ,101]
 }
 
+number_dict = {
+-1: 0
+0: 2
+1: 3
+2: 4
+3: 5
+4: 6
+5: 8
+6: 9
+7: 10
+8: 11
+9: 12
+}
+
 
 # This does not work, hmz
 def road_to_nodes(r):
