@@ -2,9 +2,6 @@ import socket
 import game
 import agent
 
-import locale
-locale.setlocale(locale.LC_ALL, 'en_US.ISO8859-1')
-
 class Client:
     def __init__(self):
         self.game = game.Game()
@@ -41,12 +38,14 @@ class Client:
         
         while True:
             """Receive high byte"""
-            highByte = ord(self.client.recv(1))
+            lol = self.client.recv(1)
+            highByte = ord(lol)
             """Receive low byte"""
-            lowByte = ord(self.client.recv(1))
+            sup = self.client.recv(1)
+            lowByte = ord(sup)
             """Calculate length of the rest of the message and receive"""
             transLength = highByte * 256 + lowByte
-            print "highByte: {0}, lowByte: {1}".format(highByte, lowByte)
+            print "highByte: {0}({1}), lowByte: {2}({3})".format(sup, lol, highByte, lowByte)
             msg = self.client.recv(transLength)
             
             parsed = self.game.parse_message(msg)
