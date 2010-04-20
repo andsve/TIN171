@@ -1,0 +1,161 @@
+%
+%  untitled
+%
+%  Created by work on 2010-04-16.
+%  Copyright (c) 2010 . All rights reserved.
+%
+\documentclass[]{article}
+
+% Use utf-8 encoding for foreign characters
+\usepackage[utf8]{inputenc}
+
+% Setup for fullpage use
+\usepackage{fullpage}
+
+% Uncomment some of the following if you use the features
+%
+% Running Headers and footers
+%\usepackage{fancyhdr}
+
+% Multipart figures
+%\usepackage{subfigure}
+
+% More symbols
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{latexsym}
+
+% Surround parts of graphics with box
+\usepackage{boxedminipage}
+
+% Package for including code in the document
+\usepackage{listings}
+
+% If you want to generate a toc for each chapter (use with book)
+\usepackage{minitoc}
+
+% This is now the recommended way for checking for PDFLaTeX:
+\usepackage{ifpdf}
+
+%\newif\ifpdf
+%\ifx\pdfoutput\undefined
+%\pdffalse % we are not running PDFLaTeX
+%\else
+%\pdfoutput=1 % we are running PDFLaTeX
+%\pdftrue
+%\fi
+
+\ifpdf
+\usepackage[pdftex]{graphicx}
+\else
+\usepackage{graphicx}
+\fi
+\title{Project proposal:\\Developing a Intelligent Player for Settlers of Catan}
+\author{Johannes Algelind
+\and Sven Andersson
+\and Sicheng Chen
+\and Andreas Rönnqvist}
+
+\date{2010-04-16}
+
+\begin{document}
+
+\ifpdf
+\DeclareGraphicsExtensions{.pdf, .jpg, .tif}
+\else
+\DeclareGraphicsExtensions{.eps, .jpg}
+\fi
+
+\maketitle
+
+\begin{center}
+  Revision 1
+\end{center}
+
+%\begin{abstract}
+%\end{abstract}
+
+\section{Summary}
+  We want to create an agent that can play the board game Settlers of Catan, focusing on making it specifically good at the starting/setup stage and its usage of settlements and roads. It should be able to find good spots to build at that gives it the most important resources. We aren't going to focus on including all possible features of the board game, but focus on only the core features in our agent (i.e. Development Cards and trading will not be utilized to keep the simplicity), but if we have enough time more advanced features will be implemented.
+
+\section{Key ideas}
+We are planning on dividing the game play in two parts. The first part is the actual game setup, where the players need to place their initial settlements and roads. The second part is the actual game playing, where the dice is rolled and settlements are bought and cards are dealt.
+
+As there are so few actions the player can do each turn, the main idea is to have a long going plan. The AI's task will be to insert appropriate actions in to the planning queue. An appropriate plan might be to understand that it needs to get more ore and then develop a plan to get more ore. This could be solved by building a settlement at an ore site, if found possible.
+
+Actions that we are planning to support are mainly to build roads, settlements and cities in a strategically good way. The AI should scan its close-by area, say all spots maximum 3 roads from any of its settlements or roads and rank each spot based on how good it would be to build a settlement there. Resources that the AI is missing gets ranked high, harbors are considered and this is weighted versus upgrading an existing settlement to a city.
+
+Actions that might be inside the scope of the project are those of trading and buying and using development cards. These actions are not necessary to win the game, but provides an advantage if used. If we cannot find time to implement these actions, we should estimate how much better the AI would be if it could use them.
+
+Outside the scope of the project, but still interesting, is that of playing aggressively towards the opponents. It's possible to block the opponents or build at a spot just to prevent them from building there. This kind of strategic play is hard even for human players and thus not in the scope of this project.
+
+By using the existing server of JSettlers we already have the basic game logic and message passing. Our client receive all information about the game and we can keep track of the board layout in our local datastructure. To make an action, the client only has to send simple messages to the server. We believe our approach of dividing the game play in two parts is a good solution as the initiation does not return later and doesn't have to be considered when playing in the second part. Also, by sticking to the basic foundations of the game, the AI can quite easily value its options and aim for its longterm goal by ranking the steps that work towards it higher than other steps.
+
+If we succeed, we will have created an AI that will be competitive to the robots that comes with JSettlers. If we manage to implement trading and developement cards the AI might even be competitive to humans.
+
+\section{Survey}
+  \begin{itemize}
+    \item{\textbf{Benchmarking}\\
+      We will benchmark our AI in a number of different ways, each focusing on some key part of Settlers playing. Most of the benchmarking will come from actually letting our AI bot play against JSettlers own AI bots.
+      \begin{itemize}
+        \item \textbf{\emph{Points after game}} - How many points the AI has collected in a game round compared to other game rounds.
+        \item \textbf{\emph{Win/Loss Ratio}} - Calculating the ratio between won rounds (or losses) and total rounds played.
+        \item \textbf{\emph{Psuedo-points}} - Building roads gives points, buying developement card gives points.
+      \end{itemize}
+    }
+    \item{\textbf{Tools and programs}\\
+    We are going to use a pre-existing game server called JSettlers, which will handle all game states, game interaction and game client connections. Our AI will be implemented as a client that connects to the JSettlers server and acts as a regular player. The interaction between the client and server is implemented via a messaging system, which enable us to implement the client in any language as long as we conform with the message protocols set up by JSettlers. Our client will be written in a scripting language called Python\footnote{http://www.python.org/} which allows for quick but robust prototyping.
+    }
+    
+    \item{\textbf{Literature}
+      \begin{itemize}
+        \item{Natiq, R.R., Saleem, H. (2009), A Multi-Agent Player for Settlers of Catan.\\
+        \emph{Online}, \texttt{http://www.bth.se/fou/cuppsats.nsf/04c233cb0d90bad0c1256cec00325988/5182dee54d5efc33c1257559004f8dbc!OpenDocument},\\
+        Available: 2010-04-13}
+        \item{Szita, I., Chaslot, G., Spronck, P. (2009), Monte-Carlo Search Tree in Settlers of Catan.\\
+        \emph{Online}, \texttt{http://www.personeel.unimaas.nl/g-chaslot/papers/ACGSzitaChaslotSpronck.pdf},\\
+        Available: 2010-04-13}
+
+        \item{Geuze, J., van den Broek, E.L. (2006), Intelligent Tutoring Agent for Settlers of Catan.\\
+        \emph{Online}, \texttt{http://www.nici.kun.nl/mmm/papers/JG06.pdf},\\
+        Available: 2010-04-13}
+
+        \item{Russell, S., Norvig, P. (2003), Artificial Intelligence A Modern Approach, 2nd Edition, Pearson Education.\\
+        Ch 6, 11, 14 and 16 being especially significant for this project.}
+      \end{itemize}
+        
+        }
+  \end{itemize}
+
+\section{Evaluation}
+  The main measure of progress and result we can study is the benchmarking results, which should tell is how good the AI agent is, at least compared to the naive AI bots supplied with JSettlers. These benchmarking results will come from repeatedly running out AI agent against the JSettlers bots. We also aim to run our AI agent against Group 31's agent, since both groups will use JSettlers as server. This will however not serve as any benchmarking, but more of a way to test if we might have overseen something that the JSettlers bots don't do (since from what we have observed when playing against the JSettlers bots, they seem to follow primitive/general agenda). The ultimate goal is however to have the AI agent to reach such a degree that it can play against a human player and give it good challenge.
+
+\section{First results with small programs}
+  By using the JSettlers server, we have a working game logic. To use this, we have developed a client in Python that communicates with the server. The client connects to the server, creates a new game and requests the server to start it. The server adds robots to the empty spots and starts the game. The client then receives the board layout and all other messages that the server passes. The client stores the game elements in its own local datastructure that it will use to decide upon its next move.
+
+Making this program has allowed us to confirm that our approach will work and that a Python client is compatible with the Java server.
+
+\section{Project management}
+  We are planning on having weekly group meetings, not counting the supervision meetings, where we can oversee how far our project has come and plan for upcoming weeks. In week 4 and up we will probably have more than one group meeting per week, to keep up with the increased workload and tempo. We are also going to divide the project into smaller milestones and goals. This will help us stay focused on the core parts along the development.
+
+\begin{enumerate}
+   \item Get the AI to interact/talk with a JSettlers server. (Week 2-3)
+   \item Make the AI place initial settlements and roads (Week 4)
+   \item Make the AI complete a whole game round (by staying passive) (Week 4)
+   \item Make the AI create a long-running plan. (Week 5-6)
+   \item Tweak and fine tune AI planning and gather benchmarking stats. (Week 6)
+\end{enumerate}
+
+As the code base will be divided into two parts, internal game representation and agent parts, we will initially divide the group in two and work on them mostly separately. When the internal game representation is mature and stable enough we will focus fully on the AI agent.
+
+\section{Website}
+Our website is updated with news and relevant information for our project, which also has some introduction information about the project itself. We also have a central repository where we store our source code for the agent and toy applications.
+
+\begin{itemize}
+  \item Website: \texttt{http://sweetfish.github.com/TIN171/}
+  \item Source repository: \texttt{http://github.com/sweetfish/TIN171}
+\end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{}
+\end{document}
