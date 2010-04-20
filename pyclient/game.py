@@ -51,14 +51,8 @@ class Game:
             # Set game board
             self.boardLayout = BoardLayout()
 
-            # Add resource to all neighbours
-            if message.board[5] != 0:
-             """self.boardLayout[ord('\x27')].addResource(message.board[5])
-                self.boardLayout[ord('\x36')].addResource(message.board[5])
-                self.boardLayout[ord('\x38')].addResource(message.board[5])
-                self.boardLayout[ord('\x47')].addResource(message.board[5])
-                self.boardLayout[ord('\x49')].addResource(message.board[5])
-                self.boardLayout[ord('\x58')].addResource(message.board[5])"""
+            # Add resource to all tiles
+                        
             
             pass               
             
@@ -82,21 +76,40 @@ class Game:
 
 class RoadNode:
     def __init__(self, name, neighbour1, neighbour2):
+        #static layout-info
         self.id = name
         self.n1 = neighbour1
         self.n2 = neighbour2
+        #dynamic info
         self.owner = None
 
 class BoardNode:
-    def __init__(self, name, neighbour1, neighbour2, neighbour3):
+    def __init__(self, name, neighbour1, neighbour2, neighbour3, tile1, tile2, tile3):
+        #static layout-info
+        self.id = name
+        self.n1 = neighbour1
+        self.n2 = neighbour2
+        self.n3 = neighbour3        
+        self.t1 = tile1
+        self.t2 = tile2
+        self.t3 = tile3
+        #dynamic info
+        self.harbor = None
+        self.owner = None
+
+class TileNode:
+    def __init__(self, name, neighbour1, neighbour2, neighbour3)
+        #static layout-info
         self.id = name
         self.n1 = neighbour1
         self.n2 = neighbour2
         self.n3 = neighbour3
-        self.harbor = None
-        self.resource1 = None
-        self.resource2 = None
-        self.resource3 = None
+        self.n4 = neighbour4
+        self.n5 = neighbour5
+        self.n6 = neighbour6
+        #dynamic info
+        self.resource = None
+        self.number = None
 
 class BoardLayout:
     # Static look-up tables
