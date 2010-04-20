@@ -58,7 +58,188 @@ class Game:
             self.boardLayout = BoardLayout()
 
             # Add resource to all tiles
-                        
+            import jsettlers_utils as soc
+
+            #first harbor (0x17)
+            if message.hexes[0] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[0] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[0] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[0] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[0] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[0] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0x27) and Node(0x38) to harbor = #resource
+            self.boardLayout.nodes[0x27].harbor = harbor_type
+            self.boardLayout.nodes[0x38].harbor = harbor_type
+
+            #second harbor (0x5b)
+            if message.hexes[2] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[2] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[2] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[2] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[2] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[2] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0x5a) and Node(0x6b) to harbor = #resource
+            self.boardLayout.nodes[0x5a].harbor = harbor_type
+            self.boardLayout.nodes[0x6b].harbor = harbor_type
+
+            #third harbor (0x9d)
+            if message.hexes[8] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[8] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[8] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[8] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[8] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[8] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0x9c) and Node(0xad) to harbor = #resource
+            self.boardLayout.nodes[0x9c].harbor = harbor_type
+            self.boardLayout.nodes[0xad].harbor = harbor_type
+
+            #forth harbor (0x13)
+            if message.hexes[9] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[9] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[9] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[9] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[9] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[9] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0x25) and Node(0x34) to harbor = #resource
+            self.boardLayout.nodes[0x25].harbor = harbor_type
+            self.boardLayout.nodes[0x34].harbor = harbor_type
+
+            #fifth harbor (0xdd)
+            if message.hexes[21] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[21] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[21] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[21] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[21] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[21] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0xcd) and Node(0xdc) to harbor = #resource
+            self.boardLayout.nodes[0xcd].harbor = harbor_type
+            self.boardLayout.nodes[0xdc].harbor = harbor_type
+
+            #sixth harbor (0x31)
+            if message.hexes[22] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[22] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[22] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[22] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[22] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[22] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0x43) and Node(0x52) to harbor = #resource
+            self.boardLayout.nodes[0x43].harbor = harbor_type
+            self.boardLayout.nodes[0x52].harbor = harbor_type
+
+            #seventh harbor (0xd9)
+            if message.hexes[32] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[32] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[32] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[32] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[32] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[32] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0xc9) and Node(0xda) to harbor = #resource
+            self.boardLayout.nodes[0xc9].harbor = harbor_type
+            self.boardLayout.nodes[0xda].harbor = harbor_type
+
+            #eigth harbor (0x71)
+            if message.hexes[33] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[33] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[33] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[33] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[33] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[33] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0    
+                
+            #set Node(0x72) and Node(0x83) to harbor = #resource
+            self.boardLayout.nodes[0x72].harbor = harbor_type
+            self.boardLayout.nodes[0x83].harbor = harbor_type
+
+            #ninth harbor (0xb5)
+            if message.hexes[35] in soc.harbors['clay']:
+                harbor_type = 1
+            elif message.hexes[35] in soc.harbors['ore']:
+                harbor_type = 2
+            elif message.hexes[35] in soc.harbors['sheep']:
+                harbor_type = 3
+            elif message.hexes[35] in soc.harbors['grain']:
+                harbor_type = 4
+            elif message.hexes[35] in soc.harbors['lumber']:
+                harbor_type = 5
+            elif message.hexes[35] in soc.harbors['3for1']:
+                harbor_type = 6
+            else
+                harbor_type = 0
+                
+            #set Node(0xa5) and Node(0xb6) to harbor = #resource
+            self.boardLayout.nodes[0xa5].harbor = harbor_type
+            self.boardLayout.nodes[0xb6].harbor = harbor_type
+            
         elif id == "PlayerElementMessage":
             # Update resources
             pass
@@ -97,8 +278,8 @@ class BoardNode:
         self.t2 = tile2
         self.t3 = tile3
         #dynamic info
-        self.harbor = None
-        self.owner = None
+        self.harbor = 0
+        self.owner = None    
 
 class TileNode:
     def __init__(self, name, neighbour1, neighbour2, neighbour3):
