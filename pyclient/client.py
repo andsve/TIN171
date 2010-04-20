@@ -6,7 +6,7 @@ class Client:
     def __init__(self):
         self.game = game.Game()
         self.socket = None
-        self.agent = agent.Agent(self.game)
+        self.agent = None #= agent.Agent(self.game)
         
         
     def connect(self, server):
@@ -33,6 +33,7 @@ class Client:
         
         nickname = "aiBot[{0}]".format(socket.gethostname())
         gamename = "game[{0}]".format(socket.gethostname())
+        self.agent = agent.Agent(nickname, self.game)
         
         
         while True:
