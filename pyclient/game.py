@@ -78,7 +78,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[0] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0x27) and Node(0x38) to harbor = #resource
@@ -98,7 +98,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[2] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0x5a) and Node(0x6b) to harbor = #resource
@@ -118,7 +118,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[8] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0x9c) and Node(0xad) to harbor = #resource
@@ -138,7 +138,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[9] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0x25) and Node(0x34) to harbor = #resource
@@ -158,7 +158,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[21] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0xcd) and Node(0xdc) to harbor = #resource
@@ -178,7 +178,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[22] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0x43) and Node(0x52) to harbor = #resource
@@ -198,7 +198,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[32] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0xc9) and Node(0xda) to harbor = #resource
@@ -218,7 +218,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[33] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0    
                 
             #set Node(0x72) and Node(0x83) to harbor = #resource
@@ -238,7 +238,7 @@ class Game:
                 harbor_type = 5
             elif message.hexes[35] in soc.harbors['3for1']:
                 harbor_type = 6
-            else
+            else:
                 harbor_type = 0
                 
             #set Node(0xa5) and Node(0xb6) to harbor = #resource
@@ -305,10 +305,10 @@ class BoardLayout:
 
     def __init__(self):
         import jsettlers_utils as soc
-        self.roads = []
+        self.roads = {}
         for k,v in soc.roadLUT.items():
-            self.roads.append(RoadNode(*v))
+            self.roads[k] = RoadNode(*v)
         
-        self.nodes = []
+        self.nodes = {}
         for k, v in soc.nodeLUT.items():
-            self.nodes.append(BoardNode(*v))
+            self.nodes[k] = BoardNode(*v)
