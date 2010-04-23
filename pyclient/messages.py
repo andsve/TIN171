@@ -147,7 +147,7 @@ class LeaveAllMessage(Message):
 
 class PutPieceMessage(Message):
     id = 1009
-    def __init__(self, game, piecetype, playernum, coords):
+    def __init__(self, game, playernum, piecetype, coords):
         self.game = game
         self.piecetype = piecetype
         self.playernum = playernum
@@ -155,7 +155,7 @@ class PutPieceMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1},{2},{3},{4}".format(self.id, self.game
-                                           ,self.piecetype, self.playernum
+                                           ,self.playernum, self.piecetype
                                            ,self.coords)
         
     @staticmethod
