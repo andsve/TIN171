@@ -40,15 +40,9 @@ class Client:
         
         
         while True:
-            """Receive high byte"""
-            lol = self.client.recv(1).decode(None)
-            highByte = lol #ord(lol)
-            """Receive low byte"""
-            sup = self.client.recv(1).decode(None)
-            lowByte = sup #ord(sup)
-            """Calculate length of the rest of the message and receive"""
+            highByte = ord(self.client.recv(1))
+            lowByte = ord(self.client.recv(1))
             transLength = highByte * 256 + lowByte
-            print "highByte: {0}({1}), lowByte: {2}({3})".format(lol, highByte, sup, lowByte)
             msg = self.client.recv(transLength)
             
             parsed = self.game.parse_message(msg)
