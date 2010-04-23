@@ -292,6 +292,10 @@ class Game:
             
         elif id == "PutPieceMessage":
             print "PutPieceMessage: {0}".format(message.values())
+            if message.piecetype == 1:
+                self.boardLayout.nodes[message.coords].owner = message.playernum
+            elif message.piecetype == 0:
+                self.boardLayout.roads[message.coords].owner = message.playernum
             
         elif id == "MoveRobberMessage":
             print "MoveRobberMessage: {0}".format(message.values())
