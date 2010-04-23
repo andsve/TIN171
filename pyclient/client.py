@@ -33,7 +33,7 @@ class Client:
         
         nickname = "aiBot[{0}]".format(socket.gethostname())
         gamename = "game[{0}]".format(socket.gethostname())
-        self.agent = agent.Agent(nickname, self.game)
+        self.agent = agent.Agent(nickname, gamename, self.game, self)
         
         
         while True:
