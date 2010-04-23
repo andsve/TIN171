@@ -2,9 +2,6 @@ import socket
 import game
 import agent
 
-import locale
-locale.setlocale(locale.LC_ALL, 'sv_SE.ISO8859-1') #'en_US.US-ASCII')
-
 class Client:
     def __init__(self):
         self.game = game.Game()
