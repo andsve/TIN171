@@ -285,6 +285,9 @@ class Game:
             #set Node(0xa5) and Node(0xb6) to harbor = #resource
             self.boardLayout.nodes[0xa5].harbor = harbor_type
             self.boardLayout.nodes[0xb6].harbor = harbor_type
+
+            #set the robber location
+            self.boardLayout.robberLoc = message.robberpos
             
         elif id == "PlayerElementMessage":
             # Update resources
@@ -299,6 +302,7 @@ class Game:
             
         elif id == "MoveRobberMessage":
             print "MoveRobberMessage: {0}".format(message.values())
+            self.boardLayout.robberLoc = message.coords
             
         elif id == "LastSettlementMessage":
             print "LastSettlementMessage: {0}".format(message.values())
@@ -348,6 +352,8 @@ class TileNode:
 
 class BoardLayout:
     # Static look-up tables
+
+    self.robberLoc = None
 
     def __init__(self):
         import jsettlers_utils as soc
