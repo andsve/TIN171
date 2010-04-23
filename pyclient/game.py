@@ -131,20 +131,23 @@ class Game:
 
                 #May not build on neighbouring nodes
                 if self.boardLayout.nodes[message.coords].n1:
-                    id1 = self.boardLayout.nodes[message.coords].n1.n1.id
-                    id2 = self.boardLayout.nodes[message.coords].n1.n2.id
+                    road = self.boardLayout.nodes[message.coords].n1
+                    id1 = self.boardLayout.roads[road].n1
+                    id2 = self.boardLayout.roads[road].n2
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
 
                 if self.boardLayout.nodes[message.coords].n2:
-                    id1 = self.boardLayout.nodes[message.coords].n2.n1.id
-                    id2 = self.boardLayout.nodes[message.coords].n2.n2.id
+                    road = self.boardLayout.nodes[message.coords].n2
+                    id1 = self.boardLayout.roads[road].n1
+                    id2 = self.boardLayout.roads[road].n2
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
 
                 if self.boardLayout.nodes[message.coords].n3:
-                    id1 = self.boardLayout.nodes[message.coords].n3.n1.id
-                    id2 = self.boardLayout.nodes[message.coords].n3.n2.id
+                    road = self.boardLayout.nodes[message.coords].n3
+                    id1 = self.boardLayout.roads[road].n1
+                    id2 = self.boardLayout.roads[road].n2
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
                     
