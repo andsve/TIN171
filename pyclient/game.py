@@ -61,6 +61,7 @@ class Game:
         if id == "BoardLayoutMessage":
             # Set game board
             self.boardLayout = BoardLayout()
+            self.buildableNodes = BuildableNodes()
 
             import jsettlers_utils as soc
 
@@ -288,15 +289,31 @@ class Game:
 
             #set the robber location
             self.boardLayout.robberpos = message.robberpos
-            
-        elif id == "PlayerElementMessage":
-            # Update resources
-            pass
-            
+                       
         elif id == "PutPieceMessage":
             print "PutPieceMessage: {0}".format(message.values())
             if message.piecetype == 1:
                 self.boardLayout.nodes[message.coords].owner = message.playernum
+
+                #May not build on neighbouring nodes
+                if self.boardLayout.nodes[message.coords].n1:
+                    id1 = self.boardLayout.nodes[message.coords].n1.n1.id
+                    id2 = self.boardLayout.nodes[message.coords].n1.n2.id
+                    self.buildableNodes.nodes[id1] = False
+                    self.buildableNodes.nodes[id2] = False
+
+                if self.boardLayout.nodes[message.coords].n2:
+                    id1 = self.boardLayout.nodes[message.coords].n2.n1.id
+                    id2 = self.boardLayout.nodes[message.coords].n2.n2.id
+                    self.buildableNodes.nodes[id1] = False
+                    self.buildableNodes.nodes[id2] = False
+
+                if self.boardLayout.nodes[message.coords].n3:
+                    id1 = self.boardLayout.nodes[message.coords].n3.n1.id
+                    id2 = self.boardLayout.nodes[message.coords].n3.n2.id
+                    self.buildableNodes.nodes[id1] = False
+                    self.buildableNodes.nodes[id2] = False
+                    
             elif message.piecetype == 0:
                 self.boardLayout.roads[message.coords].owner = message.playernum
             
@@ -377,4 +394,12 @@ class BoardLayout:
                 continue
             nodes = soc.nodes_around_hex(tile)
             self.tiles[tile] = TileNode(tile, *[self.nodes[n] for n in nodes])
-       
+            
+class BuildableNodes:
+
+    def __init__(self):
+
+        import jsettlers_utils as soc
+        self.nodes = {}
+        for k in soc.nodeLUT.items():
+            self.nodes[k] = True
