@@ -1,20 +1,18 @@
-from termcolor import colored
-
-#print colored('Hello, World!', 'red', attrs=['reverse', 'blink'])
-#print colored('Hello, World!', 'green', 'on_red')
-
+import Message
 
 
 class Agent:
-    def __init__(self, nickname, game):
+    def __init__(self, nickname, gamename, game, client):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
+        self.gamename = gamename
+        self.client = client
         self.nickname = nickname
         
         self.output_prefix = "[DEBUG] agent.py ->"
     
     def debug_print(self, msg):
-        print colored("{0} {1}".format(self.output_prefix, msg), 'red')
+        print "{0} {1}".format(self.output_prefix, msg)
     
     
     # incomming messages from the message handler
@@ -35,6 +33,12 @@ class Agent:
             # Setup state
             if (name == "TurnMessage" and message.playernum == self.playernum):
                 self.debug_print("We should place our settlements now!")
+                # Try to build at pos 0x23!
+                if (self.can_build_at_node(0x23)):
+                    response = Message.PutPieceMessage(self.gamename, self.playernum, 0, 0x23):
+                    self.client.send_msg(response)
+                else:
+                    self.debug_print("Could not build at position 0x23!")
         #else:
             # Game is running!
             #print "LETS PLAY!"
@@ -50,9 +54,9 @@ class Agent:
     def can_build_at_node(self, node):
         # Returns 1 if it is possible to build a settlement at
         # this node, 0 otherwize.
-        print("HEY NOW: ")
-        print(self.game.boardLayout)
-        pass
+        #print("HEY NOW: ")
+        #print(self.game.boardLayout)
+        return True
     
     
     def resources_at_node(self, node):
