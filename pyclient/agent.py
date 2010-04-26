@@ -1,5 +1,4 @@
-import Message
-
+from messages import *
 
 class Agent:
     def __init__(self, nickname, gamename, game, client):
@@ -35,7 +34,7 @@ class Agent:
                 self.debug_print("We should place our settlements now!")
                 # Try to build at pos 0x23!
                 if (self.can_build_at_node(0x23)):
-                    response = Message.PutPieceMessage(self.gamename, self.playernum, 0, 0x23):
+                    response = PutPieceMessage(self.gamename, self.playernum, 1, 0x23)
                     self.client.send_msg(response)
                 else:
                     self.debug_print("Could not build at position 0x23!")
