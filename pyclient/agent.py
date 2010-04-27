@@ -1,6 +1,22 @@
 from messages import *
 from utils import cprint
 
+dice_props = {}
+dice_props[0]  = 0.0
+dice_props[2]  = 0.0278
+dice_props[3]  = 0.0556
+dice_props[4]  = 0.0833
+dice_props[5]  = 0.1111
+dice_props[6]  = 0.1389
+dice_props[7]  = 0.1667
+dice_props[8]  = 0.1389
+dice_props[9]  = 0.1111
+dice_props[10] = 0.0833
+dice_props[11] = 0.0556
+dice_props[12] = 0.0278
+
+resource_list = [0,0,0,0,0,0]#make a list of exist resource
+
 class Agent:
     def __init__(self, nickname, gamename, game, client):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
@@ -17,37 +33,38 @@ class Agent:
 	#
     # Auxiliary gameboard functions
     #
+    
     def calculate_new_settlement_weight(self, node, _round): # add the round number as parameter?
-        weight = weight + resource_weight(node.t1.resource,_round) * dice_probability(node.t1.number)
-        weight = weight + resource_weight(node.t2.resource,_round) * dice_probability(node.t2.number)
-        weight = weight + resource_weight(node.t3.resource,_round) * dice_probability(node.t3.number) 
-        return 0
+        weight = 0
+        if node.t1:
+            t1 = self.game.boardLayout.tiles[node.t1]
+            weight = weight + self.resource_weight(t1.resource,_round) * dice_props[t1.number]
+        if node.t2:
+            t2 = self.game.boardLayout.tiles[node.t2]
+            weight = weight + self.resource_weight(t2.resource,_round) * dice_props[t2.number]
+        if node.t3:
+            t3 = self.game.boardLayout.tiles[node.t3]
+            weight = weight + self.resource_weight(t3.resource,_round) * dice_props[t3.number]   
+        
+        
+        return weight
 
-    def resource_weight(self, _type, _round)
-        resource_list #make a list of exist resource
+    def resource_weight(self, _type, _round):
+        #1 = Clay
+        #2 = Ore
+        #3 = Sheep
+        #4 = Grain
+        #5 = Lumber
+        resource_weight = [0,20,15,10,15,20]
+        
         if (_round!=1):
-            if (!resource_list[_type]):
-                return 40
+            if (resource_list[_type]==0 and _type!=0):
+                return 40 # enhance the importance of the scarce resource
         else:
-            select (_type)
-                case 1: #return the weight value of each kind of resource
+            resource_list[_type] = 1
+            return resource_weight[_type]
         
     
-    def dice_probability(self, number):
-        dice_props = {}
-        dice_props[2]  = 0.0278
-        dice_props[3]  = 0.0556
-        dice_props[4]  = 0.0833
-        dice_props[5]  = 0.1111
-        dice_props[6]  = 0.1389
-        dice_props[7]  = 0.1667
-        dice_props[8]  = 0.1389
-        dice_props[9]  = 0.1111
-        dice_props[10] = 0.0833
-        dice_props[11] = 0.0556
-        dice_props[12] = 0.0278
-        return dice_props[number]
-        
     
     def find_buildable_node(self):
         # Returns the best buildable new node!
@@ -62,7 +79,7 @@ class Agent:
                 # look up node in gameboard
                 node = self.game.boardLayout.nodes[k]
                 
-                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node)})
+                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node,1)})
                 
                 # print neighbour roads
                 #self.debug_print("It has neighbours: {0}, {1}, {2}".format(node.n1, node.n2, node.n3))
@@ -129,18 +146,22 @@ class Agent:
             # Setup state
             if (name == "TurnMessage" and message.playernum == self.playernum):
                 new_settlement_place = self.find_buildable_node()
+                # change the resource_list to see which kind of resources are taken
+                node = self.game.boardLayout.nodes[new_settlement_place]
+                t1 = self.game.boardLayout.tiles[node.t1]
+                t2 = self.game.boardLayout.tiles[node.t2]
+                t3 = self.game.boardLayout.tiles[node.t3]
+                resource_list[t1.resource]=1
+                resource_list[t2.resource]=1
+                resource_list[t3.resource]=1
+                
                 self.debug_print("We should place our settlements now!")
                 
-				
-                # Try to build at pos 0x23!
-                if (self.can_build_at_node(0x23)):
-                    response = PutPieceMessage(self.gamename, self.playernum, 1, 0x23)
-                    self.client.send_msg(response)
-					
+                response = PutPieceMessage(self.gamename, self.playernum, 1, new_settlement_place)
+                self.client.send_msg(response)
+		
 					# Always place a road after settlement
 					# 
-                else:
-                    self.debug_print("Could not build at position 0x23!")
         #else:
             # Game is running!
             #print "LETS PLAY!"
