@@ -17,9 +17,21 @@ class Agent:
 	#
     # Auxiliary gameboard functions
     #
-    def calculate_new_settlement_weight(self, node):
-    
+    def calculate_new_settlement_weight(self, node, _round): # add the round number as parameter?
+        weight = weight + resource_weight(node.t1.resource,_round) * dice_probability(node.t1.number)
+        weight = weight + resource_weight(node.t2.resource,_round) * dice_probability(node.t2.number)
+        weight = weight + resource_weight(node.t3.resource,_round) * dice_probability(node.t3.number) 
         return 0
+
+    def resource_weight(self, _type, _round)
+        resource_list #make a list of exist resource
+        if (_round!=1):
+            if (!resource_list[_type]):
+                return 40
+        else:
+            select (_type)
+                case 1: #return the weight value of each kind of resource
+        
     
     def find_buildable_node(self):
         # Returns the best buildable new node!
