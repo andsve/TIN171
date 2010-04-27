@@ -22,7 +22,7 @@ def generate_graph(game):
         n = graph.add_node(str(tile), label=hex(tile), fontsize=16)
         n.shape = yapgvb.shapes.circle
         for i in range(1, 7):
-            id = getattr(node, "n%d"%i).id
+            id = getattr(node, "n%d"%i)
             e = graph.add_edge(n, nodes[id])
             e.decorate = True
     

@@ -230,7 +230,7 @@ class BoardLayout:
                             ,0x51, 0x31]:
                 continue
             nodes = soc.nodes_around_hex(tile)
-            self.tiles[tile] = TileNode(tile, *[self.nodes[n] for n in nodes])
+            self.tiles[tile] = TileNode(tile, *nodes)
             
 class BuildableNodes:
 
