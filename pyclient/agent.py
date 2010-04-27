@@ -28,7 +28,7 @@ class Agent:
         self.output_prefix = "[DEBUG] agent.py ->"
     
     def debug_print(self, msg):
-        cprint("{0} {1}".format(self.output_prefix, msg), 'red')
+        cprint("{0} {1}".format(self.output_prefix, msg), 'green')
 	
 	#
     # Auxiliary gameboard functions
@@ -79,7 +79,9 @@ class Agent:
                 # look up node in gameboard
                 node = self.game.boardLayout.nodes[k]
                 
-                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node,1)})
+                w = self.calculate_new_settlement_weight(node,1)
+                self.debug_print("   Weight: {0}".format(w))
+                good_nodes.append({'id': k, 'w': w})
                 
                 # print neighbour roads
                 #self.debug_print("It has neighbours: {0}, {1}, {2}".format(node.n1, node.n2, node.n3))
