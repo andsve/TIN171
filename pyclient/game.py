@@ -1,12 +1,13 @@
 from messages import *
 
 class Game:
-    def __init__(self):
+    def __init__(self, nickname):
         # Initiate gameboard when the message is recieved?
         #self.gameboard = gameboard # save raw gameboad
         #self.parse_board()         # parse gameboard and create internal representation
         self.messagetbl = {}
         self.init_parser()
+        self.nickname = nickname
         
     
     def init_parser(self):
@@ -57,11 +58,16 @@ class Game:
         # Look up how the data is exposed by matching the id with the
         # message-classes listed below. Some of them will need some tweaking
         # (i.e.BankTradeMessage - must map Jsettlers resource id -> resource name)
+
+        if id == "SitDownMessage" and message.nickname == self.nickname:
+
+            self.playernum = message.playernum
         
-        if id == "BoardLayoutMessage":
+        elif id == "BoardLayoutMessage":
             # Set game board
             self.boardLayout = BoardLayout()
             self.buildableNodes = BuildableNodes()
+            self.buildableRoads = BuildableRoads()
 
             import jsettlers_utils as soc
 
@@ -150,10 +156,45 @@ class Game:
                     id2 = self.boardLayout.roads[road].n2
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
-                    
+       
             elif message.piecetype == 0:
                 self.boardLayout.roads[message.coords].owner = message.playernum
-            
+
+                #May not build on built roads
+                self.buildableRoads.roads[message.coords] = False
+                #May build on roads adjacent to built roads
+                
+                if message.player == self.playernum:
+                    n1 = self.boardLayout.roads[message.coords].n1
+                    n2 = self.boardLayout.roads[message.coords].n2
+
+                    r1 = self.boardLayout.nodes[n1].n1
+                    r2 = self.boardLayout.nodes[n1].n2
+                    r3 = self.boardLayout.nodes[n1].n3
+
+                    if r1 and self.boardLayout.roads[r1].owner == None:
+                        self.buildableRoads.roads[message.coords] = True
+
+                    if r2 and self.boardLayout.roads[r2].owner == None:
+                        self.buildableRoads.roads[r2] = True
+
+                    if r3 and self.boardLayout.roads[r3].owner == None:
+                        self.buildableRoads.roads[r3] = True
+                        
+                    r1 = self.boardLayout.nodes[n2].n1
+                    r2 = self.boardLayout.nodes[n2].n2
+                    r3 = self.boardLayout.nodes[n2].n3
+
+                    if r1 and self.boardLayout.roads[r1].owner == None:
+                        self.buildableRoads.roads[message.coords] = True
+
+                    if r2 and self.boardLayout.roads[r2].owner == None:
+                        self.buildableRoads.roads[r2] = True
+
+                    if r3 and self.boardLayout.roads[r3].owner == None:
+                        self.buildableRoads.roads[r3] = True
+
+                
         elif id == "MoveRobberMessage":
             print "MoveRobberMessage: {0}".format(message.values())
             self.boardLayout.robberpos = message.coords
@@ -240,3 +281,12 @@ class BuildableNodes:
         self.nodes = {}
         for k in soc.nodeLUT:
             self.nodes[k] = True
+
+class BuildableRoads:
+
+    def __init__(self)
+
+        import jsettlers_utils as soc
+        self.roads = {}
+        for k in soc.roadLUT:
+            self.roads[k] = False

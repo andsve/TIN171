@@ -1,8 +1,7 @@
 class Planner:
-    def __init__(self, game, player, resources, nodes, roads):
+    def __init__(self, game, resources, nodes, roads):
 
         self.game = game
-        self.player = player
         self.nodes = nodes
         self.roads = roads
         self.resources = resources
@@ -165,7 +164,22 @@ class Planner:
         #find out how to build to that node
         if bestNode:
 
-            return findClosestBuildableRoad([bestNode])
+            r1 = self.game.boardLayout.nodes[bestNode].n1
+            r2 = self.game.boardLayout.nodes[bestNode].n2
+            r3 = self.game.boardLayout.nodes[bestNode].n3
+
+            if (r1 and self.game.boardLayout.roads[r1].owner == self.game.playernum) or (r2 and self.game.boardLayout.roads[r2].owner == self.game.playernum) or (r3 and self.game.boardLayout.roads[r3].owner == self.game.playernum):
+                return (bestNode, 1)
+
+            tempList = []
+            if r1:
+                tempList.append(r1)
+            if r2:
+                tempList.append(r2)
+            if r3:
+                tempList.append(r3)
+
+            return findClosestBuildableRoad(tempList)
             
         else:
             return None
@@ -450,43 +464,35 @@ class Planner:
     #finds the closest buildable road to a node
     def findClosestBuildableRoad(self, parents):
 
-        for p in parents:
+        for r in parents:
 
-            r1 = self.game.boardLayout.nodes[p].n1
-            r2 = self.game.boardLayout.nodes[p].n2
-            r3 = self.game.boardLayout.nodes[p].n3
+            n1 = self.game.boardLayout.roads[r].n1
+            n2 = self.game.boardLayout.roads[r].n2
 
-            if (r1 and self.game.boardLayout.roads[r1].owner == self.player) or (r2 and self.game.boardLayout.roads[r2].owner == self.player) or (r3 and self.game.boardLayout.roads[r3].owner == self.player):
-                return (p, 1)
+            r1 = self.game.boardLayout.nodes[n1].n1
+            r2 = self.game.boardLayout.nodes[n1].n2
+            r3 = self.game.boardLayout.nodes[n1].n3
 
-            if r1 and self.game.boardLayout.roads[r1].owner == None:
-                n1 = self.game.boardLayout.roads[r1].n1
-                n2 = self.game.boardLayout.roads[r1].n2
+            if r1 and self.game.buildableRoads[r1]:
+                return (r1, 0) 
 
-                if n1 not in parents:
-                    parents.append(n1)
+            if r2 and self.game.buildableRoads[r2]:
+                return (r2, 0)
 
-                if n2 not in parents:
-                    parents.append(n2)
+            if r3 and self.game.buildableRoads[r3]:
+                return (r3, 0)
 
-            if r2 and self.game.boardLayout.roads[r2].owner == None:
-                n1 = self.game.boardLayout.roads[r2].n1
-                n2 = self.game.boardLayout.roads[r2].n2
+            r1 = self.game.boardLayout.nodes[n2].n1
+            r2 = self.game.boardLayout.nodes[n2].n2
+            r3 = self.game.boardLayout.nodes[n2].n3
 
-                if n1 not in parents:
-                    parents.append(n1)
+            if r1 and self.game.buildableRoads[r1]:
+                return (r1, 0) 
 
-                if n2 not in parents:
-                    parents.append(n2)
+            if r2 and self.game.buildableRoads[r2]:
+                return (r2, 0)
 
-            if r3 and self.game.boardLayout.roads[r3].owner == None:
-                n1 = self.game.boardLayout.roads[r3].n1
-                n2 = self.game.boardLayout.roads[r3].n2
+            if r3 and self.game.buildableRoads[r3]:
+                return (r3, 0)
 
-                if n1 not in parents:
-                    parents.append(n1)
-
-                if n2 not in parents:
-                    parents.append(n2)
-
-        return findClosestBuildableRoad(self, parents)
+        return None

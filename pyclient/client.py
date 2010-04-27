@@ -12,7 +12,7 @@ except:
 
 class Client:
     def __init__(self):
-        self.game = game.Game()
+        
         self.socket = None
         self.agent = None #= agent.Agent(self.game)
         
@@ -41,8 +41,8 @@ class Client:
         
         nickname = "aiBot[{0}]".format(socket.gethostname())
         gamename = "game[{0}]".format(socket.gethostname())
+        self.game = game.Game(nickname)
         self.agent = agent.Agent(nickname, gamename, self.game, self)
-        
         
         while True:
             highByte = ord(self.client.recv(1))
