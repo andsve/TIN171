@@ -5,16 +5,13 @@ class Planner:
         self.player = player
         self.nodes = nodes
         self.roads = roads
+        self.resources = resources
 
         #resources.LUMBER
         #resources.CLAY
         #resources.SHEEP
         #resources.GRAIN
         #resources.ORE
-
-        self.canAffordRoad = canAffordRoad(resources)
-        self.canAffordSettlement = canAffordSettlement(resources)
-        self.canAffordCity = canAffordCity(resources)
 
         self.scores = {}
         self.scores["LUMBER"] = 1
@@ -173,17 +170,17 @@ class Planner:
         else:
             return None
             
-    def canAffordRoad(self,resources):
+    def canAffordRoad(self):
 
-        return resources.LUMBER >= 1 and resources.CLAY >= 1
+        return self.resources["LUMBER"] >= 1 and self.resources["CLAY"] >= 1
 
-    def canAffordSettlement(self,resources):
+    def canAffordSettlement(self):
 
-        return resources.LUMBER >= 1 and resources.CLAY >= 1 and resources.SHEEP >= 1 and resources.GRAIN >= 1
+        return self.resources["LUMBER"] >= 1 and self.resources["CLAY"] >= 1 and self.resources["SHEEP"] >= 1 and self.resources["GRAIN"] >= 1
 
-    def canAffordCity(self,resources):
+    def canAffordCity(self):
 
-        return resources.GRAIN >= 2 and resources.ORE >= 3
+        return self.resources["GRAIN"] >= 2 and self.resources["ORE"] >= 3
 
     def numberProb(self, number):
 
