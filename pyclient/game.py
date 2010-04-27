@@ -108,7 +108,7 @@ class Game:
             # Harbours
             harbour_coords = [(0x27, 0x38), (0x5a, 0x6b), (0x9c, 0xad)
                              ,(0x25, 0x34), (0xcd, 0xdc), (0x43, 0x52)
-                             ,(0xc9, 0xda), (0x72, 0x83), (0x5a, 0xb6)]
+                             ,(0xc9, 0xda), (0x72, 0x83), (0xa5, 0xb6)]
                              
             hex_indicies = [0, 2, 8, 9, 21, 22, 32, 33, 35]
                             
@@ -230,7 +230,7 @@ class BoardLayout:
                             ,0x51, 0x31]:
                 continue
             nodes = soc.nodes_around_hex(tile)
-            self.tiles[tile] = TileNode(tile, *[self.nodes[n] for n in nodes])
+            self.tiles[tile] = TileNode(tile, *nodes)
             
 class BuildableNodes:
 
