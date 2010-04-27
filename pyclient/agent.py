@@ -33,6 +33,22 @@ class Agent:
                 case 1: #return the weight value of each kind of resource
         
     
+    def dice_probability(self, number):
+        dice_props = {}
+        dice_props[2]  = 0.0278
+        dice_props[3]  = 0.0556
+        dice_props[4]  = 0.0833
+        dice_props[5]  = 0.1111
+        dice_props[6]  = 0.1389
+        dice_props[7]  = 0.1667
+        dice_props[8]  = 0.1389
+        dice_props[9]  = 0.1111
+        dice_props[10] = 0.0833
+        dice_props[11] = 0.0556
+        dice_props[12] = 0.0278
+        return dice_props[number]
+        
+    
     def find_buildable_node(self):
         # Returns the best buildable new node!
         
