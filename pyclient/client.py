@@ -2,6 +2,14 @@ import socket
 import game
 import agent
 
+try:
+    import graphdump
+    HAS_GRAPHWIZ = True
+except:
+    HAS_GRAPHWIZ = False
+    print "warning: python library 'yapgvb' and graphwiz is needed to dump images of the graph"
+    
+
 class Client:
     def __init__(self):
         self.game = game.Game()
@@ -73,6 +81,8 @@ class Client:
             elif msg == "BoardLayoutMessage":
                 # We received gameboard information, pass it along to the Game-class.
                 print "Got game board"
+                if HAS_GRAPHWIZ:
+                    graphdump.generate_graph(self.game)
             
             elif msg == "GameTextMsgMessage":
                 print "[GameTextMsgMessage] {0}".format(message.message)
@@ -89,7 +99,6 @@ class Client:
             # Dispatch message to agent
             self.agent.handle_message(msg, message)
             
-
             """Game has STARTED! We get information about board layout, resources, starting player, etc"""
                         
 
