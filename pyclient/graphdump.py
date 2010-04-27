@@ -6,6 +6,12 @@ def generate_graph(game):
     nodes = {}
     for node in game.boardLayout.nodes:
         nodes[node] = graph.add_node(str(node), label=hex(node))
+        
+        # Is house
+        if game.boardLayout.nodes[node].owner != None:
+            nodes[node].shape = yapgvb.shapes.house
+        
+        # Harbour
 #        if game.boardLayout.nodes[node].harbor != 0:
 #            nodes[node].shape = yapgvb.shapes.doublecircle
         
@@ -13,14 +19,12 @@ def generate_graph(game):
         edge = graph.add_edge(nodes[road.n1], nodes[road.n2])
         
     for tile,node in game.boardLayout.tiles.items():
-        n = graph.add_node(str(tile), label=hex(tile))
-        n.shape = yapgvb.shapes.doublecircle
-        graph.add_edge(n, nodes[node.n1.id])
-        graph.add_edge(n, nodes[node.n2.id])
-        graph.add_edge(n, nodes[node.n3.id])
-        graph.add_edge(n, nodes[node.n4.id])
-        graph.add_edge(n, nodes[node.n5.id])
-        graph.add_edge(n, nodes[node.n6.id])
+        n = graph.add_node(str(tile), label=hex(tile), fontsize=16)
+        n.shape = yapgvb.shapes.circle
+        for i in range(1, 7):
+            id = getattr(node, "n%d"%i).id
+            e = graph.add_edge(n, nodes[id])
+            e.decorate = True
     
         
     graph.layout(yapgvb.engines.neato)

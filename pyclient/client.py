@@ -57,6 +57,12 @@ class Client:
             else:
                 (msg, message) = parsed
             
+            
+            # Graph dump on these messages
+            if msg in ["PutPieceMessage", "BoardLayoutMessage"]:
+                if HAS_GRAPHWIZ:
+                    graphdump.generate_graph(self.game)
+            
             if msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
                 gamejoined = True
@@ -81,8 +87,6 @@ class Client:
             elif msg == "BoardLayoutMessage":
                 # We received gameboard information, pass it along to the Game-class.
                 print "Got game board"
-                if HAS_GRAPHWIZ:
-                    graphdump.generate_graph(self.game)
             
             elif msg == "GameTextMsgMessage":
                 print "[GameTextMsgMessage] {0}".format(message.message)
