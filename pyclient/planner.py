@@ -438,15 +438,16 @@ class Planner:
             if n2 not in self.nodeScore or tempScore > self.nodeScore[n2]:
                 self.nodeScore[n2] = tempScore
 
-            if depth <= 1:
+            #only look for settlement point maximum 2 roads away
+            if depth < 2:
                 r1 = self.game.boardLayout.nodes[n2].n1
-                if r1:
+                if r1 and self.game.boardLayout.roads[r1].owner == None:
                     calcNeighbourScore(r1, depth + 1)
                 r2 = self.game.boardLayout.nodes[n2].n2
-                if r2:
+                if r2 and self.game.boardLayout.roads[r2].owner == None:
                     calcNeighbourScore(r2, depth + 1)
                 r3 = self.game.boardLayout.nodes[n2].n3
-                if r3:
+                if r3 and self.game.boardLayout.roads[r3].owner == None:
                     calcNeighbourScore(r3, depth + 1)
 
     #finds the closest buildable road to a node
