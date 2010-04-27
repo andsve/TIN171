@@ -526,19 +526,19 @@ class DiscardMessage(Message):
     def __init__(self, game, clay, ore, sheep, wheat, wood, unknown):
         self.game = game
         self.clay = clay
+        self.ore = ore
         self.sheep = sheep
         self.wheat = wheat
         self.wood = wood
         self.unknown = unknown
     
     def to_cmd(self):
-        return "{0}|{1},{2},{3},{4},{5},{6}".format(self.game, self.clay, self.sheep
-                                                    ,self.wheat, self.wood, self.unknown)
+        return "{0}|{1},{2},{3},{4},{5},{6},{7}".format(self.id, self.game, self.clay, self.ore, self.sheep, self.wheat, self.wood, self.unknown)
     
     @staticmethod
     def parse(text):
-        g, c, s, wh, wo, u = map(int, text.split(","))
-        return DiscardMessage(g, c, s, wh, wo, u)
+        g, c, o, s, wh, wo, u = map(int, text.split(","))
+        return DiscardMessage(g, c, o, s, wh, wo, u)
         
 class MoveRobberMessage(Message):
     id = 1034
@@ -650,15 +650,31 @@ class BankTradeMessage(Message):
         got = map(int, data[6:11])
         return BankTradeMessage(game, give, get)
 
-# TODO: Implement if needed
+# TODO: FIX!
 class MakeOfferMessage(Message):
     id = 1041
-    def __init__(self):
-        pass
+    def __init__(self, game, fr, to, give, get):
+        self.game = game
+        self.fr = fr
+        self.to = to
+        self.give = give
+        self.get = get
+
+    def to_cmd(self):
+        return "{0}|{1},{2},{3},{4},{5}".format(self.id, self.game, self.fr
+                                                ,','.join(self.to)
+                                                ,','.join(self.give)
+                                                ,','.join(self.get))
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        game = data[0]
+        fr = data[1]
+        to = " "
+        give = " "
+        get = " "
+        return MakeOfferMessage(game,fr,to,give,get)
 
 class ClearTradeMsgMessage(Message):
     id = 1042

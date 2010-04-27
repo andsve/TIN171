@@ -133,7 +133,7 @@ class Game:
         elif id == "PutPieceMessage":
             print "PutPieceMessage: {0}".format(message.values())
             if message.piecetype == 1:
-                self.boardLayout.nodes[message.coords].owner = message.playernum
+                self.boardLayout.nodes[message.coords].owner = message.playernum    
 
                 #May not build on neighbouring nodes
                 if self.boardLayout.nodes[message.coords].n1:
@@ -156,15 +156,30 @@ class Game:
                     id2 = self.boardLayout.roads[road].n2
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
+
+                #May build on unoccupied adjacent roads
+                if int(message.playernum) == int(self.playernum):
+                    r1 = self.boardLayout.nodes[message.coords].n1
+                    r2 = self.boardLayout.nodes[message.coords].n2
+                    r3 = self.boardLayout.nodes[message.coords].n3
+
+                    if r1 and self.boardLayout.roads[r1].owner == None:
+                        self.buildableRoads.roads[r1] = True
+
+                    if r2 and self.boardLayout.roads[r2].owner == None:
+                        self.buildableRoads.roads[r2] = True
+
+                    if r3 and self.boardLayout.roads[r3].owner == None:
+                        self.buildableRoads.roads[r3] = True
        
             elif message.piecetype == 0:
                 self.boardLayout.roads[message.coords].owner = message.playernum
 
                 #May not build on built roads
                 self.buildableRoads.roads[message.coords] = False
-                #May build on roads adjacent to built roads
+                #May build on unoccupied roads adjacent to built roads
                 
-                if message.player == self.playernum:
+                if int(message.playernum) == int(self.playernum):
                     n1 = self.boardLayout.roads[message.coords].n1
                     n2 = self.boardLayout.roads[message.coords].n2
 
@@ -173,7 +188,7 @@ class Game:
                     r3 = self.boardLayout.nodes[n1].n3
 
                     if r1 and self.boardLayout.roads[r1].owner == None:
-                        self.buildableRoads.roads[message.coords] = True
+                        self.buildableRoads.roads[r1] = True
 
                     if r2 and self.boardLayout.roads[r2].owner == None:
                         self.buildableRoads.roads[r2] = True
@@ -186,7 +201,7 @@ class Game:
                     r3 = self.boardLayout.nodes[n2].n3
 
                     if r1 and self.boardLayout.roads[r1].owner == None:
-                        self.buildableRoads.roads[message.coords] = True
+                        self.buildableRoads.roads[r1] = True
 
                     if r2 and self.boardLayout.roads[r2].owner == None:
                         self.buildableRoads.roads[r2] = True
@@ -284,7 +299,7 @@ class BuildableNodes:
 
 class BuildableRoads:
 
-    def __init__(self)
+    def __init__(self):
 
         import jsettlers_utils as soc
         self.roads = {}

@@ -6,22 +6,22 @@ class Planner:
         self.roads = roads
         self.resources = resources
 
-        #resources.LUMBER
         #resources.CLAY
-        #resources.SHEEP
-        #resources.GRAIN
         #resources.ORE
+        #resources.SHEEP
+        #resources.WHEAT
+        #resources.WOOD
 
         self.scores = {}
-        self.scores["LUMBER"] = 1
+        self.scores["WOOD"] = 1
         self.scores["CLAY"] = 1
         self.scores["SHEEP"] = 1
-        self.scores["GRAIN"] = 1
+        self.scores["WHEAT"] = 1
         self.scores["ORE"] = 1
-        self.scores["LUMBERH"] = 0
+        self.scores["WOODH"] = 0
         self.scores["CLAYH"] = 0
         self.scores["SHEEPH"] = 0
-        self.scores["GRAINH"] = 0
+        self.scores["WHEATH"] = 0
         self.scores["OREH"] = 0
         self.scores["3FOR1"] = 1
 
@@ -34,19 +34,19 @@ class Planner:
 
             #if we have a certain harbour, raise the score for that resource
             elif game.boardLayout.nodes[n].harbor == 1:
-                self.scores["LUMBER"] += 1
-
-            elif game.boardLayout.nodes[n].harbor == 2:
                 self.scores["CLAY"] += 1
+                
+            elif game.boardLayout.nodes[n].harbor == 2:
+                self.scores["ORE"] += 1
 
             elif game.boardLayout.nodes[n].harbor == 3:
                 self.scores["SHEEP"] += 1
 
             elif game.boardLayout.nodes[n].harbor == 4:
-                self.scores["GRAIN"] += 1
-
+                self.scores["WHEAT"] += 1
+                
             elif game.boardLayout.nodes[n].harbor == 5:
-                self.scores["ORE"] += 1
+                self.scores["WOOD"] += 1
            
             t1 = game.boardLayout.nodes[n].t1
             t2 = game.boardLayout.nodes[n].t2
@@ -59,14 +59,14 @@ class Planner:
                 if game.boardLayout.tiles[t1].resource == 1:
                     temp = numberProb(game.boardLayout.tiles[t1].number)
                     if temp:
-                        self.scores["LUMBER"] -= temp
-                        self.scores["LUMBERH"] += temp
-
-                elif game.boardLayout.tiles[t1].resource == 2:
-                    temp = numberProb(game.boardLayout.tiles[t1].number)
-                    if temp:
                         self.scores["CLAY"] -= temp
                         self.scores["CLAYH"] += temp
+
+                if game.boardLayout.tiles[t1].resource == 2:
+                    temp = numberProb(game.boardLayout.tiles[t1].number)
+                    if temp:
+                        self.scores["ORE"] -= temp
+                        self.scores["OREH"] += temp
 
                 elif game.boardLayout.tiles[t1].resource == 3:
                     temp = numberProb(game.boardLayout.tiles[t1].number)
@@ -77,27 +77,27 @@ class Planner:
                 elif game.boardLayout.tiles[t1].resource == 4:
                     temp = numberProb(game.boardLayout.tiles[t1].number)
                     if temp:
-                        self.scores["GRAIN"] -= temp
-                        self.scores["GRAINH"] += temp
-                    
+                        self.scores["WHEAT"] -= temp
+                        self.scores["WHEATH"] += temp
+                        
                 elif game.boardLayout.tiles[t1].resource == 5:
                     temp = numberProb(game.boardLayout.tiles[t1].number)
                     if temp:
-                        self.scores["ORE"] -= temp
-                        self.scores["OREH"] += temp
+                        self.scores["WOOD"] -= temp
+                        self.scores["WOODH"] += temp
 
             if t2:
                 if game.boardLayout.tiles[t2].resource == 1:
                     temp = numberProb(game.boardLayout.tiles[t2].number)
                     if temp:
-                        self.scores["LUMBER"] -= temp
-                        self.scores["LUMBERH"] += temp
+                        self.scores["CLAY"] -= temp
+                        self.scores["CLAYH"] += temp
 
                 elif game.boardLayout.tiles[t2].resource == 2:
                     temp = numberProb(game.boardLayout.tiles[t2].number)
                     if temp:
-                        self.scores["CLAY"] -= temp
-                        self.scores["CLAYH"] += temp
+                        self.scores["ORE"] -= temp
+                        self.scores["OREH"] += temp
 
                 elif game.boardLayout.tiles[t2].resource == 3:
                     temp = numberProb(game.boardLayout.tiles[t2].number)
@@ -108,27 +108,27 @@ class Planner:
                 elif game.boardLayout.tiles[t2].resource == 4:
                     temp = numberProb(game.boardLayout.tiles[t2].number)
                     if temp:
-                        self.scores["GRAIN"] -= temp
-                        self.scores["GRAINH"] += temp
-                    
+                        self.scores["WHEAT"] -= temp
+                        self.scores["WHEATH"] += temp
+
                 elif game.boardLayout.tiles[t2].resource == 5:
                     temp = numberProb(game.boardLayout.tiles[t2].number)
                     if temp:
-                        self.scores["ORE"] -= temp
-                        self.scores["OREH"] += temp
-
+                        self.scores["WOOD"] -= temp
+                        self.scores["WOODH"] += temp
+                    
             if t3:
                 if game.boardLayout.tiles[t3].resource == 1:
                     temp = numberProb(game.boardLayout.tiles[t3].number)
                     if temp:
-                        self.scores["LUMBER"] -= temp
-                        self.scores["LUMBERH"] += temp
+                        self.scores["CLAY"] -= temp
+                        self.scores["CLAYH"] += temp
 
                 elif game.boardLayout.tiles[t3].resource == 2:
                     temp = numberProb(game.boardLayout.tiles[t3].number)
                     if temp:
-                        self.scores["CLAY"] -= temp
-                        self.scores["CLAYH"] += temp
+                        self.scores["ORE"] -= temp
+                        self.scores["OREH"] += temp
 
                 elif game.boardLayout.tiles[t3].resource == 3:
                     temp = numberProb(game.boardLayout.tiles[t3].number)
@@ -139,14 +139,14 @@ class Planner:
                 elif game.boardLayout.tiles[t3].resource == 4:
                     temp = numberProb(game.boardLayout.tiles[t3].number)
                     if temp:
-                        self.scores["GRAIN"] -= temp
-                        self.scores["GRAINH"] += temp
-                    
+                        self.scores["WHEAT"] -= temp
+                        self.scores["WHEATH"] += temp
+
                 elif game.boardLayout.tiles[t3].resource == 5:
                     temp = numberProb(game.boardLayout.tiles[t3].number)
                     if temp:
-                        self.scores["ORE"] -= temp
-                        self.scores["OREH"] += temp
+                        self.scores["WOOD"] -= temp
+                        self.scores["WOODH"] += temp
 
         # determine score for possible settlement points close to any of our roads
         self.nodeScore = {}
@@ -186,15 +186,15 @@ class Planner:
             
     def canAffordRoad(self):
 
-        return self.resources["LUMBER"] >= 1 and self.resources["CLAY"] >= 1
+        return self.resources["WOOD"] >= 1 and self.resources["CLAY"] >= 1
 
     def canAffordSettlement(self):
 
-        return self.resources["LUMBER"] >= 1 and self.resources["CLAY"] >= 1 and self.resources["SHEEP"] >= 1 and self.resources["GRAIN"] >= 1
+        return self.resources["WOOD"] >= 1 and self.resources["CLAY"] >= 1 and self.resources["SHEEP"] >= 1 and self.resources["WHEAT"] >= 1
 
     def canAffordCity(self):
 
-        return self.resources["GRAIN"] >= 2 and self.resources["ORE"] >= 3
+        return self.resources["WHEAT"] >= 2 and self.resources["ORE"] >= 3
 
     def numberProb(self, number):
 
@@ -227,19 +227,19 @@ class Planner:
         if self.game.boardLayout.nodes[n1].owner == None:
 
             if self.game.boardLayout[n1].harbor == 1:
-                tempScore = self.scores["LUMBERH"]
+                tempScore = self.scores["CLAYH"]
 
             elif self.game.boardLayout[n1].harbor == 2:
-                tempScore = self.scores["CLAYH"]
+                tempScore = self.scores["OREH"]
 
             elif self.game.boardLayout[n1].harbor == 3:
                 tempScore = self.scores["SHEEPH"]
 
             elif self.game.boardLayout[n1].harbor == 4:
-                tempScore = self.scores["GRAINH"]
+                tempScore = self.scores["WHEATH"]
 
             elif self.game.boardLayout[n1].harbor == 5:
-                tempScore = self.scores["OREH"]
+                tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout[n1].harbor == 6:
                 tempScore = self.scores["3FOR1H"]
@@ -250,14 +250,14 @@ class Planner:
             t1 = self.game.boardLayout.nodes[n1].t1
             t2 = self.game.boardLayout.nodes[n1].t2
             t3 = self.game.boardLayout.nodes[n1].t3
-
+                
             if t1 and self.game.boardLayout.tiles[t1].resource == 1:
-                tempScore += self.scores["LUMBER"]
+                tempScore += self.scores["CLAY"]
                 if self.game.boardLayout[n1].harbor == 1:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
-                
+
             elif t1 and self.game.boardLayout.tiles[t1].resource == 2:
-                tempScore += self.scores["CLAY"]
+                tempScore += self.scores["ORE"]
                 if self.game.boardLayout[n1].harbor == 2:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
 
@@ -267,22 +267,22 @@ class Planner:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 4:
-                tempScore += self.scores["GRAIN"]
+                tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout[n1].harbor == 4:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 5:
-                tempScore += self.scores["ORE"]
+                tempScore += self.scores["WOOD"]
                 if self.game.boardLayout[n1].harbor == 5:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
-
+               
             if t2 and self.game.boardLayout.tiles[t2].resource == 1:
-                tempScore += self.scores["LUMBER"]
+                tempScore += self.scores["CLAY"]
                 if self.game.boardLayout[n1].harbor == 1:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
-                
+
             elif t2 and self.game.boardLayout.tiles[t2].resource == 2:
-                tempScore += self.scores["CLAY"]
+                tempScore += self.scores["ORE"]
                 if self.game.boardLayout[n1].harbor == 2:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
 
@@ -292,22 +292,22 @@ class Planner:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 4:
-                tempScore += self.scores["GRAIN"]
+                tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout[n1].harbor == 4:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 5:
-                tempScore += self.scores["ORE"]
+                tempScore += self.scores["WOOD"]
                 if self.game.boardLayout[n1].harbor == 5:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
-
+                
             if t3 and self.game.boardLayout.tiles[t3].resource == 1:
-                tempScore += self.scores["LUMBER"]
+                tempScore += self.scores["CLAY"]
                 if self.game.boardLayout[n1].harbor == 1:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
-                
+
             elif t3 and self.game.boardLayout.tiles[t3].resource == 2:
-                tempScore += self.scores["CLAY"]
+                tempScore += self.scores["ORE"]
                 if self.game.boardLayout[n1].harbor == 2:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
@@ -317,12 +317,12 @@ class Planner:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
             elif t3 and self.game.boardLayout.tiles[t3].resource == 4:
-                tempScore += self.scores["GRAIN"]
+                tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout[n1].harbor == 4:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
             elif t3 and self.game.boardLayout.tiles[t3].resource == 5:
-                tempScore += self.scores["ORE"]
+                tempScore += self.scores["WOOD"]
                 if self.game.boardLayout[n1].harbor == 5:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
@@ -343,21 +343,21 @@ class Planner:
                     calcNeighbourScore(r3, depth + 1)
 
         if self.game.boardLayout.nodes[n2].owner == None:
-            
+
             if self.game.boardLayout[n2].harbor == 1:
-                tempScore = self.scores["LUMBERH"]
+                tempScore = self.scores["CLAYH"]
 
             elif self.game.boardLayout[n2].harbor == 2:
-                tempScore = self.scores["CLAYH"]
+                tempScore = self.scores["OREH"]
 
             elif self.game.boardLayout[n2].harbor == 3:
                 tempScore = self.scores["SHEEPH"]
 
             elif self.game.boardLayout[n2].harbor == 4:
-                tempScore = self.scores["GRAINH"]
+                tempScore = self.scores["WHEATH"]
 
             elif self.game.boardLayout[n2].harbor == 5:
-                tempScore = self.scores["OREH"]
+                tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout[n2].harbor == 6:
                 tempScore = self.scores["3FOR1H"]
@@ -368,14 +368,14 @@ class Planner:
             t1 = self.game.boardLayout.nodes[n2].t1
             t2 = self.game.boardLayout.nodes[n2].t2
             t3 = self.game.boardLayout.nodes[n2].t3
-
+                
             if t1 and self.game.boardLayout.tiles[t1].resource == 1:
-                tempScore += self.scores["LUMBER"]
+                tempScore += self.scores["CLAY"]
                 if self.game.boardLayout[n2].harbor == 1:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
-                
+
             elif t1 and self.game.boardLayout.tiles[t1].resource == 2:
-                tempScore += self.scores["CLAY"]
+                tempScore += self.scores["ORE"]
                 if self.game.boardLayout[n2].harbor == 2:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
 
@@ -385,22 +385,22 @@ class Planner:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 4:
-                tempScore += self.scores["GRAIN"]
+                tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout[n2].harbor == 4:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 5:
-                tempScore += self.scores["ORE"]
+                tempScore += self.scores["WOOD"]
                 if self.game.boardLayout[n2].harbor == 5:
                     tempScore += numberProb(self.game.boardLayout.tiles[t1].number)
-
+               
             if t2 and self.game.boardLayout.tiles[t2].resource == 1:
-                tempScore += self.scores["LUMBER"]
+                tempScore += self.scores["CLAY"]
                 if self.game.boardLayout[n2].harbor == 1:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
-                
+
             elif t2 and self.game.boardLayout.tiles[t2].resource == 2:
-                tempScore += self.scores["CLAY"]
+                tempScore += self.scores["ORE"]
                 if self.game.boardLayout[n2].harbor == 2:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
 
@@ -410,22 +410,22 @@ class Planner:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 4:
-                tempScore += self.scores["GRAIN"]
+                tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout[n2].harbor == 4:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 5:
-                tempScore += self.scores["ORE"]
+                tempScore += self.scores["WOOD"]
                 if self.game.boardLayout[n2].harbor == 5:
                     tempScore += numberProb(self.game.boardLayout.tiles[t2].number)
-
+                
             if t3 and self.game.boardLayout.tiles[t3].resource == 1:
-                tempScore += self.scores["LUMBER"]
+                tempScore += self.scores["CLAY"]
                 if self.game.boardLayout[n2].harbor == 1:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
-                
+
             elif t3 and self.game.boardLayout.tiles[t3].resource == 2:
-                tempScore += self.scores["CLAY"]
+                tempScore += self.scores["ORE"]
                 if self.game.boardLayout[n2].harbor == 2:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
@@ -435,12 +435,12 @@ class Planner:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
             elif t3 and self.game.boardLayout.tiles[t3].resource == 4:
-                tempScore += self.scores["GRAIN"]
+                tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout[n2].harbor == 4:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
             elif t3 and self.game.boardLayout.tiles[t3].resource == 5:
-                tempScore += self.scores["ORE"]
+                tempScore += self.scores["WOOD"]
                 if self.game.boardLayout[n2].harbor == 5:
                     tempScore += numberProb(self.game.boardLayout.tiles[t3].number)
 
@@ -473,26 +473,26 @@ class Planner:
             r2 = self.game.boardLayout.nodes[n1].n2
             r3 = self.game.boardLayout.nodes[n1].n3
 
-            if r1 and self.game.buildableRoads[r1]:
+            if r1 and self.game.buildableRoads.roads[r1]:
                 return (r1, 0) 
 
-            if r2 and self.game.buildableRoads[r2]:
+            if r2 and self.game.buildableRoads.roads[r2]:
                 return (r2, 0)
 
-            if r3 and self.game.buildableRoads[r3]:
+            if r3 and self.game.buildableRoads.roads[r3]:
                 return (r3, 0)
 
             r1 = self.game.boardLayout.nodes[n2].n1
             r2 = self.game.boardLayout.nodes[n2].n2
             r3 = self.game.boardLayout.nodes[n2].n3
 
-            if r1 and self.game.buildableRoads[r1]:
+            if r1 and self.game.buildableRoads.roads[r1]:
                 return (r1, 0) 
 
-            if r2 and self.game.buildableRoads[r2]:
+            if r2 and self.game.buildableRoads.roads[r2]:
                 return (r2, 0)
 
-            if r3 and self.game.buildableRoads[r3]:
+            if r3 and self.game.buildableRoads.roads[r3]:
                 return (r3, 0)
 
         return None
