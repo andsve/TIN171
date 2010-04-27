@@ -238,5 +238,5 @@ class BuildableNodes:
 
         import jsettlers_utils as soc
         self.nodes = {}
-        for k in soc.nodeLUT.items():
+        for k in soc.nodeLUT:
             self.nodes[k] = True

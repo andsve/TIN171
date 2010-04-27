@@ -1,4 +1,5 @@
 from messages import *
+from utils import cprint
 
 class Agent:
     def __init__(self, nickname, gamename, game, client):
@@ -11,9 +12,21 @@ class Agent:
         self.output_prefix = "[DEBUG] agent.py ->"
     
     def debug_print(self, msg):
-        print "{0} {1}".format(self.output_prefix, msg)
-    
-    
+        cprint("{0} {1}".format(self.output_prefix, msg), 'red')
+	
+	#
+    # Auxiliary gameboard functions
+    #
+    def find_buildable_nodes(self):
+        # Returns a list of available nodes
+        # should then be sorted in some way
+        # according to the resources at each node
+        
+        # First, get all buildable nodes!
+        for (k,n) in self.game.buildableNodes.nodes.items():
+            self.debug_print("id: {0} has value {1}".format(k, n))
+        #print(self.game.buildableNodes)
+        
     # incomming messages from the message handler
     #  (i.e. alarms/signals/events from the game the agent needs to act on)
     def handle_message(self, name, message):
@@ -32,10 +45,15 @@ class Agent:
             # Setup state
             if (name == "TurnMessage" and message.playernum == self.playernum):
                 self.debug_print("We should place our settlements now!")
+                self.find_buildable_nodes()
+				
                 # Try to build at pos 0x23!
                 if (self.can_build_at_node(0x23)):
                     response = PutPieceMessage(self.gamename, self.playernum, 1, 0x23)
                     self.client.send_msg(response)
+					
+					# Always place a road after settlement
+					# 
                 else:
                     self.debug_print("Could not build at position 0x23!")
         #else:
@@ -45,11 +63,9 @@ class Agent:
         # DEBUG: 
         #if message:
         #    print "Agent: {0} - {1}".format(name, message.values())
-    
-    
-    #
-    # Auxiliary gameboard functions
-    #
+		
+		
+		
     def can_build_at_node(self, node):
         # Returns 1 if it is possible to build a settlement at
         # this node, 0 otherwize.
