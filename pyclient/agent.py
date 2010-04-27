@@ -24,13 +24,20 @@ class Agent:
         return 0
 
     def resource_weight(self, _type, _round)
-        resource_list #make a list of exist resource
+        #1 = Clay
+        #2 = Ore
+        #3 = Sheep
+        #4 = Grain
+        #5 = Lumber
+        resource_weight = [0,20,15,10,15,20]
+        resource_list = []#make a list of exist resource
         if (_round!=1):
             if (!resource_list[_type]):
-                return 40
+                resource_list[]
+                return 40 # enhance the importance of the scarce resource
         else:
-            select (_type)
-                case 1: #return the weight value of each kind of resource
+            resource_list[_type] = 1
+            return resource_weight[_type]
         
     
     def find_buildable_node(self):
