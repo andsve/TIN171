@@ -270,14 +270,7 @@ class Agent:
             
             # Throw away cards here (message.numcards)
             numcards = int(message.numcards)
-
-            self.debug_print(numcards)
-            self.debug_print(self.resources["CLAY"])
-            self.debug_print(self.resources["ORE"])
-            self.debug_print(self.resources["SHEEP"])
-            self.debug_print(self.resources["WHEAT"])
-            self.debug_print(self.resources["WOOD"])
-            
+           
             clay = min(self.resources["CLAY"], numcards)
             ore = min(self.resources["ORE"], numcards - clay)
             sheep = min(self.resources["SHEEP"], numcards - clay - ore)
@@ -299,14 +292,7 @@ class Agent:
             # Throw away cards here (message.numcards)
 
             numcards = int(message.numcards)
-
-            self.debug_print(numcards)
-            self.debug_print(self.resources["CLAY"])
-            self.debug_print(self.resources["ORE"])
-            self.debug_print(self.resources["SHEEP"])
-            self.debug_print(self.resources["WHEAT"])
-            self.debug_print(self.resources["WOOD"])
-            
+           
             clay = min(self.resources["CLAY"], numcards)
             ore = min(self.resources["ORE"], numcards - clay)
             sheep = min(self.resources["SHEEP"], numcards - clay - ore)
@@ -327,7 +313,7 @@ class Agent:
                 
             self.client.send_msg(response)
 
-        elif self.gamestate == 8 and name == "ChoosePlayerRequest":
+        elif self.gamestate == 8 and name == "ChoosePlayerRequestMessage":
 
             # Choose a player to steal from
             # TODO: Dont do this randomly
@@ -344,11 +330,15 @@ class Agent:
 
             # Play normally
             # TODO: Do something!
-            response = EndTurnMessage(self.gamename)
-            self.client.send_msg(response)
+            self.make_play()
 
-            self.gamestate = 7
-            
+    # the default playing method
+    # TODO: Intelligent stuff
+    def make_play(self):
+        response = EndTurnMessage(self.gamename)
+        self.client.send_msg(response)
+
+        self.gamestate = 7
 		
     def can_build_at_node(self, node):
         # Returns 1 if it is possible to build a settlement at

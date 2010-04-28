@@ -747,7 +747,7 @@ class DevCardMessage(Message):
     @staticmethod
     def parse(text):
         g, pn, ac, ct = text.split(",")
-        return DevCardmessage(g, int(pn), int(ac), int(ct))
+        return DevCardMessage(g, int(pn), int(ac), int(ct))
    
 class DevCardCountMessage(Message):
     id = 1047
