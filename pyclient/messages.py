@@ -190,7 +190,7 @@ class LeaveGameMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1}{2}{3}".format(self.id, self.nickname
-                                     ,self.hostname, self.channel)
+                                     ,self.hostname, self.game)
         
     @staticmethod
     def parse(text):
