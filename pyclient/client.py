@@ -1,6 +1,7 @@
 import socket
 import game
 import agent
+import random
 
 try:
     import graphdump
@@ -39,8 +40,8 @@ class Client:
         satdown = False
         gamestarted = False
         
-        nickname = "aiBot[{0}]".format(socket.gethostname())
-        gamename = "game[{0}]".format(socket.gethostname())
+        nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
+        gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         self.game = game.Game(nickname)
         self.agent = agent.Agent(nickname, gamename, self.game, self)
         
