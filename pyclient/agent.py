@@ -1,5 +1,6 @@
 from messages import *
 from utils import cprint
+from planner import *
 
 dice_props = {}
 dice_props[0]  = 0.0
@@ -25,6 +26,9 @@ class Agent:
         self.client = client
         self.nickname = nickname
         self.playernum = None
+
+        self.builtnodes = []
+        self.builtroads = []
 
         self.resources = {
             "CLAY": 0,
@@ -190,12 +194,13 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 1 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
+            self.builtnodes.append(message.coords)
             self.gamestate = 2
-            self.debug_print("Confirm build1")
+            
             
         # Setup state 2    
         elif self.gamestate == 2 and name == "GameStateMessage" and int(message.state) == 6:
-            self.debug_print("Enter buildroad1")
+    
             #arbitarly build a first road
 	    for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r]:
@@ -205,6 +210,7 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 2 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
+            self.builtroads.append(message.coords)
             self.gamestate = 3
 
             # If we were the last one to play, we won't get a TurnMessage, goto state 4
@@ -237,6 +243,7 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 4 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
+            self.builtnodes.append(message.coords)
             self.gamestate = 5
 
         # Setup state 5    
@@ -251,6 +258,7 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 5 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
+            self.builtroads.append(message.coords)
             self.gamestate = 6
 
             # We were not first to play, we must wait for a TurnMessage before requested to roll the dices
@@ -318,6 +326,7 @@ class Agent:
             # Choose a player to steal from
             # TODO: Dont do this randomly
             i = 0
+            self.debug_print("Steal list: {0}".format(message.choices))
             for c in message.choices:
                 if c:
                     response = ChoosePlayerMessage(self.gamename, i)
@@ -335,10 +344,24 @@ class Agent:
     # the default playing method
     # TODO: Intelligent stuff
     def make_play(self):
-        response = EndTurnMessage(self.gamename)
-        self.client.send_msg(response)
 
-        self.gamestate = 7
+        temp = Planner(self.game,self.resources,self.builtnodes,self.builtroads)
+        plan = temp.make_plan()
+
+        if plan:
+            (build_spot, build_type) = plan
+
+            response = BuildRequestMessage(self.gamename,build_type)
+            self.client.send_msg(response)
+
+            response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
+            self.client.send_msg(response)
+
+        else:        
+        
+            response = EndTurnMessage(self.gamename)
+            self.client.send_msg(response)
+            self.gamestate = 7
 		
     def can_build_at_node(self, node):
         # Returns 1 if it is possible to build a settlement at

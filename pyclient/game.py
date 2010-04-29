@@ -1,4 +1,5 @@
 from messages import *
+from utils import cprint
 
 class Game:
     def __init__(self, nickname):
@@ -8,7 +9,11 @@ class Game:
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
-        
+
+        self.output_prefix = "[DEBUG] game.py ->"
+
+    def debug_print(self, msg):
+       cprint("{0} {1}".format(self.output_prefix, msg), 'blue')        
     
     def init_parser(self):
         """ Create a LUT for message id => message instance """
@@ -133,13 +138,17 @@ class Game:
         elif id == "PutPieceMessage":
             print "PutPieceMessage: {0}".format(message.values())
             if message.piecetype == 1:
-                self.boardLayout.nodes[message.coords].owner = message.playernum    
+                self.boardLayout.nodes[message.coords].owner = message.playernum
+
+                #May not build on built spots
+                self.buildableNodes.nodes[message.coords] = False
 
                 #May not build on neighbouring nodes
                 if self.boardLayout.nodes[message.coords].n1:
                     road = self.boardLayout.nodes[message.coords].n1
                     id1 = self.boardLayout.roads[road].n1
                     id2 = self.boardLayout.roads[road].n2
+                    self.debug_print("Built s at {0}. May not build s on {1} or {2}".format(hex(message.coords),hex(id1),hex(id2)))
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
 
@@ -147,6 +156,7 @@ class Game:
                     road = self.boardLayout.nodes[message.coords].n2
                     id1 = self.boardLayout.roads[road].n1
                     id2 = self.boardLayout.roads[road].n2
+                    self.debug_print("Built s at {0}. May not build s on {1} or {2}".format(hex(message.coords),hex(id1),hex(id2)))
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
 
@@ -154,6 +164,7 @@ class Game:
                     road = self.boardLayout.nodes[message.coords].n3
                     id1 = self.boardLayout.roads[road].n1
                     id2 = self.boardLayout.roads[road].n2
+                    self.debug_print("Built s at {0}. May not build s on {1} or {2}".format(hex(message.coords),hex(id1),hex(id2)))
                     self.buildableNodes.nodes[id1] = False
                     self.buildableNodes.nodes[id2] = False
 
@@ -164,12 +175,15 @@ class Game:
                     r3 = self.boardLayout.nodes[message.coords].n3
 
                     if r1 and self.boardLayout.roads[r1].owner == None:
+                        self.debug_print("Built s at {0}. May build road on {1}".format(hex(message.coords),hex(r1)))
                         self.buildableRoads.roads[r1] = True
 
                     if r2 and self.boardLayout.roads[r2].owner == None:
+                        self.debug_print("Built s at {0}. May build road on {1}".format(hex(message.coords),hex(r2)))
                         self.buildableRoads.roads[r2] = True
 
                     if r3 and self.boardLayout.roads[r3].owner == None:
+                        self.debug_print("Built s at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
                         self.buildableRoads.roads[r3] = True
        
             elif message.piecetype == 0:
@@ -189,12 +203,15 @@ class Game:
 
                     if r1 and self.boardLayout.roads[r1].owner == None:
                         self.buildableRoads.roads[r1] = True
+                        self.debug_print("Built road at {0}. May build on road {1}".format(hex(message.coords),hex(r1)))
 
                     if r2 and self.boardLayout.roads[r2].owner == None:
                         self.buildableRoads.roads[r2] = True
+                        self.debug_print("Built road at {0}. May build on {1}".format(hex(message.coords),hex(r2)))
 
                     if r3 and self.boardLayout.roads[r3].owner == None:
                         self.buildableRoads.roads[r3] = True
+                        self.debug_print("Built road at {0}. May build on {1}".format(hex(message.coords),hex(r3)))
                         
                     r1 = self.boardLayout.nodes[n2].n1
                     r2 = self.boardLayout.nodes[n2].n2
@@ -202,12 +219,15 @@ class Game:
 
                     if r1 and self.boardLayout.roads[r1].owner == None:
                         self.buildableRoads.roads[r1] = True
+                        self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r1)))
 
                     if r2 and self.boardLayout.roads[r2].owner == None:
                         self.buildableRoads.roads[r2] = True
+                        self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r2)))
 
                     if r3 and self.boardLayout.roads[r3].owner == None:
                         self.buildableRoads.roads[r3] = True
+                        self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
 
                 
         elif id == "MoveRobberMessage":
