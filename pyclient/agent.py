@@ -171,6 +171,9 @@ class Agent:
 
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
+
+            self.debug_print("Have total: {0}".format(self.resources))
+
             
         # Setup state 1    
         if self.gamestate == 1 and name == "TurnMessage" and message.playernum == self.playernum:

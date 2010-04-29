@@ -399,20 +399,30 @@ class PlayerElementMessage(Message):
         self.action = action
         self.element = element
         self.value = value
-        
+
     def to_cmd(self):
         for i, v in self.etype.items():
             if self.action == v:
                 ac = i
             elif self.element == v:
                 el = i
+
         return "{0}|{1},{2},{3},{4},{5}".format(self.id, self.game, self.playernum, ac, el, self.value)
         
     @staticmethod
     def parse(text):
+
+        from utils import cprint
+        output_prefix = "[DEBUG] messages.py ->"
+
+        def debug_print(msg):
+            cprint("{0} {1}".format(output_prefix, msg), 'green')
+        
         game, playernum, action, element, value = text.split(',')
         ac = PlayerElementMessage.etype[action]
         el = PlayerElementMessage.etype[element]
+        if int(playernum) == 1:
+            debug_print("Got {0} ({1})".format(element, el))
         return PlayerElementMessage(game, playernum
                                     , ac, el
                                     , int(value))

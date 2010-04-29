@@ -9,6 +9,7 @@ class Planner:
         self.resources = resources
 
         self.probabilities = {
+            0: 0,
             2: 1/36.0,
             3: 2/36.0,
             4: 3/36.0,
@@ -291,52 +292,52 @@ class Planner:
             if t1 and self.game.boardLayout.tiles[t1].resource == 1:
                 tempScore += self.scores["CLAY"]
                 if self.game.boardLayout.nodes[n1].harbor == 1:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t1].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t1].number]
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 2:
                 tempScore += self.scores["ORE"]
                 if self.game.boardLayout.nodes[n1].harbor == 2:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t1].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t1].number]
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 3:
                 tempScore += self.scores["SHEEP"]
                 if self.game.boardLayout.nodes[n1].harbor == 3:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t1].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t1].number]
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 4:
                 tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout.nodes[n1].harbor == 4:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t1].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t1].number]
 
             elif t1 and self.game.boardLayout.tiles[t1].resource == 5:
                 tempScore += self.scores["WOOD"]
                 if self.game.boardLayout.nodes[n1].harbor == 5:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t1].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t1].number]
                
             if t2 and self.game.boardLayout.tiles[t2].resource == 1:
                 tempScore += self.scores["CLAY"]
                 if self.game.boardLayout.nodes[n1].harbor == 1:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t2].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t2].number]
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 2:
                 tempScore += self.scores["ORE"]
                 if self.game.boardLayout.nodes[n1].harbor == 2:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t2].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t2].number]
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 3:
                 tempScore += self.scores["SHEEP"]
                 if self.game.boardLayout.nodes[n1].harbor == 3:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t2].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t2].number]
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 4:
                 tempScore += self.scores["WHEAT"]
                 if self.game.boardLayout.nodes[n1].harbor == 4:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t2].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t2].number]
 
             elif t2 and self.game.boardLayout.tiles[t2].resource == 5:
                 tempScore += self.scores["WOOD"]
                 if self.game.boardLayout.nodes[n1].harbor == 5:
-                    tempScore += self.probabilities[game.boardLayout.tiles[t2].number]
+                    tempScore += self.probabilities[self.game.boardLayout.tiles[t2].number]
                 
             if t3 and self.game.boardLayout.tiles[t3].resource == 1:
                 tempScore += self.scores["CLAY"]
