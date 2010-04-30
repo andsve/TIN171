@@ -651,8 +651,8 @@ class BankTradeMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1},{2},{3}".format(self.id, self.game
-                                        ,','.join(self.give)
-                                        ,','.join(self.get))
+                                        ,','.join(map(str, self.give))
+                                        ,','.join(map(str, self.get)))
         
     @staticmethod
     def parse(text):
