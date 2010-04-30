@@ -30,6 +30,8 @@ class Agent:
         self.builtnodes = []
         self.builtroads = []
 
+        self.gotInitialResources = 0
+
         self.resources = {
             "CLAY": 0,
             "ORE": 0,
@@ -68,7 +70,7 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,20,15,10,15,20]
+        resource_weight = [0,20,0,20,20,20]
         
         if (_round!=1):
             if (resource_list[_type]==0 and _type!=0):
@@ -163,8 +165,12 @@ class Agent:
 
         # add / remove to resource list
         elif name == "PlayerElementMessage" and int(message.playernum) == int(self.playernum):
+            self.debug_print("self.gotInitialResources: {0}".format(self.gotInitialResources))
             if message.action == "SET":                
-                self.resources[message.element] = int(message.value)
+                if int(self.gotInitialResources) < 5 and self.gamestate >= 1:
+                    self.gotInitialResources += 1
+                    self.resources[message.element] = int(message.value)
+                    self.debug_print("SETTED")
 
             elif message.action == "GAIN":
                 self.resources[message.element] += int(message.value)
@@ -172,6 +178,7 @@ class Agent:
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
 
+            self.debug_print("{0} {1} {2}".format(message.action,message.element,message.value))
             self.debug_print("Have total: {0}".format(self.resources))
 
             
@@ -282,11 +289,11 @@ class Agent:
             # Throw away cards here (message.numcards)
             numcards = int(message.numcards)
            
-            clay = min(self.resources["CLAY"], numcards)
-            ore = min(self.resources["ORE"], numcards - clay)
-            sheep = min(self.resources["SHEEP"], numcards - clay - ore)
-            wheat = min(self.resources["WHEAT"], numcards - clay - ore - sheep)
-            wood = min(self.resources["WOOD"], numcards - clay - ore - sheep - wheat)
+            ore = min(self.resources["ORE"], numcards)           
+            clay = min(self.resources["CLAY"] - 1, numcards - ore)
+            sheep = min(self.resources["SHEEP"] - 1, numcards - clay - ore)
+            wheat = min(self.resources["WHEAT"] - 1, numcards - clay - ore - sheep)
+            wood = min(self.resources["WOOD"] - 1, numcards - clay - ore - sheep - wheat)
             response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
 
             self.client.send_msg(response)
@@ -303,12 +310,12 @@ class Agent:
             # Throw away cards here (message.numcards)
 
             numcards = int(message.numcards)
-           
-            clay = min(self.resources["CLAY"], numcards)
-            ore = min(self.resources["ORE"], numcards - clay)
-            sheep = min(self.resources["SHEEP"], numcards - clay - ore)
-            wheat = min(self.resources["WHEAT"], numcards - clay - ore - sheep)
-            wood = min(self.resources["WOOD"], numcards - clay - ore - sheep - wheat)
+
+            ore = min(self.resources["ORE"], numcards)           
+            clay = min(self.resources["CLAY"] - 1, numcards - ore)
+            sheep = min(self.resources["SHEEP"] - 1, numcards - clay - ore)
+            wheat = min(self.resources["WHEAT"] - 1, numcards - clay - ore - sheep)
+            wood = min(self.resources["WOOD"] - 1, numcards - clay - ore - sheep - wheat)
             response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
 
             self.client.send_msg(response)
