@@ -75,7 +75,12 @@ class Client:
                 # We receive confirmation of a game created, available seats, etc
                 satdown = True
                 print("Sitting down...")
-                m = game.SitDownMessage(gamename, nickname, 1, False)
+                m = game.SitDownMessage(gamename, nickname, 1, True)
+                self.send_msg(m)
+
+            elif msg == "RobotDismissMessage":
+
+                m = game.LeaveGameMessage(nickname,socket.gethostname(), gamename)
                 self.send_msg(m)
                 
             elif msg == "ChangeFaceMessage" and not gamestarted:

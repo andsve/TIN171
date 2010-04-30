@@ -189,7 +189,7 @@ class LeaveGameMessage(Message):
         self.game = game
         
     def to_cmd(self):
-        return "{0}|{1}{2}{3}".format(self.id, self.nickname
+        return "{0}|{1},{2},{3}".format(self.id, self.nickname
                                      ,self.hostname, self.game)
         
     @staticmethod
@@ -417,7 +417,8 @@ class PlayerElementMessage(Message):
 
         def debug_print(msg):
             cprint("{0} {1}".format(output_prefix, msg), 'green')
-        
+
+        debug_print(text)
         game, playernum, action, element, value = text.split(',')
         ac = PlayerElementMessage.etype[action]
         el = PlayerElementMessage.etype[element]
