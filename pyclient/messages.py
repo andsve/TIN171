@@ -216,7 +216,7 @@ class SitDownMessage(Message):
         nn = data[1] # nick name
         pn = data[2] # seat number
         rf = False if data[3] == "false" else True # is robot
-        return SitDownMessage(gn, nn, pn, rf)
+        return SitDownMessage(gn, nn, int(pn), rf)
 
 class JoinGameMessage(Message):
     id = 1013
@@ -374,7 +374,7 @@ class JoinGameRequestMessage(Message):
     @staticmethod
     def parse(text):
         game, playernum = text.split(",")
-        return JoinGameRequestMessage(game, playernum)
+        return JoinGameRequestMessage(game, int(playernum))
 
 class PlayerElementMessage(Message):
     id = 1024
@@ -424,7 +424,7 @@ class PlayerElementMessage(Message):
         el = PlayerElementMessage.etype[element]
         if int(playernum) == 1:
             debug_print("Got {0} ({1})".format(element, el))
-        return PlayerElementMessage(game, playernum
+        return PlayerElementMessage(game, int(playernum)
                                     , ac, el
                                     , int(value))
 
@@ -454,7 +454,7 @@ class TurnMessage(Message):
     @staticmethod
     def parse(text):
         gn, pn = text.split(",")
-        return TurnMessage(gn, pn)
+        return TurnMessage(gn, int(pn))
 
 class SetupDoneMessage(Message):
     id = 1027
@@ -588,12 +588,13 @@ class ChoosePlayerRequestMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1},{2}".format(self.id, self.game
-                                    ,",".join(self.choices))
+                                    ,",".join([cs.lower() for cs in self.choices]))
         
     @staticmethod
     def parse(text):
         data = text.split(",")
         game, choices = data[0], data[1:]
+        choices = [True if c.lower() == "true" else False for c in choices]
         return ChoosePlayerRequestMessage(game, choices)
 
 class RejectOfferMessage(Message):
@@ -788,7 +789,7 @@ class SetPlayedDevCardMessage(Message):
     def parse(text):
         g, p, c = text.split(",")
         cf = True if c.lower() == "true" else False
-        return SetPlayedDevCardMessage(g, p, cf)
+        return SetPlayedDevCardMessage(g, int(p), cf)
 
 # TODO: Lookup how cards are represented
 class PlayDevCardRequestMessage(Message):
@@ -897,7 +898,7 @@ class ChangeFaceMessage(Message):
     @staticmethod
     def parse(text):
         g, pn, fi = text.split(",")
-        return ChangeFaceMessage(g, pn, fi)
+        return ChangeFaceMessage(g, int(pn), fi)
 
 # TODO
 class RejectConnectionMessage(Message):
