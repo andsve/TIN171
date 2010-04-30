@@ -40,7 +40,7 @@ class Planner:
         self.scores["SHEEPH"] = 0
         self.scores["WHEATH"] = 0
         self.scores["OREH"] = 0
-        self.scores["3FOR1"] = 1
+        self.scores["3FOR1"] = 0.5
 
         self.output_prefix = "[DEBUG] planner.py ->"
 
@@ -55,7 +55,7 @@ class Planner:
 
             #if we already have a 3For1 harbor, lower the score for building a new one
             if self.game.boardLayout.nodes[n].harbor == 6:
-                self.scores["3FOR1"] == 0.1
+                self.scores["3FOR1"] = 0.1
 
             #if we have a certain harbour, raise the score for that resource
             elif self.game.boardLayout.nodes[n].harbor == 1:
@@ -186,9 +186,14 @@ class Planner:
             return int(b[1] - a[1])
       
         if len(self.nodeScore) > 0:
-                          
-            (bestNode, score) = sorted(self.nodeScore.items(), cmp=cmp_fun)[0]
-            self.debug_print(self.nodeScore.items())
+
+            tempList = sorted(self.nodeScore.items(), cmp=cmp_fun)
+            (bestNode, score) = tempList[0]
+            i = 1
+            for item in tempList:
+                (node,score) = item
+                self.debug_print("{0}. {1} ({2})".format(i,hex(node),score))
+                i += 1
 
         else:
 
@@ -364,7 +369,7 @@ class Planner:
                 if self.game.boardLayout.nodes[n1].harbor == 5:
                     tempScore += self.probabilites[self.game.boardLayout.tiles[t3].number]
 
-            tempScore += 2 - depth
+            tempScore += (2 - depth)
 
             if n1 not in self.nodeScore or tempScore > self.nodeScore[n1]:
                 self.nodeScore[n1] = tempScore
@@ -372,13 +377,13 @@ class Planner:
         #only look for settlement point maximum 2 roads away
         if depth < 2:
             r1 = self.game.boardLayout.nodes[n1].n1
-            if r1:
+            if r1 and self.game.boardLayout.roads[r1].owner == None:
                 self.calcNeighbourScore(r1, depth + 1)
             r2 = self.game.boardLayout.nodes[n1].n2
-            if r2:
+            if r2 and self.game.boardLayout.roads[r2].owner == None:
                 self.calcNeighbourScore(r2, depth + 1)
             r3 = self.game.boardLayout.nodes[n1].n3
-            if r3:
+            if r3 and self.game.boardLayout.roads[r3].owner == None:
                 self.calcNeighbourScore(r3, depth + 1)
 
         if self.game.buildableNodes.nodes[n2]:
@@ -483,7 +488,7 @@ class Planner:
                 if self.game.boardLayout.nodes[n2].harbor == 5:
                     tempScore += self.probabilities[self.game.boardLayout.tiles[t3].number]
 
-            tempScore += 2 - depth
+            tempScore += (2 - depth)
 
             if n2 not in self.nodeScore or tempScore > self.nodeScore[n2]:
                 self.nodeScore[n2] = tempScore
