@@ -840,17 +840,17 @@ class FirstPlayerMessage(Message):
 
 class SetTurnMessage(Message):
     id = 1055
-    def __init__(self, game, seatnum):
+    def __init__(self, game, playernum):
         self.game = game
-        self.seatnum = seatnum
+        self.playernum = playernum
                  
     def to_cmd(self):
-        return "{0}|{1},{2}".format(self.id, self.game, self.seatnum)
+        return "{0}|{1},{2}".format(self.id, self.game, self.playernum)
                  
     @staticmethod
     def parse(text):
-        game, seat = text.split(",")
-        return SetTurnMessage(game, int(seat))
+        game, playernum = text.split(",")
+        return SetTurnMessage(game, int(playernum))
 
 class RobotDismissMessage(Message):
     id = 1056

@@ -13,7 +13,7 @@ except:
 
 class Client:
     def __init__(self):
-        
+        self.turn_count = 0
         self.socket = None
         self.agent = None #= agent.Agent(self.game)
         
@@ -64,7 +64,11 @@ class Client:
                 if HAS_GRAPHWIZ:
                     graphdump.generate_graph(self.game)
             
-            if msg == "GamesMessage" and not gamejoined:
+            if msg == "TurnMessage":
+                print "\nRound #{0} - Player: {1} - (I am #{2})\n".format(self.turn_count, message.playernum, self.game.playernum)
+                self.turn_count += 1
+                
+            elif msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
                 gamejoined = True
                 print("Making new game...")
