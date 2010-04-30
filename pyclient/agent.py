@@ -41,7 +41,7 @@ class Agent:
         self.output_prefix = "[DEBUG] agent.py ->"
     
     def debug_print(self, msg):
-        cprint("{0} {1}".format(self.output_prefix, msg), 'green')
+        cprint("{0} {1}".format(self.output_prefix, msg), 'red')
 	
 	#
     # Auxiliary gameboard functions
@@ -68,7 +68,7 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,20,15,10,15,20]
+        resource_weight = [0,20,0,20,20,20]
         
         if (_round!=1):
             if (resource_list[_type]==0 and _type!=0):
@@ -92,9 +92,7 @@ class Agent:
                 # look up node in gameboard
                 node = self.game.boardLayout.nodes[k]
                 
-                w = self.calculate_new_settlement_weight(node,1)
-                self.debug_print("   Weight: {0}".format(w))
-                good_nodes.append({'id': k, 'w': w})
+                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node,1)})
                 
                 # print neighbour roads
                 #self.debug_print("It has neighbours: {0}, {1}, {2}".format(node.n1, node.n2, node.n3))
@@ -165,7 +163,8 @@ class Agent:
 
         # add / remove to resource list
         elif name == "PlayerElementMessage" and int(message.playernum) == int(self.playernum):
-            if message.action == "SET":                
+            
+            if message.action == "SET":
                 self.resources[message.element] = int(message.value)
 
             elif message.action == "GAIN":
@@ -174,6 +173,7 @@ class Agent:
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
 
+            self.debug_print("{0} {1} {2}".format(message.action,message.element,message.value))
             self.debug_print("Have total: {0}".format(self.resources))
 
             
@@ -284,11 +284,11 @@ class Agent:
             # Throw away cards here (message.numcards)
             numcards = int(message.numcards)
            
-            clay = min(self.resources["CLAY"], numcards)
-            ore = min(self.resources["ORE"], numcards - clay)
-            sheep = min(self.resources["SHEEP"], numcards - clay - ore)
-            wheat = min(self.resources["WHEAT"], numcards - clay - ore - sheep)
-            wood = min(self.resources["WOOD"], numcards - clay - ore - sheep - wheat)
+            ore = min(self.resources["ORE"], numcards)           
+            clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
+            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - ore)
+            wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
+            wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
             response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
 
             self.client.send_msg(response)
@@ -305,12 +305,12 @@ class Agent:
             # Throw away cards here (message.numcards)
 
             numcards = int(message.numcards)
-           
-            clay = min(self.resources["CLAY"], numcards)
-            ore = min(self.resources["ORE"], numcards - clay)
-            sheep = min(self.resources["SHEEP"], numcards - clay - ore)
-            wheat = min(self.resources["WHEAT"], numcards - clay - ore - sheep)
-            wood = min(self.resources["WOOD"], numcards - clay - ore - sheep - wheat)
+
+            ore = min(self.resources["ORE"], numcards)           
+            clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
+            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - ore)
+            wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
+            wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
             response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
 
             self.client.send_msg(response)
@@ -350,7 +350,7 @@ class Agent:
     # TODO: Intelligent stuff
     def make_play(self):
 
-        temp = Planner(self.game,self.resources,self.builtnodes,self.builtroads)
+        temp = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
         plan = temp.make_plan()
 
         if plan:

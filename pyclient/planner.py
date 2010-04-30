@@ -1,12 +1,15 @@
 from utils import cprint
+from messages import *
 
 class Planner:
-    def __init__(self, game, resources, nodes, roads):
+    def __init__(self, game, gamename, resources, nodes, roads, client):
 
         self.game = game
+        self.gamename = gamename
         self.nodes = nodes
         self.roads = roads
         self.resources = resources
+        self.client = client
 
         self.probabilities = {
             0: 0,
@@ -40,7 +43,7 @@ class Planner:
         self.scores["SHEEPH"] = 0
         self.scores["WHEATH"] = 0
         self.scores["OREH"] = 0
-        self.scores["3FOR1"] = 1
+        self.scores["3FOR1"] = 0.5
 
         self.output_prefix = "[DEBUG] planner.py ->"
 
@@ -55,7 +58,7 @@ class Planner:
 
             #if we already have a 3For1 harbor, lower the score for building a new one
             if self.game.boardLayout.nodes[n].harbor == 6:
-                self.scores["3FOR1"] == 0.1
+                self.scores["3FOR1"] = 0.1
 
             #if we have a certain harbour, raise the score for that resource
             elif self.game.boardLayout.nodes[n].harbor == 1:
@@ -176,19 +179,36 @@ class Planner:
         # determine score for possible settlement points close to any of our roads
         self.nodeScore = {}
         bestNode = None
-        
+
+        possibleRoads = []
+
         for r in self.roads:
+
+            possibleRoads.append(r)
+
+        for r in self.game.buildableRoads.roads:
+
+            if self.game.buildableRoads.roads[r] and r not in possibleRoads:
+
+                possibleRoads.append(r)
+        
+        for r in possibleRoads:
             depth = 0
 
             self.calcNeighbourScore(r, depth)
 
         def cmp_fun(a,b):
-            return int(b[1] - a[1])
+            return int(int(1000*b[1]) - int(1000*a[1]))
       
         if len(self.nodeScore) > 0:
-                          
-            (bestNode, score) = sorted(self.nodeScore.items(), cmp=cmp_fun)[0]
-            self.debug_print(self.nodeScore.items())
+
+            tempList = sorted(self.nodeScore.items(), cmp=cmp_fun)
+            (bestNode, score) = tempList[0]
+            i = 1
+            for item in tempList:
+                (node,score) = item
+                self.debug_print("{0}. {1} ({2})".format(i,hex(node),score))
+                i += 1
 
         else:
 
@@ -218,6 +238,9 @@ class Planner:
                 if self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (bestNode, 1)
+                elif self.canAffordWithTrade(1):
+                    self.debug_print("Can afford s after trade...")
+                    return (bestNode, 1)
                 else:
                     self.debug_print("Cannot afford settlement.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -235,6 +258,9 @@ class Planner:
                 tempList.append(r3)
             if self.canAffordRoad():
                 self.debug_print("Can build road, sending...")
+                return self.findClosestBuildableRoad(tempList)
+            elif self.canAffordWithTrade(0):
+                self.debug_print("Can afford road after trade...")
                 return self.findClosestBuildableRoad(tempList)
             else:
                 self.debug_print("Cannot afford road.")
@@ -364,22 +390,27 @@ class Planner:
                 if self.game.boardLayout.nodes[n1].harbor == 5:
                     tempScore += self.probabilites[self.game.boardLayout.tiles[t3].number]
 
-            tempScore += 2 - depth
+            tempScore += (2 - depth)
+            if depth == 0 and self.game.boardLayout.roads[road].owner == None:
+                tempScore -= 1
 
             if n1 not in self.nodeScore or tempScore > self.nodeScore[n1]:
                 self.nodeScore[n1] = tempScore
                 
         #only look for settlement point maximum 2 roads away
         if depth < 2:
+            d = 1
+            if depth == 0 and self.game.boardLayout.roads[road].owner == None:
+                d = 2
             r1 = self.game.boardLayout.nodes[n1].n1
-            if r1:
-                self.calcNeighbourScore(r1, depth + 1)
+            if r1 and self.game.boardLayout.roads[r1].owner == None:
+                self.calcNeighbourScore(r1, depth + d)
             r2 = self.game.boardLayout.nodes[n1].n2
-            if r2:
-                self.calcNeighbourScore(r2, depth + 1)
+            if r2 and self.game.boardLayout.roads[r2].owner == None:
+                self.calcNeighbourScore(r2, depth + d)
             r3 = self.game.boardLayout.nodes[n1].n3
-            if r3:
-                self.calcNeighbourScore(r3, depth + 1)
+            if r3 and self.game.boardLayout.roads[r3].owner == None:
+                self.calcNeighbourScore(r3, depth + d)
 
         if self.game.buildableNodes.nodes[n2]:
 
@@ -483,22 +514,27 @@ class Planner:
                 if self.game.boardLayout.nodes[n2].harbor == 5:
                     tempScore += self.probabilities[self.game.boardLayout.tiles[t3].number]
 
-            tempScore += 2 - depth
+            tempScore += (2 - depth)
+            if depth == 0 and self.game.boardLayout.roads[road].owner == None:
+                tempScore -= 1
 
             if n2 not in self.nodeScore or tempScore > self.nodeScore[n2]:
                 self.nodeScore[n2] = tempScore
 
         #only look for settlement point maximum 2 roads away
         if depth < 2:
+            d = 1
+            if depth == 0 and self.game.boardLayout.roads[road].owner == None:
+                d = 2
             r1 = self.game.boardLayout.nodes[n2].n1
             if r1 and self.game.boardLayout.roads[r1].owner == None:
-                self.calcNeighbourScore(r1, depth + 1)
+                self.calcNeighbourScore(r1, depth + d)
             r2 = self.game.boardLayout.nodes[n2].n2
             if r2 and self.game.boardLayout.roads[r2].owner == None:
-                self.calcNeighbourScore(r2, depth + 1)
+                self.calcNeighbourScore(r2, depth + d)
             r3 = self.game.boardLayout.nodes[n2].n3
             if r3 and self.game.boardLayout.roads[r3].owner == None:
-                self.calcNeighbourScore(r3, depth + 1)
+                self.calcNeighbourScore(r3, depth + d)
 
         return
 
@@ -537,3 +573,148 @@ class Planner:
                 return (r3, 0)
 
         return None
+
+    def canAffordWithTrade(self,_type):
+
+        wood_trade = 4
+        clay_trade = 4
+        wheat_trade = 4
+        sheep_trade = 4
+        ore_trade = 4
+        h3for1_trade = 4
+
+        for n in self.nodes:
+
+            if self.game.boardLayout.nodes[n].harbor == 6:
+                h3for1_trade = 3
+
+            elif self.game.boardLayout.nodes[n].harbor == 1:
+                clay_trade = 2
+                
+            elif self.game.boardLayout.nodes[n].harbor == 2:
+                ore_trade = 2
+
+            elif self.game.boardLayout.nodes[n].harbor == 3:
+                sheep_trade = 2
+
+            elif self.game.boardLayout.nodes[n].harbor == 4:
+                wheat_trade = 2
+                
+            elif self.game.boardLayout.nodes[n].harbor == 5:
+                wood_trade = 2
+
+        if _type == 1:
+
+            self.debug_print("Trying to trade for s...")
+            clay_needed = max(0, 1 - self.resources["CLAY"])
+            wood_needed = max(0, 1 - self.resources["WOOD"])
+            sheep_needed = max(0, 1 - self.resources["SHEEP"])
+            wheat_needed = max(0, 1 - self.resources["WHEAT"])
+            self.debug_print("Missing {0} clay, {1} wood, {2} sheep, {3} wheat.".format(clay_needed,wood_needed,sheep_needed,wheat_needed))
+
+            wood_gives = (max(0, self.resources["WOOD"] - 1)) / min(wood_trade, h3for1_trade)
+            clay_gives = (max(0, self.resources["CLAY"] - 1)) / min(clay_trade, h3for1_trade)
+            wheat_gives = (max(0, self.resources["WHEAT"] - 1)) / min(wheat_trade, h3for1_trade)
+            ore_gives = self.resources["ORE"] / min(ore_trade, h3for1_trade)
+            sheep_gives = (max(0, self.resources["SHEEP"] - 1)) / min(sheep_trade, h3for1_trade)
+
+            self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
+
+            if wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives >= clay_needed + wood_needed + sheep_needed + wheat_needed:
+                ore_to_trade = 0
+                wheat_to_trade = 0
+                sheep_to_trade = 0
+                wood_to_trade = 0
+                clay_to_trade = 0
+                left_to_trade = clay_needed + wood_needed + sheep_needed + wheat_needed
+
+                while left_to_trade > 0:
+                
+                    if ore_gives > 0 and left_to_trade > 0:
+                        ore_to_trade += ore_trade
+                        ore_gives -= 1
+                        left_to_trade -= 1
+
+                    if wheat_gives > 0 and left_to_trade > 0:
+                        wheat_to_trade += wheat_trade
+                        wheat_gives -= 1
+                        left_to_trade -= 1
+
+                    if sheep_gives > 0 and left_to_trade > 0:
+                        sheep_to_trade += sheep_trade
+                        sheep_gives -= 1
+                        left_to_trade -= 1
+
+                    if wood_gives > 0 and left_to_trade > 0:
+                        wood_to_trade += wood_trade
+                        wood_gives -= 1
+                        left_to_trade -= 1
+
+                    if clay_gives > 0 and left_to_trade > 0:
+                        clay_to_trade += clay_trade
+                        clay_gives -= 1
+                        left_to_trade -= 1
+
+                response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed])
+                self.client.send_msg(response)
+
+                return True 
+
+            return False
+
+        elif _type == 0:
+
+            self.debug_print("Trying to trade for road...")
+            clay_needed = max(0, 1 - self.resources["CLAY"])
+            wood_needed = max(0, 1 - self.resources["WOOD"])
+            self.debug_print("Missing {0} clay, {1} wood.".format(clay_needed,wood_needed))
+
+            wood_gives = (max(0, self.resources["WOOD"] - 1)) / min(wood_trade, h3for1_trade, 4)
+            clay_gives = (max(0, self.resources["CLAY"] - 1)) / min(clay_trade, h3for1_trade, 4)
+            wheat_gives = self.resources["WHEAT"] / min(wheat_trade, h3for1_trade, 4)
+            ore_gives = self.resources["ORE"] / min(ore_trade, h3for1_trade, 4)
+            sheep_gives = self.resources["SHEEP"] / min(sheep_trade, h3for1_trade, 4)
+
+            self.debug_print("Might get:{0},{1},{2},{3},{4},{5}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
+
+            if wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives >= clay_needed + wood_needed:
+                ore_to_trade = 0
+                wheat_to_trade = 0
+                sheep_to_trade = 0
+                wood_to_trade = 0
+                clay_to_trade = 0
+                left_to_trade = clay_needed + wood_needed
+
+                while left_to_trade > 0:
+                
+                    if ore_gives > 0 and left_to_trade > 0:
+                        ore_to_trade += ore_trade
+                        ore_gives -= 1
+                        left_to_trade -= 1
+
+                    if wheat_gives > 0 and left_to_trade > 0:
+                        wheat_to_trade += wheat_trade
+                        wheat_gives -= 1
+                        left_to_trade -= 1
+
+                    if sheep_gives > 0 and left_to_trade > 0:
+                        sheep_to_trade += sheep_trade
+                        sheep_gives -= 1
+                        left_to_trade -= 1
+
+                    if wood_gives > 0 and left_to_trade > 0:
+                        wood_to_trade += wood_trade
+                        wood_gives -= 1
+                        left_to_trade -= 1
+
+                    if clay_gives > 0 and left_to_trade > 0:
+                        clay_to_trade += clay_trade
+                        clay_gives -= 1
+                        left_to_trade -= 1
+
+                response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed])
+                self.client.send_msg(response)
+
+                return True                
+
+        return False
