@@ -1,5 +1,7 @@
 import yapgvb
 
+player_colors = ["red", "blue", "magenta", "green"]
+
 def generate_graph(game):
     graph = yapgvb.Graph("game_graph")
     
@@ -7,16 +9,22 @@ def generate_graph(game):
     for node in game.boardLayout.nodes:
         nodes[node] = graph.add_node(str(node), label=hex(node))
         
+        # Color non-harbours grey
+        if game.boardLayout.nodes[node].harbor == 0:
+            nodes[node].color = "grey"
+        
         # Is house
         if game.boardLayout.nodes[node].owner != None:
-            nodes[node].shape = yapgvb.shapes.house
-        
-        # Harbour
-#        if game.boardLayout.nodes[node].harbor != 0:
-#            nodes[node].shape = yapgvb.shapes.doublecircle
+        #    nodes[node].shape = yapgvb.shapes.house
+            
+            owner = game.boardLayout.nodes[node].owner
+            if owner:
+                nodes[node].color = player_colors[owner-1]
         
     for road in game.boardLayout.roads.values():
         edge = graph.add_edge(nodes[road.n1], nodes[road.n2])
+        if road.owner:
+            edge.color = player_colors[road.owner-1]
         
     for tile,node in game.boardLayout.tiles.items():
         n = graph.add_node(str(tile), label=hex(tile), fontsize=16)

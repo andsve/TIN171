@@ -190,7 +190,7 @@ class LeaveGameMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1}{2}{3}".format(self.id, self.nickname
-                                     ,self.hostname, self.channel)
+                                     ,self.hostname, self.game)
         
     @staticmethod
     def parse(text):
@@ -399,20 +399,30 @@ class PlayerElementMessage(Message):
         self.action = action
         self.element = element
         self.value = value
-        
+
     def to_cmd(self):
         for i, v in self.etype.items():
             if self.action == v:
                 ac = i
             elif self.element == v:
                 el = i
+
         return "{0}|{1},{2},{3},{4},{5}".format(self.id, self.game, self.playernum, ac, el, self.value)
         
     @staticmethod
     def parse(text):
+
+        from utils import cprint
+        output_prefix = "[DEBUG] messages.py ->"
+
+        def debug_print(msg):
+            cprint("{0} {1}".format(output_prefix, msg), 'green')
+        
         game, playernum, action, element, value = text.split(',')
         ac = PlayerElementMessage.etype[action]
         el = PlayerElementMessage.etype[element]
+        if int(playernum) == 1:
+            debug_print("Got {0} ({1})".format(element, el))
         return PlayerElementMessage(game, playernum
                                     , ac, el
                                     , int(value))
@@ -526,19 +536,19 @@ class DiscardMessage(Message):
     def __init__(self, game, clay, ore, sheep, wheat, wood, unknown):
         self.game = game
         self.clay = clay
+        self.ore = ore
         self.sheep = sheep
         self.wheat = wheat
         self.wood = wood
         self.unknown = unknown
     
     def to_cmd(self):
-        return "{0}|{1},{2},{3},{4},{5},{6}".format(self.game, self.clay, self.sheep
-                                                    ,self.wheat, self.wood, self.unknown)
+        return "{0}|{1},{2},{3},{4},{5},{6},{7}".format(self.id, self.game, self.clay, self.ore, self.sheep, self.wheat, self.wood, self.unknown)
     
     @staticmethod
     def parse(text):
-        g, c, s, wh, wo, u = map(int, text.split(","))
-        return DiscardMessage(g, c, s, wh, wo, u)
+        g, c, o, s, wh, wo, u = map(int, text.split(","))
+        return DiscardMessage(g, c, o, s, wh, wo, u)
         
 class MoveRobberMessage(Message):
     id = 1034
@@ -650,15 +660,31 @@ class BankTradeMessage(Message):
         got = map(int, data[6:11])
         return BankTradeMessage(game, give, get)
 
-# TODO: Implement if needed
+# TODO: FIX!
 class MakeOfferMessage(Message):
     id = 1041
-    def __init__(self):
-        pass
+    def __init__(self, game, fr, to, give, get):
+        self.game = game
+        self.fr = fr
+        self.to = to
+        self.give = give
+        self.get = get
+
+    def to_cmd(self):
+        return "{0}|{1},{2},{3},{4},{5}".format(self.id, self.game, self.fr
+                                                ,','.join(self.to)
+                                                ,','.join(self.give)
+                                                ,','.join(self.get))
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        game = data[0]
+        fr = data[1]
+        to = " "
+        give = " "
+        get = " "
+        return MakeOfferMessage(game,fr,to,give,get)
 
 class ClearTradeMsgMessage(Message):
     id = 1042
@@ -731,7 +757,7 @@ class DevCardMessage(Message):
     @staticmethod
     def parse(text):
         g, pn, ac, ct = text.split(",")
-        return DevCardmessage(g, int(pn), int(ac), int(ct))
+        return DevCardMessage(g, int(pn), int(ac), int(ct))
    
 class DevCardCountMessage(Message):
     id = 1047
