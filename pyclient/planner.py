@@ -676,7 +676,7 @@ class Planner:
             ore_gives = self.resources["ORE"] / min(ore_trade, h3for1_trade, 4)
             sheep_gives = self.resources["SHEEP"] / min(sheep_trade, h3for1_trade, 4)
 
-            self.debug_print("Might get:{0},{1},{2},{3},{4},{5}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
+            self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
 
             if wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives >= clay_needed + wood_needed:
                 ore_to_trade = 0

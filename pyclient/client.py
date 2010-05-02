@@ -15,7 +15,7 @@ except:
 import logging
 import logging.handlers
 
-class PwettyCollows(logging.Handler):
+class ConsolePrettyPrinter(logging.Handler):
     def __init__(self):
         logging.Handler.__init__(self)
     def emit(self, record):
@@ -33,7 +33,7 @@ class PwettyCollows(logging.Handler):
         utils.nt_set_color('grey')
         print record.message
 
-logconsole = PwettyCollows()
+logconsole = ConsolePrettyPrinter()
 logconsole.setLevel(logging.INFO)
 
 js_logger = logging.getLogger("")
@@ -157,4 +157,9 @@ def main(args):
 
 if __name__ == '__main__':
     import sys
+    import os
+    
+    if os.name == 'nt':
+        os.system("mode 100,40")
+    
     main(sys.argv[1:])

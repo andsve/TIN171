@@ -157,6 +157,12 @@ elementIdToType = {
             '101': 'GAIN',
             '102': 'LOSE' 
     }
+    
+pieceToType = {
+    0: "ROAD",
+    1: "SETTLEMENT",
+    2: "CITY"
+}
 
 # Node -> Road LUT
 roadLUT = {

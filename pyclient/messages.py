@@ -160,9 +160,11 @@ class PutPieceMessage(Message):
         
     @staticmethod
     def parse(text):
+        from jsettlers_utils import pieceToType
         data = text.split(",")
+        piece = pieceToType[int(data[2])]
         return PutPieceMessage(data[0], int(data[1])
-                              ,int(data[2]), int(data[3]))
+                              ,  piece, int(data[3]))
 
 class GameTextMsgMessage(Message):
     id = 1010

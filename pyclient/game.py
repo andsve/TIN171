@@ -133,8 +133,8 @@ class Game:
             self.boardLayout.robberpos = message.robberpos
                        
         elif id == "PutPieceMessage":
-            logging.info("PutPiece (#{0}): Type={0}, Coords = {1}".format(message.playernum, message.piecetype, message.coords))
-            if message.piecetype == 1:
+            logging.info("PutPiece (#{0}): Type = {1}, Coords = {2}".format(message.playernum, message.piecetype, message.coords))
+            if message.piecetype == "SETTLEMENT":
                 self.boardLayout.nodes[message.coords].owner = message.playernum
 
                 #May not build on built spots
@@ -183,7 +183,7 @@ class Game:
                         self.debug_print("Built s at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
                         self.buildableRoads.roads[r3] = True
        
-            elif message.piecetype == 0:
+            elif message.piecetype == "ROAD":
                 self.boardLayout.roads[message.coords].owner = message.playernum
 
                 #May not build on built roads
