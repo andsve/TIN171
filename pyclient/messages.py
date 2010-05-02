@@ -8,7 +8,7 @@ class Message:
     def values(self):
         vars = filter(lambda x: x not in [
                                 "__doc__", "__init__", "__module__"
-                              , "to_cmd", "parse", "values", "id"]
+                              , "to_cmd", "parse", "values", "id", "etype"]
                      , dir(self))
         return dict([(name, getattr(self, name)) for name in vars])
         
@@ -247,9 +247,9 @@ class BoardLayoutMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1},{2},{3},{4}".format(self.id, self.game
-                                            ,",".join(self.hexes)
-                                            ,",".join(self.numbers)
-                                            ,robberpos)
+                                            ,",".join(map(str, self.hexes))
+                                            ,",".join(map(str, self.numbers))
+                                            ,self.robberpos)
         
     @staticmethod
     def parse(text):
@@ -378,21 +378,6 @@ class JoinGameRequestMessage(Message):
 
 class PlayerElementMessage(Message):
     id = 1024
-    etype = {
-            '1': 'CLAY',
-            '2': 'ORE',
-            '3': 'SHEEP',
-            '4': 'WHEAT',
-            '5': 'WOOD',
-            '6': 'UNKNOWN',
-            '10': 'ROADS',
-            '11': 'SETTLEMENTS',
-            '12': 'CITIES',
-            '15': 'NUMKNIGHTS',
-            '100': 'SET',
-            '101': 'GAIN',
-            '102': 'LOSE' 
-    }
     def __init__(self, game, playernum, action, element, value):
         self.game = game
         self.playernum = playernum
@@ -401,7 +386,8 @@ class PlayerElementMessage(Message):
         self.value = value
 
     def to_cmd(self):
-        for i, v in self.etype.items():
+        from jsettlers_utils import elementIdToType
+        for i, v in elementIdToType.items():
             if self.action == v:
                 ac = i
             elif self.element == v:
@@ -411,18 +397,10 @@ class PlayerElementMessage(Message):
         
     @staticmethod
     def parse(text):
-
-        from utils import cprint
-        output_prefix = "[DEBUG] messages.py ->"
-
-        def debug_print(msg):
-            cprint("{0} {1}".format(output_prefix, msg), 'green')
-        
+        from jsettlers_utils import elementIdToType
         game, playernum, action, element, value = text.split(',')
-        ac = PlayerElementMessage.etype[action]
-        el = PlayerElementMessage.etype[element]
-        if int(playernum) == 1:
-            debug_print("Got {0} ({1})".format(element, el))
+        ac = elementIdToType[action]
+        el = elementIdToType[element]
         return PlayerElementMessage(game, playernum
                                     , ac, el
                                     , int(value))
@@ -649,8 +627,8 @@ class BankTradeMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1},{2},{3}".format(self.id, self.game
-                                        ,','.join(self.give)
-                                        ,','.join(self.get))
+                                        ,','.join(map(str, self.give))
+                                        ,','.join(map(str, self.get)))
         
     @staticmethod
     def parse(text):
@@ -672,9 +650,9 @@ class MakeOfferMessage(Message):
 
     def to_cmd(self):
         return "{0}|{1},{2},{3},{4},{5}".format(self.id, self.game, self.fr
-                                                ,','.join(self.to)
-                                                ,','.join(self.give)
-                                                ,','.join(self.get))
+                                                ,','.join(map(str, self.to))
+                                                ,','.join(map(str, self.give))
+                                                ,','.join(map(str, self.get)))
         
     @staticmethod
     def parse(text):

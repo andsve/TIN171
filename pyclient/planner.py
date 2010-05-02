@@ -48,7 +48,8 @@ class Planner:
         self.output_prefix = "[DEBUG] planner.py ->"
 
     def debug_print(self, msg):
-       cprint("{0} {1}".format(self.output_prefix, msg), 'yellow')
+        import logging
+        logging.info("{0} {1}".format(self.output_prefix, msg))
 
 
     def make_plan(self):

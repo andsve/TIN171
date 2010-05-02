@@ -1,23 +1,27 @@
 import os
 import ctypes
 
-def print_nt(text, color):
+def nt_set_color(color):
     COLORS = {
         "grey": 0x0007,
-        "red": 0x0004,
-        "green": 0x0002,
-        "yellow": 0x0006,
-        "blue": 0x0001,
-        "magenta": 0x0005,
-        "cyan": 0x0003
+        "red": 0x000C,
+        "green": 0x000A,
+        "yellow": 0x000E,
+        "blue": 0x0009,
+        "magenta": 0x000D,
+        "cyan": 0x0003,
+        "white": 0x000F
     }
     
     STD_OUTPUT_HANDLE = -11
     stdout_handle = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
     SetConsoleTextAttribute = ctypes.windll.kernel32.SetConsoleTextAttribute
     SetConsoleTextAttribute(stdout_handle, COLORS[color])
+
+def print_nt(text, color):
+    nt_set_color(color)
     print(text)
-    SetConsoleTextAttribute(stdout_handle, COLORS['grey'])
+    nt_set_color('grey')
     
 def print_posix(text, color):
     RESET = '\033[0m'
@@ -30,8 +34,9 @@ def print_posix(text, color):
             'blue',
             'magenta',
             'cyan',
+            'white'
             ],
-            range(30, 37)
+            range(30, 38)
             )
         )
         

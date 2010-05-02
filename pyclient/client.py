@@ -11,13 +11,41 @@ except:
     print "warning: python library 'yapgvb' and graphwiz is needed to dump images of the graph"
     
 
+# Set up logging
+import logging
+import logging.handlers
+
+class PwettyCollows(logging.Handler):
+    def __init__(self):
+        logging.Handler.__init__(self)
+    def emit(self, record):
+        import utils
+        prefix = '{0}:{1}:'.format(record.module, record.levelname)
+        padding = " " * (16 - len(prefix))
+        
+        color = {"client":'white'
+                , "game":'red'
+                , "agent":'green'
+                , "planner":'yellow'}.setdefault(record.module, 'grey')
+                
+        utils.nt_set_color(color)
+        print padding + prefix,
+        utils.nt_set_color('grey')
+        print record.message
+
+logconsole = PwettyCollows()
+logconsole.setLevel(logging.INFO)
+
+js_logger = logging.getLogger("")
+logging.basicConfig(filename="robot-output.log",filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+js_logger.addHandler(logconsole)
+
+
 class Client:
     def __init__(self):
-        
         self.socket = None
         self.agent = None #= agent.Agent(self.game)
-        
-        
+
     def connect(self, server):
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,7 +60,7 @@ class Client:
         return highByte + lowByte + raw_msg
           
     def send_msg(self, msg):
-        print("Sending: {0}".format(msg.to_cmd()))
+        logging.debug("Sending: {0}".format(msg.to_cmd()))
         self.client.send(self.make_message(msg.to_cmd()))
             
     def run(self):
@@ -53,7 +81,7 @@ class Client:
             
             parsed = self.game.parse_message(msg)
             if parsed == None:
-                print "Message not supported -- {0}".format(msg)
+                logging.debug("Message not supported -- {0}".format(msg))
                 continue
             else:
                 (msg, message) = parsed
@@ -67,39 +95,35 @@ class Client:
             if msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
                 gamejoined = True
-                print("Making new game...")
+                logging.info("Starting a new game...")
                 m = game.JoinGameMessage(nickname, "", socket.gethostname(), gamename)
                 self.send_msg(m)
 
             elif msg == "JoinGameMessage" and not satdown:
                 # We receive confirmation of a game created, available seats, etc
                 satdown = True
-                print("Sitting down...")
+                logging.info("Sitting down...")
                 m = game.SitDownMessage(gamename, nickname, 1, False)
                 self.send_msg(m)
                 
             elif msg == "ChangeFaceMessage" and not gamestarted:
                 # We receive starting values, 0 of each resource, game state and game face
                 gamestarted = True
-                print("Starting game...")
+                logging.info("Starting game...")
                 m = game.StartGameMessage(gamename)
                 self.send_msg(m)
-                
-            elif msg == "BoardLayoutMessage":
-                # We received gameboard information, pass it along to the Game-class.
-                print "Got game board"
             
             elif msg == "GameTextMsgMessage":
-                print "[GameTextMsgMessage] {0}".format(message.message)
+                logging.info("(Chat) {0}".format(message.message))
 
             else:
                 # Output only unhandeled messages to stdout
                 if message == None:
-                    print "{0} - NOT SUPPORTED".format(msg)
+                    logging.debug("{0} - NOT SUPPORTED".format(msg))
                     continue
                 
                 r = message.to_cmd()
-                print "[{0}] {1}".format(msg, "to_cmd() NOT IMPLEMENTED"if r == None else r)
+                logging.debug("[{0}] {1}".format(msg, "to_cmd() NOT IMPLEMENTED"if r == None else r))
 
             # Dispatch message to agent
             self.agent.handle_message(msg, message)
@@ -122,8 +146,7 @@ def main(args):
     if not client.connect(server):
         print("Could not connect to: {0}".format(server))
         exit(-1)
-
-    print("connected")
+        
     client.run()
 
 if __name__ == '__main__':

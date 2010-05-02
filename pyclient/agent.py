@@ -1,3 +1,4 @@
+import logging
 from messages import *
 from utils import cprint
 from planner import *
@@ -41,7 +42,8 @@ class Agent:
         self.output_prefix = "[DEBUG] agent.py ->"
     
     def debug_print(self, msg):
-        cprint("{0} {1}".format(self.output_prefix, msg), 'red')
+        logging.info(msg)
+        #cprint("{0} {1}".format(self.output_prefix, msg), 'red')
 	
 	#
     # Auxiliary gameboard functions
@@ -173,8 +175,11 @@ class Agent:
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
 
-            self.debug_print("{0} {1} {2}".format(message.action,message.element,message.value))
-            self.debug_print("Have total: {0}".format(self.resources))
+            items = self.resources.items()
+            self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
+            for res, val in items[1:]:
+                if res != "UNKNOWN":
+                    self.debug_print("                {0} = {1}".format(res, val))
 
             
         # Setup state 1    

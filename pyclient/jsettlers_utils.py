@@ -98,28 +98,6 @@ number_dict = {
 9: 12
 }
 
-
-# This does not work, hmz
-def road_to_nodes(r):
-    cs = hex(r)[2:]
-    if len(cs) == 1:
-        cs = '0' + cs[0]
-    c1, c2 = cs
-    c1e = int(c1, 16) % 2 == 0
-    c2e = int(c2, 16) % 2 == 0
-    
-    if c1e and c2e:
-        n1 = r + 0x01
-        n2 = r + 0x10 
-    elif not c1e and c2e:
-        n1 = r
-        n2 = r + 0x11
-    else:
-        n1 = r - 0x11
-        n2 = r
-
-    return [n1, n2]
-
 def nodes_around_hex(n):
     return [n + v for v in [0x01, 0x12, 0x21, 0x10, -0x01, -0x10]]
     
@@ -164,7 +142,21 @@ def node_to_roads(n):
            , r2 if 0x0 < r2 < 0xff else None
            , r3 if 0x0 < r3 < 0xff else None]
 
-
+elementIdToType = {
+            '1': 'CLAY',
+            '2': 'ORE',
+            '3': 'SHEEP',
+            '4': 'WHEAT',
+            '5': 'WOOD',
+            '6': 'UNKNOWN',
+            '10': 'ROADS',
+            '11': 'SETTLEMENTS',
+            '12': 'CITIES',
+            '15': 'NUMKNIGHTS',
+            '100': 'SET',
+            '101': 'GAIN',
+            '102': 'LOSE' 
+    }
 
 # Node -> Road LUT
 roadLUT = {

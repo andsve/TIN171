@@ -1,11 +1,9 @@
+import logging
 from messages import *
 from utils import cprint
 
 class Game:
     def __init__(self, nickname):
-        # Initiate gameboard when the message is recieved?
-        #self.gameboard = gameboard # save raw gameboad
-        #self.parse_board()         # parse gameboard and create internal representation
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
@@ -13,7 +11,8 @@ class Game:
         self.output_prefix = "[DEBUG] game.py ->"
 
     def debug_print(self, msg):
-       cprint("{0} {1}".format(self.output_prefix, msg), 'blue')        
+        logging.info(msg)
+       #cprint("{0} {1}".format(self.output_prefix, msg), 'blue')        
     
     def init_parser(self):
         """ Create a LUT for message id => message instance """
@@ -28,7 +27,7 @@ class Game:
         id, txt = msg[:4], msg[5:]
         
         if not id in self.messagetbl:
-            print "ERROR: can not parse '{0}'".format(msg)
+            logging.critical("Can not parse '{0}'".format(msg))
             return
         
         message_class, name = self.messagetbl[id]
@@ -58,6 +57,7 @@ class Game:
             
     def update_game(self, id, message):
         import sys
+        import jsettlers_utils as soc
         """ Update game state """
         
         # Look up how the data is exposed by matching the id with the
@@ -65,7 +65,6 @@ class Game:
         # (i.e.BankTradeMessage - must map Jsettlers resource id -> resource name)
 
         if id == "SitDownMessage" and message.nickname == self.nickname:
-
             self.playernum = message.playernum
         
         elif id == "BoardLayoutMessage":
@@ -73,8 +72,6 @@ class Game:
             self.boardLayout = BoardLayout()
             self.buildableNodes = BuildableNodes()
             self.buildableRoads = BuildableRoads()
-
-            import jsettlers_utils as soc
 
             # Add resources and numbers to all tiles
             self.boardLayout.tiles[0x37].resource = message.hexes[5]
@@ -136,7 +133,7 @@ class Game:
             self.boardLayout.robberpos = message.robberpos
                        
         elif id == "PutPieceMessage":
-            print "PutPieceMessage: {0}".format(message.values())
+            logging.info("PutPiece (#{0}): Type={0}, Coords = {1}".format(message.playernum, message.piecetype, message.coords))
             if message.piecetype == 1:
                 self.boardLayout.nodes[message.coords].owner = message.playernum
 
@@ -229,18 +226,18 @@ class Game:
                         self.buildableRoads.roads[r3] = True
                         self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
 
-                
+        elif id == "PlayerElementMessage" and message.playernum == self.playernum:
+            symb = {"SET":"=", "GAIN":"+=", "LOSE":"-="}[message.action]
+            logging.info("Resources recieved: {0} {1} {2}".format(message.element, symb, message.value))
+            
+        
         elif id == "MoveRobberMessage":
-            print "MoveRobberMessage: {0}".format(message.values())
+            logging.info("Robber moved: player={0}, coords={1}".format(message.playernum, hex(message.coords)))
             self.boardLayout.robberpos = message.coords
             
         elif id == "LastSettlementMessage":
-            print "LastSettlementMessage: {0}".format(message.values())
+            logging.info("Last settlement: player={0}, coords={1}".format(message.playernum, hex(message.coords)))
             
-    def parse_board(self):
-        for elt in self.gameboard:
-            print(elt)
-            #pass # TODO: parse the gameboard information sent by the server
 
 class RoadNode:
     def __init__(self, name, neighbour1, neighbour2):
