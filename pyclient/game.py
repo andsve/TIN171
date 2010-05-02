@@ -133,7 +133,7 @@ class Game:
             self.boardLayout.robberpos = message.robberpos
                        
         elif id == "PutPieceMessage":
-            logging.info("PutPiece (#{0}): Type = {1}, Coords = {2}".format(message.playernum, message.piecetype, message.coords))
+            logging.info("PutPiece (#{0}): Type = {1}, Coords = {2}".format(message.playernum, message.piecetype, hex(message.coords)))
             if message.piecetype == "SETTLEMENT":
                 self.boardLayout.nodes[message.coords].owner = message.playernum
 
