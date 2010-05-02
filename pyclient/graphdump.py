@@ -19,12 +19,12 @@ def generate_graph(game):
             
             owner = game.boardLayout.nodes[node].owner
             if owner:
-                nodes[node].color = player_colors[owner-1]
+                nodes[node].color = player_colors[owner]
         
     for road in game.boardLayout.roads.values():
         edge = graph.add_edge(nodes[road.n1], nodes[road.n2])
         if road.owner:
-            edge.color = player_colors[road.owner-1]
+            edge.color = player_colors[road.owner]
         
     for tile,node in game.boardLayout.tiles.items():
         n = graph.add_node(str(tile), label=hex(tile), fontsize=16)
