@@ -115,6 +115,7 @@ class Client:
             
             elif msg == "GameTextMsgMessage":
                 import pdb
+                import messages
                 logging.info("(Chat) {0}".format(message.message))
                 g = self.game
                 a = self.agent
