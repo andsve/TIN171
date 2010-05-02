@@ -45,6 +45,7 @@ class Client:
     def __init__(self):
         self.socket = None
         self.agent = None #= agent.Agent(self.game)
+        self.game = None
 
     def connect(self, server):
         try:
@@ -115,6 +116,11 @@ class Client:
             
             elif msg == "GameTextMsgMessage":
                 logging.info("(Chat) {0}".format(message.message))
+                if message.message.upper().startswith("*PDB*"):
+                    import pdb
+                    g = self.game
+                    a = self.agent
+                    pdb.set_trace()
 
             else:
                 # Output only unhandeled messages to stdout
