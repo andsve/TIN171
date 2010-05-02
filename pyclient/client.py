@@ -160,6 +160,7 @@ if __name__ == '__main__':
     import os
     
     if os.name == 'nt':
-        os.system("mode 100,40")
+        os.system("mode 100,60")
+        os.system("mode con: cols=100 lines=900")
     
     main(sys.argv[1:])
