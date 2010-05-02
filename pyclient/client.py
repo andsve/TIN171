@@ -12,6 +12,7 @@ except:
     
 
 # Set up logging
+import time
 import logging
 import logging.handlers
 
@@ -37,7 +38,7 @@ logconsole = ConsolePrettyPrinter()
 logconsole.setLevel(logging.INFO)
 
 js_logger = logging.getLogger("")
-logging.basicConfig(filename="robot-output.log",filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
 js_logger.addHandler(logconsole)
 
 
@@ -135,7 +136,7 @@ class Client:
                 self.send_msg(m)
                 g = self.game
                 a = self.agent
-                logger.info(a.resources)
+                logging.info(a.resources)
                 pdb.set_trace()
 
 
