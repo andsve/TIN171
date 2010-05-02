@@ -45,11 +45,9 @@ class Planner:
         self.scores["OREH"] = 0
         self.scores["3FOR1"] = 0.5
 
-        self.output_prefix = "[DEBUG] planner.py ->"
-
     def debug_print(self, msg):
         import logging
-        logging.info("{0} {1}".format(self.output_prefix, msg))
+        logging.info(msg)
 
 
     def make_plan(self):
@@ -235,7 +233,9 @@ class Planner:
             if r3:
                 self.debug_print("Road {0} belongs to: {1}".format(hex(r3), self.game.boardLayout.roads[r3].owner))
 
-            if (r1 and self.game.boardLayout.roads[r1].owner and int(self.game.boardLayout.roads[r1].owner) == int(self.game.playernum)) or (r2 and self.game.boardLayout.roads[r2].owner and int(self.game.boardLayout.roads[r2].owner) == int(self.game.playernum)) or (r3 and self.game.boardLayout.roads[r3].owner and int(self.game.boardLayout.roads[r3].owner) == int(self.game.playernum)):
+            if ((r1 and self.game.boardLayout.roads[r1].owner and int(self.game.boardLayout.roads[r1].owner) == int(self.game.playernum))
+                or (r2 and self.game.boardLayout.roads[r2].owner and int(self.game.boardLayout.roads[r2].owner) == int(self.game.playernum))
+                or (r3 and self.game.boardLayout.roads[r3].owner and int(self.game.boardLayout.roads[r3].owner) == int(self.game.playernum))):
                 if self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (bestNode, 1)

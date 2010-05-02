@@ -113,7 +113,7 @@ class LeaveMessage(Message):
         self.channel = channel
         
     def to_cmd(self):
-        return "{0}|{1}{2}{3}".format(self.id, self.nickname
+        return "{0}|{1},{2},{3}".format(self.id, self.nickname
                                      ,self.hostname, self.channel)
         
     @staticmethod
@@ -191,7 +191,7 @@ class LeaveGameMessage(Message):
         self.game = game
         
     def to_cmd(self):
-        return "{0}|{1}{2}{3}".format(self.id, self.nickname
+        return "{0}|{1},{2},{3}".format(self.id, self.nickname
                                      ,self.hostname, self.game)
         
     @staticmethod

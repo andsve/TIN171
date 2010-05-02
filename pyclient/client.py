@@ -87,7 +87,6 @@ class Client:
             else:
                 (msg, message) = parsed
             
-            
             # Graph dump on these messages
             if msg in ["PutPieceMessage", "BoardLayoutMessage"]:
                 if HAS_GRAPHWIZ:
@@ -104,7 +103,7 @@ class Client:
                 # We receive confirmation of a game created, available seats, etc
                 satdown = True
                 logging.info("Sitting down...")
-                m = game.SitDownMessage(gamename, nickname, 1, False)
+                m = game.SitDownMessage(gamename, nickname, 1, True)
                 self.send_msg(m)
                 
             elif msg == "ChangeFaceMessage" and not gamestarted:
@@ -115,12 +114,29 @@ class Client:
                 self.send_msg(m)
             
             elif msg == "GameTextMsgMessage":
+                import pdb
                 logging.info("(Chat) {0}".format(message.message))
+                g = self.game
+                a = self.agent
                 if message.message.upper().startswith("*PDB*"):
-                    import pdb
-                    g = self.game
-                    a = self.agent
                     pdb.set_trace()
+                    
+                elif "can't build" in message.message:
+                    logging.critical("BUG: Can not build, canceling all build requests!")
+                    logging.critical(a.resources)
+                    self.send_msg(CancelBuildRequestMessage(gamename, 0))
+                    self.send_msg(CancelBuildRequestMessage(gamename, 1))
+                    
+            elif msg == "RobotDismissMessage":
+                import pdb
+                import messages
+                m = messages.LeaveGameMessage(nickname, socket.gethostname(), gamename)
+                self.send_msg(m)
+                g = self.game
+                a = self.agent
+                logger.info(a.resources)
+                pdb.set_trace()
+
 
             else:
                 # Output only unhandeled messages to stdout
