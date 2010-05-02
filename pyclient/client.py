@@ -21,18 +21,28 @@ class ConsolePrettyPrinter(logging.Handler):
         logging.Handler.__init__(self)
     def emit(self, record):
         import utils
+        import os
         prefix = '{0}:{1}:'.format(record.module, record.levelname)
-        padding = " " * (16 - len(prefix))
+        padding = " " * (13 - len(prefix))
         
         color = {"client":'white'
                 , "game":'red'
                 , "agent":'green'
                 , "planner":'yellow'}.setdefault(record.module, 'grey')
-                
-        utils.nt_set_color(color)
+        
+        if os.name == 'nt':
+            utils.nt_set_color(color)
         print padding + prefix,
-        utils.nt_set_color('grey')
+        if os.name == 'nt':
+            utils.nt_set_color('grey')
+            
+        if os.name == 'nt' and record.levelname == "CRITICAL":
+            utils.nt_set_color('red')
         print record.message
+        if os.name == 'nt' and record.levelname == "CRITICAL":
+            utils.nt_set_color('grey')            
+            
+        
 
 logconsole = ConsolePrettyPrinter()
 logconsole.setLevel(logging.INFO)
@@ -126,8 +136,10 @@ class Client:
                 elif "can't build" in message.message:
                     logging.critical("BUG: Can not build, canceling all build requests!")
                     logging.critical(a.resources)
-                    self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
-                    self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
+                    # Blah blah
+                    #self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
+                    #self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
+                    #self.send_msg(messages.EndTurnMessage(gamename))
                     
             elif msg == "RobotDismissMessage":
                 import pdb
@@ -181,4 +193,10 @@ if __name__ == '__main__':
         os.system("mode 100,60")
         os.system("mode con: cols=100 lines=900")
     
-    main(sys.argv[1:])
+    try:
+        main(sys.argv[1:])
+    except:
+        import pdb
+        import traceback
+        traceback.print_exc(file=sys.stdout)
+        pdb.set_trace()

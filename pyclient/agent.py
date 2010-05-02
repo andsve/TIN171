@@ -174,14 +174,14 @@ class Agent:
 
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
-
+        
+        if name == "ResourceCountMessage":
             items = self.resources.items()
             self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
             for res, val in items[1:]:
                 if res != "UNKNOWN":
                     self.debug_print("                {0} = {1}".format(res, val))
-
-            
+        
         # Setup state 1    
         if self.gamestate == 1 and name == "TurnMessage" and message.playernum == self.playernum:
             new_settlement_place = self.find_buildable_node()
