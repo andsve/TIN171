@@ -239,9 +239,9 @@ class Planner:
                 if self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (bestNode, 1)
-                elif self.canAffordWithTrade(1):
-                    self.debug_print("Can afford s after trade...")
-                    return (bestNode, 1)
+#  BUG             elif self.canAffordWithTrade(1):
+#    BUG              self.debug_print("Can afford s after trade...")
+#      BUG            return (bestNode, 1)
                 else:
                     self.debug_print("Cannot afford settlement.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -260,9 +260,9 @@ class Planner:
             if self.canAffordRoad():
                 self.debug_print("Can build road, sending...")
                 return self.findClosestBuildableRoad(tempList)
-            elif self.canAffordWithTrade(0):
-                self.debug_print("Can afford road after trade...")
-                return self.findClosestBuildableRoad(tempList)
+#   BUG      elif self.canAffordWithTrade(0):
+#     BUG        self.debug_print("Can afford road after trade...")
+#       BUG.     return self.findClosestBuildableRoad(tempList)
             else:
                 self.debug_print("Cannot afford road.")
                 self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
