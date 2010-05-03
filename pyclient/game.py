@@ -3,12 +3,14 @@ from messages import *
 from utils import cprint
 
 class Game:
-    def __init__(self, nickname):
+    def __init__(self, nickname,resources):
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
 
         self.output_prefix = "[DEBUG] game.py ->"
+
+        self.resources = resources
 
     def debug_print(self, msg):
         logging.info(msg)
@@ -135,7 +137,12 @@ class Game:
         elif id == "PutPieceMessage":
             logging.info("PutPiece (#{0}): Type = {1}, Coords = {2}".format(message.playernum, message.piecetype, hex(message.coords)))
             if message.piecetype == "SETTLEMENT":
-                self.boardLayout.nodes[message.coords].owner = message.playernum
+                self.boardLayout.nodes[message.coords].owner = message.playernum 
+                self.boardLayout.nodes[message.coords].type = 1
+
+                # decrease the number of settlements we have left to build
+                if int(message.playernum) == int(self.playernum):
+                    self.resources["SETTLEMENTS"] -= 1
 
                 #May not build on built spots
                 self.buildableNodes.nodes[message.coords] = False
@@ -186,6 +193,10 @@ class Game:
             elif message.piecetype == "ROAD":
                 self.boardLayout.roads[message.coords].owner = message.playernum
 
+                # decrease the number of settlements we have left to build
+                if int(message.playernum) == int(self.playernum):
+                    self.resources["ROADS"] -= 1
+
                 #May not build on built roads
                 self.buildableRoads.roads[message.coords] = False
                 #May build on unoccupied roads adjacent to built roads
@@ -226,6 +237,15 @@ class Game:
                         self.buildableRoads.roads[r3] = True
                         self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
 
+                elif message.piecetype == "CITY":
+                    self.boardLayout.nodes[message.coords].type = 2
+
+                    # increase the number of settlements we have left to build
+                    # decrease the number of cities we have left to build
+                    if int(message.playernum) == int(self.playernum):
+                        self.resources["SETTLEMENTS"] += 1
+                        self.resources["CITIES"] -= 1
+
         elif id == "PlayerElementMessage" and message.playernum == self.playernum:
             symb = {"SET":"=", "GAIN":"+=", "LOSE":"-="}[message.action]
             logging.info("Resources recieved: {0} {1} {2}".format(message.element, symb, message.value))
@@ -260,7 +280,8 @@ class BoardNode:
         self.t3 = tile3
         #dynamic info
         self.harbor = 0
-        self.owner = None    
+        self.owner = None
+        self.type = None
 
 class TileNode:
     def __init__(self, name, neighbour1, neighbour2

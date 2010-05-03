@@ -20,7 +20,7 @@ dice_props[12] = 0.0278
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
 class Agent:
-    def __init__(self, nickname, gamename, game, client):
+    def __init__(self, nickname, gamename, game, client, resources):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
         self.gamename = gamename
@@ -31,13 +31,13 @@ class Agent:
         self.builtnodes = []
         self.builtroads = []
 
-        self.resources = {
-            "CLAY": 0,
-            "ORE": 0,
-            "SHEEP": 0,
-            "WHEAT": 0,
-            "WOOD": 0
-            }
+        self.resources = resources
+
+        self.resources["CLAY"] = 0
+        self.resources["ORE"] = 0
+        self.resources["SHEEP"] = 0
+        self.resources["WHEAT"] = 0
+        self.resources["WOOD"] = 0
         
         self.output_prefix = "[DEBUG] agent.py ->"
     

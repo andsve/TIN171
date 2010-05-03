@@ -58,6 +58,8 @@ class Client:
         self.agent = None #= agent.Agent(self.game)
         self.game = None
 
+        self.resources = {}
+
     def connect(self, server):
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -82,8 +84,8 @@ class Client:
         
         nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
-        self.game = game.Game(nickname)
-        self.agent = agent.Agent(nickname, gamename, self.game, self)
+        self.game = game.Game(nickname,self.resources)
+        self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources)
         
         while True:
             highByte = ord(self.client.recv(1))
@@ -140,9 +142,6 @@ class Client:
                     #self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
                     #self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
                     #self.send_msg(messages.EndTurnMessage(gamename))
-                    
-            elif msg == "GameStateMessage":
-                logging.info("Switching gamestate to: {0}".format(message.state_name))
                     
             elif msg == "RobotDismissMessage":
                 import pdb
