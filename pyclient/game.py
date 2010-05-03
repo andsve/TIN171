@@ -3,7 +3,7 @@ from messages import *
 from utils import cprint
 
 class Game:
-    def __init__(self, nickname,resources):
+    def __init__(self, nickname,resources,nodes,roads):
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
@@ -11,6 +11,9 @@ class Game:
         self.output_prefix = "[DEBUG] game.py ->"
 
         self.resources = resources
+        self.builtnodes = nodes
+        self.builtroads = roads
+        
 
     def debug_print(self, msg):
         logging.info(msg)
@@ -124,12 +127,15 @@ class Game:
                             
             for num, cs in zip(hex_indicies, harbour_coords):
                 board_tile = soc.board_indicators[message.hexes[num]]
+                harbor_type = 0
                 if board_tile in soc.harbour_to_resource:
                     harbor_type = soc.harbour_to_resource[board_tile]
-                else:
-                    harbor_type = 0
-                self.boardLayout.nodes[cs[0]].harbor = harbor_type
-                self.boardLayout.nodes[cs[1]].harbor = harbor_type
+        
+                self.boardLayout.nodes[cs[0]].harbor = int(harbor_type)
+                self.boardLayout.nodes[cs[1]].harbor = int(harbor_type)
+
+                self.debug_print("{0} has harbor {1}".format(hex(cs[0]),harbor_type))
+                self.debug_print("{0} has harbor {1}".format(hex(cs[1]),harbor_type))
 
             #set the robber location
             self.boardLayout.robberpos = message.robberpos
@@ -143,6 +149,7 @@ class Game:
                 # decrease the number of settlements we have left to build
                 if int(message.playernum) == int(self.playernum):
                     self.resources["SETTLEMENTS"] -= 1
+                    self.builtnodes.append(message.coords)
 
                 #May not build on built spots
                 self.buildableNodes.nodes[message.coords] = False
@@ -204,6 +211,7 @@ class Game:
                 if int(message.playernum) == int(self.playernum):
                     n1 = self.boardLayout.roads[message.coords].n1
                     n2 = self.boardLayout.roads[message.coords].n2
+                    self.builtroads.append(message.coords)
 
                     r1 = self.boardLayout.nodes[n1].n1
                     r2 = self.boardLayout.nodes[n1].n2

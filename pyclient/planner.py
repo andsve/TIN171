@@ -874,6 +874,8 @@ class Planner:
 
                 return True
 
+            return False
+
         elif _type == 2:
 
             self.debug_print("Trying to trade for city...")
@@ -889,7 +891,9 @@ class Planner:
 
             self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
 
-            if wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives >= wheat_needed + ore_needed:
+            self.debug_print("{0} >= {1}".format(wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives,wheat_needed + ore_needed))
+
+            if (wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives) >= (wheat_needed + ore_needed):
                 ore_to_trade = 0
                 wheat_to_trade = 0
                 sheep_to_trade = 0

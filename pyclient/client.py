@@ -59,6 +59,8 @@ class Client:
         self.game = None
 
         self.resources = {}
+        self.builtnodes = []
+        self.builtroads = []
 
     def connect(self, server):
         try:
@@ -84,8 +86,8 @@ class Client:
         
         nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
-        self.game = game.Game(nickname,self.resources)
-        self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources)
+        self.game = game.Game(nickname,self.resources,self.builtnodes,self.builtroads)
+        self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
         
         while True:
             highByte = ord(self.client.recv(1))

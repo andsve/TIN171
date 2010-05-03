@@ -20,7 +20,7 @@ dice_props[12] = 0.0278
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
 class Agent:
-    def __init__(self, nickname, gamename, game, client, resources):
+    def __init__(self, nickname, gamename, game, client, resources,nodes,roads):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
         self.gamename = gamename
@@ -28,8 +28,8 @@ class Agent:
         self.nickname = nickname
         self.playernum = None
 
-        self.builtnodes = []
-        self.builtroads = []
+        self.builtnodes = nodes
+        self.builtroads = roads
 
         self.resources = resources
 
@@ -70,7 +70,7 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,20,0,20,20,20]
+        resource_weight = [0,20,20,20,20,20]
         
         if (_round!=1):
             if (resource_list[_type]==0 and _type!=0):
@@ -204,7 +204,6 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 1 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtnodes.append(message.coords)
             self.gamestate = 2
             
             
@@ -220,7 +219,6 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 2 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtroads.append(message.coords)
             self.gamestate = 3
 
             # If we were the last one to play, we won't get a TurnMessage, goto state 4
@@ -253,7 +251,6 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 4 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtnodes.append(message.coords)
             self.gamestate = 5
 
         # Setup state 5    
@@ -269,7 +266,6 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 5 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtroads.append(message.coords)
             self.gamestate = 6
 
             # We were not first to play, we must wait for a TurnMessage before requested to roll the dices
