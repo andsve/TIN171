@@ -1,5 +1,6 @@
 from utils import cprint
 from messages import *
+import copy
 
 class Planner:
     def __init__(self, game, gamename, resources, nodes, roads, client):
@@ -32,184 +33,67 @@ class Planner:
         #resources["WHEAT"]
         #resources["WOOD"]
 
-        self.scores = {}
-        self.scores["WOOD"] = 1
-        self.scores["CLAY"] = 1
-        self.scores["SHEEP"] = 1
-        self.scores["WHEAT"] = 1
-        self.scores["ORE"] = 1
-        self.scores["WOODH"] = 0
-        self.scores["CLAYH"] = 0
-        self.scores["SHEEPH"] = 0
-        self.scores["WHEATH"] = 0
-        self.scores["OREH"] = 0
-        self.scores["3FOR1"] = 0.5
-
-    def debug_print(self, msg):
-        import logging
-        logging.info(msg)
-
+        self.default_scores = {
+             "WOOD":   1
+            ,"CLAY":   1
+            ,"SHEEP":  1
+            ,"WHEAT":  1
+            ,"ORE":    1
+            ,"WOODH":  0
+            ,"CLAYH":  0
+            ,"SHEEPH": 0
+            ,"WHEATH": 0
+            ,"OREH":   0
+            ,"3FOR1":  0.5
+        }
+        
     def make_plan(self):
-
-        self.scores["WOOD"] = 1
-        self.scores["CLAY"] = 1
-        self.scores["SHEEP"] = 1
-        self.scores["WHEAT"] = 1
-        self.scores["ORE"] = 1
-        self.scores["WOODH"] = 0
-        self.scores["CLAYH"] = 0
-        self.scores["SHEEPH"] = 0
-        self.scores["WHEATH"] = 0
-        self.scores["OREH"] = 0
-        self.scores["3FOR1"] = 0.5        
-
+        from jsettlers_utils import  elementIdToType, pieceToType
+        self.scores = copy.deepcopy(self.default_scores)
+        self.nodeScore = {} # move
+        
         # Determine what resources we are gaining
         for n in self.nodes:
-
-            #if we already have a 3For1 harbor, lower the score for building a new one
-            if self.game.boardLayout.nodes[n].harbor == 6:
-                self.scores["3FOR1"] = 0.1
-
-            #if we have a certain harbour, raise the score for that resource
-            elif self.game.boardLayout.nodes[n].harbor == 1:
-                self.scores["CLAY"] += 1
+            node = self.game.boardLayout.nodes[n]
+            type = node.harbor
+            type_name = elementIdToType.setdefault(str(type), "NO HARBOUR")
+            
+            # If we have a certain harbour, raise the score for that resource
+            if 0 < type < 6:
+                self.scores[type_name] += 1
                 
-            elif self.game.boardLayout.nodes[n].harbor == 2:
-                self.scores["ORE"] += 1
-
-            elif self.game.boardLayout.nodes[n].harbor == 3:
-                self.scores["SHEEP"] += 1
-
-            elif self.game.boardLayout.nodes[n].harbor == 4:
-                self.scores["WHEAT"] += 1
+            # If we have a 3 for 1 harbour: lower the score for building a new one
+            elif type == 6:
+                self.scores[type_name] = 0.1
                 
-            elif self.game.boardLayout.nodes[n].harbor == 5:
-                self.scores["WOOD"] += 1
-           
-            t1 = self.game.boardLayout.nodes[n].t1
-            t2 = self.game.boardLayout.nodes[n].t2
-            t3 = self.game.boardLayout.nodes[n].t3
+            tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
             city_bonus = 1
-
-            if self.game.boardLayout.nodes[n].type == 2:
+            if node.type == 2:
                 city_bonus = 2
-
+            
             #if we have a settlement where we get a resource, lower the score for that resource
             #if we have a settlement where we get a resource, raise the score for that harbor
-            if t1:
-                if self.game.boardLayout.tiles[t1].resource == 1:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t1].number]
-                    if temp:
-                        self.scores["CLAY"] -= temp * city_bonus
-                        self.scores["CLAYH"] += temp * city_bonus
+            for tile in tiles:
+                if 0 < tile.resource < 6:
+                    res_name  = elementIdToType[str(tile.resource)]
+                    score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
+                    self.scores[res_name] -= score_mod
+                    self.scores[res_name + "H"] += score_mod
+           
+        self.node_scores = {}
+        possible_roads = [] # use a set?
 
-                if self.game.boardLayout.tiles[t1].resource == 2:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t1].number]
-                    if temp:
-                        self.scores["ORE"] -= temp * city_bonus
-                        self.scores["OREH"] += temp * city_bonus
+        possible_roads += self.roads
 
-                elif self.game.boardLayout.tiles[t1].resource == 3:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t1].number]
-                    if temp:
-                        self.scores["SHEEP"] -= temp * city_bonus
-                        self.scores["SHEEPH"] += temp * city_bonus
+        buildable_roads = self.game.buildableRoads.roads
+        for r in buildable_roads:
+            if buildable_roads[r] and r not in possible_roads:
+                possible_roads.append(r)
 
-                elif self.game.boardLayout.tiles[t1].resource == 4:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t1].number]
-                    if temp:
-                        self.scores["WHEAT"] -= temp * city_bonus
-                        self.scores["WHEATH"] += temp * city_bonus
-                        
-                elif self.game.boardLayout.tiles[t1].resource == 5:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t1].number]
-                    if temp:
-                        self.scores["WOOD"] -= temp * city_bonus
-                        self.scores["WOODH"] += temp * city_bonus
+        for r in possible_roads:
+            self.calcNeighbourScore(r, 0)
 
-            if t2:
-                if self.game.boardLayout.tiles[t2].resource == 1:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t2].number]
-                    if temp:
-                        self.scores["CLAY"] -= temp * city_bonus
-                        self.scores["CLAYH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t2].resource == 2:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t2].number]
-                    if temp:
-                        self.scores["ORE"] -= temp * city_bonus
-                        self.scores["OREH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t2].resource == 3:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t2].number]
-                    if temp:
-                        self.scores["SHEEP"] -= temp * city_bonus
-                        self.scores["SHEEPH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t2].resource == 4:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t2].number]
-                    if temp:
-                        self.scores["WHEAT"] -= temp * city_bonus
-                        self.scores["WHEATH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t2].resource == 5:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t2].number]
-                    if temp:
-                        self.scores["WOOD"] -= temp * city_bonus
-                        self.scores["WOODH"] += temp * city_bonus
-                    
-            if t3:
-                if self.game.boardLayout.tiles[t3].resource == 1:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t3].number]
-                    if temp:
-                        self.scores["CLAY"] -= temp * city_bonus
-                        self.scores["CLAYH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t3].resource == 2:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t3].number]
-                    if temp:
-                        self.scores["ORE"] -= temp * city_bonus
-                        self.scores["OREH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t3].resource == 3:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t3].number]
-                    if temp:
-                        self.scores["SHEEP"] -= temp * city_bonus
-                        self.scores["SHEEPH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t3].resource == 4:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t3].number]
-                    if temp:
-                        self.scores["WHEAT"] -= temp * city_bonus
-                        self.scores["WHEATH"] += temp * city_bonus
-
-                elif self.game.boardLayout.tiles[t3].resource == 5:
-                    temp = self.probabilities[self.game.boardLayout.tiles[t3].number]
-                    if temp:
-                        self.scores["WOOD"] -= temp * city_bonus
-                        self.scores["WOODH"] += temp * city_bonus
-
-        # determine score for possible settlement points close to any of our roads
-        self.nodeScore = {}
-        bestNode = None
-
-        possibleRoads = []
-
-        for r in self.roads:
-
-            possibleRoads.append(r)
-
-        for r in self.game.buildableRoads.roads:
-
-            if self.game.buildableRoads.roads[r] and r not in possibleRoads:
-
-                possibleRoads.append(r)
-        
-        for r in possibleRoads:
-            depth = 0
-
-            self.calcNeighbourScore(r, depth)
       
         if len(self.nodeScore) > 0:
 
@@ -416,7 +300,12 @@ class Planner:
                         self.debug_print("Ore: {0}".format(self.resources["ORE"]))
 
         return None
-            
+
+
+    def debug_print(self, msg):
+        import logging
+        logging.info(msg)
+
     def canAffordRoad(self):
 
         return self.resources["WOOD"] >= 1 and self.resources["CLAY"] >= 1
