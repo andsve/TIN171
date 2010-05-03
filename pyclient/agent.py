@@ -260,8 +260,9 @@ class Agent:
         elif self.gamestate == 5 and name == "GameStateMessage" and int(message.state) == 11:          
         
             #arbitarly build a second road
+            #must be connected to second settlement
 	    for r in self.game.buildableRoads.roads:
-                if self.game.buildableRoads.roads[r]:
+                if self.game.buildableRoads.roads[r] and (self.game.boardLayout.roads[r].n1 == self.builtnodes[1] or self.game.boardLayout.roads[r].n2 == self.builtnodes[1]):
                     response = PutPieceMessage(self.gamename, self.playernum, 0, r)
                     self.client.send_msg(response)
                     break
@@ -338,7 +339,7 @@ class Agent:
             i = 0
             self.debug_print("Steal list: {0}".format(message.choices))
             for c in message.choices:
-                if c:
+                if c == 'true':
                     response = ChoosePlayerMessage(self.gamename, i)
                     self.client.send_msg(response)
                     break
@@ -361,6 +362,7 @@ class Agent:
         if plan:
             (build_spot, build_type) = plan
 
+            #DEBUGGING                
             response = BuildRequestMessage(self.gamename,build_type)
             self.client.send_msg(response)
 

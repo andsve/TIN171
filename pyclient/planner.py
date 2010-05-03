@@ -52,6 +52,18 @@ class Planner:
 
     def make_plan(self):
 
+        self.scores["WOOD"] = 1
+        self.scores["CLAY"] = 1
+        self.scores["SHEEP"] = 1
+        self.scores["WHEAT"] = 1
+        self.scores["ORE"] = 1
+        self.scores["WOODH"] = 0
+        self.scores["CLAYH"] = 0
+        self.scores["SHEEPH"] = 0
+        self.scores["WHEATH"] = 0
+        self.scores["OREH"] = 0
+        self.scores["3FOR1"] = 0.5        
+
         # Determine what resources we are gaining
         for n in self.nodes:
 
@@ -239,9 +251,9 @@ class Planner:
                 if self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (bestNode, 1)
-#  BUG             elif self.canAffordWithTrade(1):
-#    BUG              self.debug_print("Can afford s after trade...")
-#      BUG            return (bestNode, 1)
+                elif self.canAffordWithTrade(1):
+                    self.debug_print("Can afford s after trade...")
+                    return (bestNode, 1)
                 else:
                     self.debug_print("Cannot afford settlement.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -260,9 +272,9 @@ class Planner:
             if self.canAffordRoad():
                 self.debug_print("Can build road, sending...")
                 return self.findClosestBuildableRoad(tempList)
-#   BUG      elif self.canAffordWithTrade(0):
-#     BUG        self.debug_print("Can afford road after trade...")
-#       BUG.     return self.findClosestBuildableRoad(tempList)
+            elif self.canAffordWithTrade(0):
+                self.debug_print("Can afford road after trade...")
+                return self.findClosestBuildableRoad(tempList)
             else:
                 self.debug_print("Cannot afford road.")
                 self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -544,6 +556,11 @@ class Planner:
 
         for r in parents:
 
+            if self.game.buildableRoads.roads[r]:
+                return(r,0)
+            
+        for r in parents:
+
             n1 = self.game.boardLayout.roads[r].n1
             n2 = self.game.boardLayout.roads[r].n2
 
@@ -588,21 +605,27 @@ class Planner:
 
             if self.game.boardLayout.nodes[n].harbor == 6:
                 h3for1_trade = 3
+                self.debug_print("Found 3for1 harbor")
 
             elif self.game.boardLayout.nodes[n].harbor == 1:
                 clay_trade = 2
+                self.debug_print("Found clay harbor")            
                 
             elif self.game.boardLayout.nodes[n].harbor == 2:
                 ore_trade = 2
+                self.debug_print("Found ore harbor")
 
             elif self.game.boardLayout.nodes[n].harbor == 3:
                 sheep_trade = 2
+                self.debug_print("Found sheep harbor")
 
             elif self.game.boardLayout.nodes[n].harbor == 4:
                 wheat_trade = 2
+                self.debug_print("Found wheat harbor")
                 
             elif self.game.boardLayout.nodes[n].harbor == 5:
                 wood_trade = 2
+                self.debug_print("Found wood harbor")
 
         if _type == 1:
 
@@ -621,7 +644,7 @@ class Planner:
 
             self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
 
-            if wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives >= clay_needed + wood_needed + sheep_needed + wheat_needed:
+            if (wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives) >= (clay_needed + wood_needed + sheep_needed + wheat_needed):
                 ore_to_trade = 0
                 wheat_to_trade = 0
                 sheep_to_trade = 0
