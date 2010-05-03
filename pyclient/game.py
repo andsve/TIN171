@@ -245,14 +245,14 @@ class Game:
                         self.buildableRoads.roads[r3] = True
                         self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
 
-                elif message.piecetype == "CITY":
-                    self.boardLayout.nodes[message.coords].type = 2
-
-                    # increase the number of settlements we have left to build
-                    # decrease the number of cities we have left to build
-                    if int(message.playernum) == int(self.playernum):
-                        self.resources["SETTLEMENTS"] += 1
-                        self.resources["CITIES"] -= 1
+            elif message.piecetype == "CITY":
+                self.boardLayout.nodes[message.coords].type = 2
+                
+                # increase the number of settlements we have left to build
+                # decrease the number of cities we have left to build
+                if int(message.playernum) == int(self.playernum):
+                    self.resources["SETTLEMENTS"] += 1
+                    self.resources["CITIES"] -= 1
 
         elif id == "PlayerElementMessage" and message.playernum == self.playernum:
             symb = {"SET":"=", "GAIN":"+=", "LOSE":"-="}[message.action]

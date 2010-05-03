@@ -290,7 +290,7 @@ class Planner:
             self.cityScore = {}
 
             for n in self.nodes:
-
+                
                 if self.game.boardLayout.nodes[n].type == 1:
 
                     if self.game.boardLayout.nodes[n].harbor == 1:
@@ -400,8 +400,8 @@ class Planner:
                 def cmp_fun(a,b):
                     return int(int(1000*b[1]) - int(1000*a[1]))
 
-                tempList = sorted(self.cityScore.items(), cmp=cmp_fun)
-                (bestNode, score) = tempList[0]
+                cityList = sorted(self.cityScore.items(), cmp=cmp_fun)
+                (bestNode, score) = cityList[0]
 
                 if bestNode:
                     if self.canAffordCity():
@@ -760,6 +760,12 @@ class Planner:
                 wood_trade = 2
                 self.debug_print("Found wood harbor")
 
+        wood_trade = min(wood_trade,h3for1_trade)
+        clay_trade = min(clay_trade,h3for1_trade)
+        wheat_trade = min(wheat_trade,h3for1_trade)
+        sheep_trade = min(sheep_trade,h3for1_trade)
+        ore_trade = min(ore_trade,h3for1_trade)
+
         if _type == 1:
 
             self.debug_print("Trying to trade for s...")
@@ -890,8 +896,6 @@ class Planner:
             sheep_gives = self.resources["SHEEP"] / min(sheep_trade, h3for1_trade, 4)
 
             self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
-
-            self.debug_print("{0} >= {1}".format(wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives,wheat_needed + ore_needed))
 
             if (wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives) >= (wheat_needed + ore_needed):
                 ore_to_trade = 0
