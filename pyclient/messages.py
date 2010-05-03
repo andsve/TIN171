@@ -410,8 +410,10 @@ class PlayerElementMessage(Message):
 class GameStateMessage(Message):
     id = 1025
     def __init__(self, game, state):
+        from jsettlers_utils import stateIdToName
         self.game = game
         self.state = state
+        self.state_name = stateIdToName[state]
         
     def to_cmd(self):
         return "{0}|{1},{2}".format(self.id, self.game, self.state)
