@@ -100,8 +100,13 @@ class Agent:
                 if(r1!=r2 and r2!=r3):
                     if(t1.resource!=t3.resource):
                         weight = weight + 5
-            
-        
+        if (rl!=0):
+            if(resource_list[r1]==0):
+                weight = weight + 2
+            if(resource_list[r2]==0):
+                weight = weight + 2
+            if(resource_list[r3]==0):
+                weight = weight + 2
         return weight
 
     def resource_weight(self, _type):
@@ -110,12 +115,9 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,30,15,20,20,30]
+        resource_weight = [0,30,20,20,20,30]
+        return resource_weight[_type]
 
-        if (resource_list[_type]==0 and _type!=0):
-            return resource_weight[_type]
-        else:
-            return resource_weight[_type] * 0.4
         
     
     
@@ -184,6 +186,8 @@ class Agent:
     # incomming messages from the message handler
     #  (i.e. alarms/signals/events from the game the agent needs to act on)
     def handle_message(self, name, message):
+    
+        self.debug_print("Victory Points: {0}, {1}, {2}, {3}".format(self.game.vp[0], self.game.vp[1], self.game.vp[2], self.game.vp[3]))
         
         if (name == "SitDownMessage" and message.nickname == self.nickname):
             # This is us sitting down, store the playernum!
@@ -212,6 +216,7 @@ class Agent:
 
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
+        
         
         if name == "ResourceCountMessage":
             items = self.resources.items()
