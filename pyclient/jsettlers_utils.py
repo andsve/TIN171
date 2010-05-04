@@ -142,6 +142,28 @@ def node_to_roads(n):
            , r2 if 0x0 < r2 < 0xff else None
            , r3 if 0x0 < r3 < 0xff else None]
 
+stateIdToName = {
+     '0':  'NEW'     # Brand new game
+    ,'1':  'READY'   # Ready to start playing
+    ,'5':  'START1A' # Players place 1st stlmt
+    ,'6':  'START1B' # Players place 1st road
+    ,'10': 'START2A' # Players place 2nd stlmt
+    ,'11': 'START2B' # Players place 2nd road
+    ,'15': 'PLAY'   # Play cotinues normally
+    ,'20': 'PLAY1'  # Done rolling
+    ,'30': 'PLACING_ROAD'
+    ,'31': 'PLACING_SETTLEMENT'
+    ,'32': 'PLACING_CITY'
+    ,'33': 'PLACING_ROBBER'
+    ,'40': 'PLACING_FREE_ROAD1'    # Player is placing first road
+    ,'41': 'PLACING_FREE_ROAD2'    # Player is placing second road
+    ,'50': 'WAITING_FOR_DISCARDS'  # Waiting for players to discard
+    ,'51': 'WAITING_FOR_CHOICE'    # Waiting for player to choose a player
+    ,'52': 'WAITING_FOR_DISCOVERY' # Waiting for player to choose 2 resources
+    ,'53': 'WAITING_FOR_MONOPOLY'  # Waiting for player to choose a resource
+    ,'1000': 'OVER' # The game is over
+   }
+
 elementIdToType = {
             '1': 'CLAY',
             '2': 'ORE',

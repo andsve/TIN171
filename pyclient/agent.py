@@ -20,7 +20,7 @@ dice_props[12] = 0.0278
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
 class Agent:
-    def __init__(self, nickname, gamename, game, client):
+    def __init__(self, nickname, gamename, game, client, resources,nodes,roads):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
         self.gamename = gamename
@@ -28,16 +28,16 @@ class Agent:
         self.nickname = nickname
         self.playernum = None
 
-        self.builtnodes = []
-        self.builtroads = []
+        self.builtnodes = nodes
+        self.builtroads = roads
 
-        self.resources = {
-            "CLAY": 0,
-            "ORE": 0,
-            "SHEEP": 0,
-            "WHEAT": 0,
-            "WOOD": 0
-            }
+        self.resources = resources
+
+        self.resources["CLAY"] = 0
+        self.resources["ORE"] = 0
+        self.resources["SHEEP"] = 0
+        self.resources["WHEAT"] = 0
+        self.resources["WOOD"] = 0
         
         self.output_prefix = "[DEBUG] agent.py ->"
     
@@ -49,7 +49,7 @@ class Agent:
     # Auxiliary gameboard functions
     #
     
-    def calculate_new_settlement_weight(self, node, _round): # add the round number as parameter?
+    def calculate_new_settlement_weight(self, node): # add the round number as parameter?
         weight = 0
         w1=0
         w2=0
@@ -57,11 +57,11 @@ class Agent:
         
         if node.t1:
             t1 = self.game.boardLayout.tiles[node.t1]
-            w1 = self.resource_weight(t1.resource,_round) * dice_props[t1.number]
+            w1 = self.resource_weight(t1.resource) * dice_props[t1.number]
             weight = weight + w1
         if node.t2:
             t2 = self.game.boardLayout.tiles[node.t2]
-            w2 = self.resource_weight(t2.resource,_round) * dice_props[t2.number]
+            w2 = self.resource_weight(t2.resource) * dice_props[t2.number]
             if (t2.resource == t1.resource):
                 if(w2>w1):
                     w1 = w1*0.8
@@ -70,7 +70,7 @@ class Agent:
             weight = weight + w2    
         if node.t3:
             t3 = self.game.boardLayout.tiles[node.t3]
-            w3 = self.resource_weight(t3.resource,_round) * dice_props[t3.number]
+            w3 = self.resource_weight(t3.resource) * dice_props[t3.number]
             if (t3.resource == t1.resource):
                 if(w3>w1):
                     w1 = w1*0.8
@@ -85,20 +85,18 @@ class Agent:
         
         return weight
 
-    def resource_weight(self, _type, _round):
+    def resource_weight(self, _type):
         #1 = Clay
         #2 = Ore
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,30,0,15,15,30]
-        
-        
-        if (_round!=1):
-            if (resource_list[_type]==0 and _type!=0):
-                return 80 # enhance the importance of the scarce resource
-        else:
+
+        resource_weight = [0,30,12,15,15,30]
+        if (resource_list[_type]==0 and _type!=0):
             return resource_weight[_type]
+        else:
+            return resource_weight[_type]*0.8
         
     
     
@@ -114,8 +112,10 @@ class Agent:
                 
                 # look up node in gameboard
                 node = self.game.boardLayout.nodes[k]
+                sw=self.calculate_new_settlement_weight(node)
+                good_nodes.append({'id': k, 'w': sw})
                 
-                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node,1)})
+                self.debug_print("The weight on this point is {0}".format(sw))
                 
                 # print neighbour roads
                 #self.debug_print("It has neighbours: {0}, {1}, {2}".format(node.n1, node.n2, node.n3))
@@ -225,7 +225,6 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 1 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtnodes.append(message.coords)
             self.gamestate = 2
             
             
@@ -241,7 +240,6 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 2 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtroads.append(message.coords)
             self.gamestate = 3
 
             # If we were the last one to play, we won't get a TurnMessage, goto state 4
@@ -274,22 +272,21 @@ class Agent:
 
         # Confirm PutPiece
         elif self.gamestate == 4 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtnodes.append(message.coords)
             self.gamestate = 5
 
         # Setup state 5    
         elif self.gamestate == 5 and name == "GameStateMessage" and int(message.state) == 11:          
         
             #arbitarly build a second road
+            #must be connected to second settlement
 	    for r in self.game.buildableRoads.roads:
-                if self.game.buildableRoads.roads[r]:
+                if self.game.buildableRoads.roads[r] and (self.game.boardLayout.roads[r].n1 == self.builtnodes[1] or self.game.boardLayout.roads[r].n2 == self.builtnodes[1]):
                     response = PutPieceMessage(self.gamename, self.playernum, 0, r)
                     self.client.send_msg(response)
                     break
 
         # Confirm PutPiece
         elif self.gamestate == 5 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
-            self.builtroads.append(message.coords)
             self.gamestate = 6
 
             # We were not first to play, we must wait for a TurnMessage before requested to roll the dices
@@ -359,7 +356,7 @@ class Agent:
             i = 0
             self.debug_print("Steal list: {0}".format(message.choices))
             for c in message.choices:
-                if c:
+                if c == 'true':
                     response = ChoosePlayerMessage(self.gamename, i)
                     self.client.send_msg(response)
                     break
@@ -382,6 +379,7 @@ class Agent:
         if plan:
             (build_spot, build_type) = plan
 
+            #DEBUGGING                
             response = BuildRequestMessage(self.gamename,build_type)
             self.client.send_msg(response)
 
