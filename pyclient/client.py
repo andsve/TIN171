@@ -95,7 +95,12 @@ class Client:
             transLength = highByte * 256 + lowByte
             msg = self.client.recv(transLength)
             
-            parsed = self.game.parse_message(msg)
+            try:
+                parsed = self.game.parse_message(msg)
+            except:
+                logging.critical("Failed to parse this message: {0}".format(msg))
+                continue
+                
             if parsed == None:
                 logging.debug("Message not supported -- {0}".format(msg))
                 continue
@@ -182,6 +187,8 @@ def main(args):
     else:
         addr = "komugi.se"
         port = 8880
+        #addr = "mkeyd.net"
+        #port = 16000
     
     server = (addr, port)
     client = Client()
