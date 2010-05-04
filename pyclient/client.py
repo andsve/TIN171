@@ -99,6 +99,7 @@ class Client:
                 parsed = self.game.parse_message(msg)
             except:
                 logging.critical("Failed to parse this message: {0}".format(msg))
+                # TODO: Attempt to skip message
                 continue
                 
             if parsed == None:
