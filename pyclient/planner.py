@@ -40,12 +40,12 @@ class Planner:
             ,"SHEEP":  1
             ,"WHEAT":  1
             ,"ORE":    1
-            ,"WOODH":  0
-            ,"CLAYH":  0
-            ,"SHEEPH": 0
-            ,"WHEATH": 0
-            ,"OREH":   0
-            ,"3FOR1H":  0.5
+            ,"WOODH":  1
+            ,"CLAYH":  1
+            ,"SHEEPH": 1
+            ,"WHEATH": 1
+            ,"OREH":   1
+            ,"3FOR1H": 1
         }
         
     def make_plan(self):
@@ -65,7 +65,7 @@ class Planner:
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
             elif htype == 6:
-                self.scores[htype_name] = 0.1
+                self.scores[htype_name] = 0.5
                 
             tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
@@ -74,13 +74,13 @@ class Planner:
                 city_bonus = 2
             
             #if we have a settlement where we get a resource, lower the score for that resource
-            #if we have a settlement where we get a resource, raise the score for that harbor
+            #if we have a settlement where we get a resource, raise the score for that harbor.
             for tile in tiles:
                 if 0 < tile.resource < 6:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
                     self.scores[res_name] -= score_mod
-                    self.scores[res_name + "H"] += score_mod
+                    self.scores[res_name + "H"] += 2 * score_mod
            
         self.node_scores = {}
         possible_roads = [] # use a set?
