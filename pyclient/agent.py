@@ -341,32 +341,78 @@ class Agent:
         # We need to move the robber, lets find a good spot!
         elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 33:
             
+            # List to store possible tiles in
+            possible_tiles = []
+            
             # Iterate over all tiles
-            for k,v in game.boardLayout.tiles.items():
+            for k,v in self.game.boardLayout.tiles.items():
                 
                 robber_scale = 0
                 tile_number = v.number
                 tile_resource = v.resource
                 
+                # We can't move it to the same tile again
+                if (self.game.boardLayout.robberpos == int(k)):
+                    continue
+                
                 # Store all nodes around this tile for future refernce
-                n1 = game.boardLayout.nodes(v.n1)
-                n2 = game.boardLayout.nodes(v.n2)
-                n3 = game.boardLayout.nodes(v.n3)
-                n4 = game.boardLayout.nodes(v.n4)
-                n5 = game.boardLayout.nodes(v.n5)
-                n6 = game.boardLayout.nodes(v.n6)
+                n1 = self.game.boardLayout.nodes[v.n1]
+                n2 = self.game.boardLayout.nodes[v.n2]
+                n3 = self.game.boardLayout.nodes[v.n3]
+                n4 = self.game.boardLayout.nodes[v.n4]
+                n5 = self.game.boardLayout.nodes[v.n5]
+                n6 = self.game.boardLayout.nodes[v.n6]
                 
-                # Iterate over all players around this tile
-                #if (n1 != None
+                # Check so we dont try to block ourselves!
+                if (n1.owner != None and int(n1.owner) == int(self.playernum)):
+                    continue
+                if (n2.owner != None and int(n2.owner) == int(self.playernum)):
+                    continue
+                if (n3.owner != None and int(n3.owner) == int(self.playernum)):
+                    continue
+                if (n4.owner != None and int(n4.owner) == int(self.playernum)):
+                    continue
+                if (n5.owner != None and int(n5.owner) == int(self.playernum)):
+                    continue
+                if (n6.owner != None and int(n6.owner) == int(self.playernum)):
+                    continue
                 
+                # We havn't built around this node, yay!
+                # The more settlements around the tile, the better to place here
+                num_settlements = 0.0
+                if (n1.owner != None):
+                    num_settlements += 1.0 * n1.type
+                if (n2.owner != None):
+                    num_settlements += 1.0 * n2.type
+                if (n3.owner != None):
+                    num_settlements += 1.0 * n3.type
+                if (n4.owner != None):
+                    num_settlements += 1.0 * n4.type
+                if (n5.owner != None):
+                    num_settlements += 1.0 * n5.type
+                if (n6.owner != None):
+                    num_settlements += 1.0 * n6.type
+                
+                robber_scale = num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
+                
+                # Append to possible tiles
+                possible_tiles.append({'id': k, 'scale': robber_scale})
             
-            # Move robber to 0x55 or 0x33
-            # TODO: Dont do this randomly
-            if self.game.boardLayout.robberpos == int(0x55):
-                response = MoveRobberMessage(self.gamename, self.playernum, 0x33)
-            else:
-                response = MoveRobberMessage(self.gamename, self.playernum, 0x55)
-                
+            # Loop possible_tiles and find best one
+            best_tile_id = -1
+            best_tile_scale = -1
+            
+            self.debug_print("Possible tiles to move robber to:")
+            for tile in possible_tiles:
+                self.debug_print("       id: {0}, scale: {1}".format(hex(tile['id']), tile['scale']))
+                if (tile['scale'] > best_tile_scale):
+                    best_tile_scale = tile['scale']
+                    best_tile_id = tile['id']
+            self.debug_print("       ---")
+            self.debug_print("       id: {0}, scale: {1} Seemed best!".format(hex(best_tile_id), best_tile_scale))
+            
+            # Now move robber to the best spot!
+            response = MoveRobberMessage(self.gamename, self.playernum, best_tile_id)
             self.client.send_msg(response)
 
         elif self.gamestate == 8 and name == "ChoosePlayerRequestMessage":
