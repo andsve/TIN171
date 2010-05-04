@@ -186,6 +186,8 @@ class Agent:
     # incomming messages from the message handler
     #  (i.e. alarms/signals/events from the game the agent needs to act on)
     def handle_message(self, name, message):
+    
+        self.debug_print("Victory Points: {0}, {1}, {2}, {3}".format(self.game.vp[0], self.game.vp[1], self.game.vp[2], self.game.vp[3]))
         
         if (name == "SitDownMessage" and message.nickname == self.nickname):
             # This is us sitting down, store the playernum!
@@ -214,6 +216,7 @@ class Agent:
 
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
+        
         
         if name == "ResourceCountMessage":
             items = self.resources.items()
