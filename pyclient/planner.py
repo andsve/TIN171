@@ -56,7 +56,7 @@ class Planner:
         for n in self.nodes:
             node = self.game.boardLayout.nodes[n]
             htype = node.harbor
-            htype_name = elementIdToType.setdefault(str(type), "NO HARBOUR")
+            htype_name = elementIdToType.setdefault(str(htype), "NO HARBOUR")
             
             # If we have a certain harbour, raise the score for that resource
             if 0 < htype < 6:
