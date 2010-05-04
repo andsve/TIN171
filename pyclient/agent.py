@@ -70,9 +70,9 @@ class Agent:
             self.debug_print("The original weight on tile2 is {0}, tile number is {1}, type is {2}".format(w2,t2.number,t2.resource))
             if (r2 == r1):
                 if(w2>w1):
-                    w1 = w1*0.8
+                    w1 = w1*0.7
                 else:
-                    w2 = w2*0.8
+                    w2 = w2*0.7
                 
         if node.t3:
             t3 = self.game.boardLayout.tiles[node.t3]
@@ -81,14 +81,14 @@ class Agent:
             self.debug_print("The original weight on tile3 is {0}, tile number is {1}, type is {2}".format(w3,t3.number,t3.resource))
             if (r3 == r1):
                 if(w3>w1):
-                    w1 = w1*0.8
+                    w1 = w1*0.7
                 else:
-                    w3 = w3*0.8
+                    w3 = w3*0.7
             elif (r3 == r2):
                 if(w3>w2):
-                    w2 = w2*0.8
+                    w2 = w2*0.7
                 else:
-                    w3 = w3*0.8
+                    w3 = w3*0.7
 
         weight = w1+w2+w3
         # if it is the first settlement than force the robot to take three kinds of resource
@@ -115,7 +115,7 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,30,20,20,20,30]
+        resource_weight = [0,30,20,25,25,30]
         return resource_weight[_type]
 
         
