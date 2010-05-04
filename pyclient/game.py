@@ -7,6 +7,7 @@ class Game:
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
+        self.playernum = -1
 
         self.output_prefix = "[DEBUG] game.py ->"
 

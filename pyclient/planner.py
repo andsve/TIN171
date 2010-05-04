@@ -1,6 +1,7 @@
 from utils import cprint
 from messages import *
 import copy
+import logging
 
 class Planner:
     def __init__(self, game, gamename, resources, nodes, roads, client):
@@ -44,7 +45,7 @@ class Planner:
             ,"SHEEPH": 0
             ,"WHEATH": 0
             ,"OREH":   0
-            ,"3FOR1":  0.5
+            ,"3FOR1H":  0.5
         }
         
     def make_plan(self):
@@ -55,16 +56,16 @@ class Planner:
         # Determine what resources we are gaining
         for n in self.nodes:
             node = self.game.boardLayout.nodes[n]
-            type = node.harbor
-            type_name = elementIdToType.setdefault(str(type), "NO HARBOUR")
+            htype = node.harbor
+            htype_name = elementIdToType.setdefault(str(htype), "NO HARBOUR")
             
             # If we have a certain harbour, raise the score for that resource
-            if 0 < type < 6:
-                self.scores[type_name] += 1
+            if 0 < htype < 6:
+                self.scores[htype_name] += 1
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
-            elif type == 6:
-                self.scores[type_name] = 0.1
+            elif htype == 6:
+                self.scores[htype_name] = 0.1
                 
             tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
@@ -107,24 +108,18 @@ class Planner:
 
         # Find out how to build to that node
         if best_node:
-            self.debug_print("Best location: {0}".format(best_node.id))
+            self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
             for road in roads:
-                self.debug_print("Road {0} belongs to: {1}".format(road.id, road.owner))
+                self.debug_print("Road {0} belongs to: {1}".format(hex(road.id), road.owner))
 
-            #if all(r.owner and (r.owner == self.game.playernum) for r in roads):
-
-            r1 = best_node.n1
-            r2 = best_node.n2
-            r3 = best_node.n3
-            if ((r1 and self.game.boardLayout.roads[r1].owner and int(self.game.boardLayout.roads[r1].owner) == int(self.game.playernum))
-                or (r2 and self.game.boardLayout.roads[r2].owner and int(self.game.boardLayout.roads[r2].owner) == int(self.game.playernum))
-                or (r3 and self.game.boardLayout.roads[r3].owner and int(self.game.boardLayout.roads[r3].owner) == int(self.game.playernum))):
-                if self.canAffordSettlement() and self.resources["SETTLEMENTS"] > 0:
+            # If we own any of the roads
+            if any(r.owner and r.owner == int(self.game.playernum) for r in roads):
+                if self.resources["SETTLEMENTS"] > 0 and self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (best_node.id, 1)
-                elif self.canAffordWithTrade(1) and self.resources["SETTLEMENTS"] > 0:
+                elif self.resources["SETTLEMENTS"] > 0 and self.canAffordWithTrade(1):
                     self.debug_print("Can afford s after trade...")
                     return (best_node.id, 1)
                 else:
@@ -135,19 +130,12 @@ class Planner:
                     self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
 
             else:
-                tempList = []
-                if r1:
-                    tempList.append(r1)
-                if r2:
-                    tempList.append(r2)
-                if r3:
-                    tempList.append(r3)
-                if self.canAffordRoad() and self.resources["ROADS"] > 0:
+                if self.resources["ROADS"] > 0 and self.canAffordRoad():
                     self.debug_print("Can build road, sending...")
-                    return self.findClosestBuildableRoad(tempList)
-                elif self.canAffordWithTrade(0) and self.resources["ROADS"] > 0:
+                    return self.findClosestBuildableRoad([road.id for road in roads])
+                elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
                     self.debug_print("Can afford road after trade...")
-                    return self.findClosestBuildableRoad(tempList)
+                    return self.findClosestBuildableRoad([road.id for road in roads])
                 else:
                     self.debug_print("Cannot afford road.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -156,34 +144,20 @@ class Planner:
         # Cannot afford settlement and shouldn't/cannot build road. Try upgrading to city.
 
         if self.resources["CITIES"] > 0:
-
             self.cityScore = {}
 
             for n in self.nodes:
-                
-                if self.game.boardLayout.nodes[n].type == 1:
-
-                    if self.game.boardLayout.nodes[n].harbor == 1:
-                        tempScore = self.scores["CLAYH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 2:
-                        tempScore = self.scores["OREH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 3:
-                        tempScore = self.scores["SHEEPH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 4:
-                        tempScore = self.scores["WHEATH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 5:
-                        tempScore = self.scores["WOODH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 6:
-                        tempScore = self.scores["3FOR1"]
-
+                node = self.game.boardLayout.nodes[n]
+                if node.type == 1:
+                    harbour = node.harbor
+                    
+                    if 0 < harbour < 6:
+                        tempScore = self.scores[str(elementIdToType[harbour]) + "H"]
+                    elif harbour == 6:
+                        tempScore = self.scores["3FOR1H"]
                     else:
                         tempScore = 0
-                    
+
                     t1 = self.game.boardLayout.nodes[n].t1
                     t2 = self.game.boardLayout.nodes[n].t2
                     t3 = self.game.boardLayout.nodes[n].t3
@@ -323,7 +297,7 @@ class Planner:
                 tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout.nodes[n1].harbor == 6:
-                tempScore = self.scores["3FOR1"]
+                tempScore = self.scores["3FOR1H"]
 
             else:
                 tempScore = 0
@@ -447,7 +421,7 @@ class Planner:
                 tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout.nodes[n2].harbor == 6:
-                tempScore = self.scores["3FOR1"]
+                tempScore = self.scores["3FOR1H"]
 
             else:
                 tempScore = 0
@@ -690,6 +664,7 @@ class Planner:
                         left_to_trade -= 1
 
                 response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed])
+                self.debug_print("Trade1: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed]))
                 self.client.send_msg(response)
 
                 return True 
@@ -747,6 +722,7 @@ class Planner:
                         left_to_trade -= 1
 
                 response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed])
+                self.debug_print("Trade2: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed]))
                 self.client.send_msg(response)
 
                 return True
@@ -804,6 +780,7 @@ class Planner:
                         left_to_trade -= 1
 
                 response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[0,ore_needed,0,wheat_needed,0])
+                self.debug_print("Trade3: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[0,ore_needed,0,wheat_needed,0]))
                 self.client.send_msg(response)
 
                 return True
