@@ -186,8 +186,6 @@ class Agent:
     # incomming messages from the message handler
     #  (i.e. alarms/signals/events from the game the agent needs to act on)
     def handle_message(self, name, message):
-    
-        self.debug_print("Victory Points: {0}, {1}, {2}, {3}".format(self.game.vp[0], self.game.vp[1], self.game.vp[2], self.game.vp[3]))
         
         if (name == "SitDownMessage" and message.nickname == self.nickname):
             # This is us sitting down, store the playernum!
@@ -402,20 +400,40 @@ class Agent:
                 # We havn't built around this node, yay!
                 # The more settlements around the tile, the better to place here
                 num_settlements = 0.0
+                num_players = {0: False, 1: False, 2: False, 3: False}
+                num_different = 0.0
+                
                 if (n1.owner != None):
                     num_settlements += 1.0 * n1.type
+                    num_players[n1.owner] = True
                 if (n2.owner != None):
                     num_settlements += 1.0 * n2.type
+                    num_players[n2.owner] = True
                 if (n3.owner != None):
                     num_settlements += 1.0 * n3.type
+                    num_players[n3.owner] = True
                 if (n4.owner != None):
                     num_settlements += 1.0 * n4.type
+                    num_players[n4.owner] = True
                 if (n5.owner != None):
                     num_settlements += 1.0 * n5.type
+                    num_players[n5.owner] = True
                 if (n6.owner != None):
                     num_settlements += 1.0 * n6.type
+                    num_players[n6.owner] = True
+                    
+                if num_players[0]:
+                    num_different += 1.0
+                if num_players[1]:
+                    num_different += 1.0
+                if num_players[2]:
+                    num_different += 1.0
+                if num_players[3]:
+                    num_different += 1.0
                 
-                robber_scale = num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
+                robber_scale += num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
+                if (num_settlements > 0.0):
+                    robber_scale += 1.0 - num_different / 4.0
                 
                 # Append to possible tiles
                 possible_tiles.append({'id': k, 'scale': robber_scale})

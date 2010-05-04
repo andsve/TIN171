@@ -44,7 +44,7 @@ class Planner:
             ,"SHEEPH": 0
             ,"WHEATH": 0
             ,"OREH":   0
-            ,"3FOR1":  0.5
+            ,"3FOR1H":  0.5
         }
         
     def make_plan(self):
@@ -107,21 +107,14 @@ class Planner:
 
         # Find out how to build to that node
         if best_node:
-            self.debug_print("Best location: {0}".format(best_node.id))
+            self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
             for road in roads:
-                self.debug_print("Road {0} belongs to: {1}".format(road.id, road.owner))
+                self.debug_print("Road {0} belongs to: {1}".format(hex(road.id), road.owner))
 
-            #if all(r.owner and (r.owner == self.game.playernum) for r in roads):
-
-            r1 = best_node.n1
-            r2 = best_node.n2
-            r3 = best_node.n3
-            if ((r1 and self.game.boardLayout.roads[r1].owner and int(self.game.boardLayout.roads[r1].owner) == int(self.game.playernum))
-                or (r2 and self.game.boardLayout.roads[r2].owner and int(self.game.boardLayout.roads[r2].owner) == int(self.game.playernum))
-                or (r3 and self.game.boardLayout.roads[r3].owner and int(self.game.boardLayout.roads[r3].owner) == int(self.game.playernum))):
-                
+            # If we own any of the roads
+            if any(r.owner and r.owner == self.game.playernum for r in roads):
                 if self.resources["SETTLEMENTS"] > 0 and self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (best_node.id, 1)
@@ -136,19 +129,12 @@ class Planner:
                     self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
 
             else:
-                tempList = []
-                if r1:
-                    tempList.append(r1)
-                if r2:
-                    tempList.append(r2)
-                if r3:
-                    tempList.append(r3)
                 if self.resources["ROADS"] > 0 and self.canAffordRoad():
                     self.debug_print("Can build road, sending...")
-                    return self.findClosestBuildableRoad(tempList)
+                    return self.findClosestBuildableRoad([road.id for road in roads])
                 elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
                     self.debug_print("Can afford road after trade...")
-                    return self.findClosestBuildableRoad(tempList)
+                    return self.findClosestBuildableRoad([road.id for road in roads])
                 else:
                     self.debug_print("Cannot afford road.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -157,34 +143,20 @@ class Planner:
         # Cannot afford settlement and shouldn't/cannot build road. Try upgrading to city.
 
         if self.resources["CITIES"] > 0:
-
             self.cityScore = {}
 
             for n in self.nodes:
-                
-                if self.game.boardLayout.nodes[n].type == 1:
-
-                    if self.game.boardLayout.nodes[n].harbor == 1:
-                        tempScore = self.scores["CLAYH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 2:
-                        tempScore = self.scores["OREH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 3:
-                        tempScore = self.scores["SHEEPH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 4:
-                        tempScore = self.scores["WHEATH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 5:
-                        tempScore = self.scores["WOODH"]
-
-                    elif self.game.boardLayout.nodes[n].harbor == 6:
-                        tempScore = self.scores["3FOR1"]
-
+                node = self.game.boardLayout.nodes[n]
+                if node.type == 1:
+                    harbour = node.harbor
+                    
+                    if 0 < harbour < 6:
+                        tempScore = self.scores[elementIdToType[harbour] + "H"]
+                    elif harbour == 6:
+                        tempScore = self.scores["3FOR1H"]
                     else:
                         tempScore = 0
-                    
+
                     t1 = self.game.boardLayout.nodes[n].t1
                     t2 = self.game.boardLayout.nodes[n].t2
                     t3 = self.game.boardLayout.nodes[n].t3
@@ -324,7 +296,7 @@ class Planner:
                 tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout.nodes[n1].harbor == 6:
-                tempScore = self.scores["3FOR1"]
+                tempScore = self.scores["3FOR1H"]
 
             else:
                 tempScore = 0
@@ -448,7 +420,7 @@ class Planner:
                 tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout.nodes[n2].harbor == 6:
-                tempScore = self.scores["3FOR1"]
+                tempScore = self.scores["3FOR1H"]
 
             else:
                 tempScore = 0
