@@ -54,17 +54,21 @@ class Agent:
         w1=0
         w2=0
         w3=0
-        
+        r1=0
+        r2=0
+        r3=0
         if node.t1:
             t1 = self.game.boardLayout.tiles[node.t1]
-            w1 = self.resource_weight(t1.resource) * dice_props[t1.number]
+            r1 = t1.resource
+            w1 = self.resource_weight(r1) * dice_props[t1.number]
             self.debug_print("The original weight on tile1 is {0}, tile number is {1}, type is {2}".format(w1,t1.number,t1.resource))
 
         if node.t2:
             t2 = self.game.boardLayout.tiles[node.t2]
-            w2 = self.resource_weight(t2.resource) * dice_props[t2.number]
+            r2 = t2.resource
+            w2 = self.resource_weight(r2) * dice_props[t2.number]
             self.debug_print("The original weight on tile2 is {0}, tile number is {1}, type is {2}".format(w2,t2.number,t2.resource))
-            if (t2.resource == t1.resource):
+            if (r2 == r1):
                 if(w2>w1):
                     w1 = w1*0.8
                 else:
@@ -72,20 +76,31 @@ class Agent:
                 
         if node.t3:
             t3 = self.game.boardLayout.tiles[node.t3]
-            w3 = self.resource_weight(t3.resource) * dice_props[t3.number]
+            r3 = t3.resource
+            w3 = self.resource_weight(r3) * dice_props[t3.number]
             self.debug_print("The original weight on tile3 is {0}, tile number is {1}, type is {2}".format(w3,t3.number,t3.resource))
-            if (t3.resource == t1.resource):
+            if (r3 == r1):
                 if(w3>w1):
                     w1 = w1*0.8
                 else:
                     w3 = w3*0.8
-            elif (t3.resource == t2.resource):
+            elif (r3 == r2):
                 if(w3>w2):
                     w2 = w2*0.8
                 else:
                     w3 = w3*0.8
 
         weight = w1+w2+w3
+        # if it is the first settlement than force the robot to take three kinds of resource
+        rl=0
+        for i in resource_list:
+            rl= rl+i
+        if (rl==0):
+            if(r1!=0 and r2!=0 and r3!=0):
+                if(r1!=r2 and r2!=r3):
+                    if(t1.resource!=t3.resource):
+                        weight = weight + 5
+            
         
         return weight
 
