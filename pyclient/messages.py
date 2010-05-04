@@ -255,11 +255,16 @@ class BoardLayoutMessage(Message):
         
     @staticmethod
     def parse(text):
+        import logging
         data = text.split(",")
         game = data[0]
+        logging.debug(data)
         hexes = map(int, data[1:38])
-        numbers = map(int, data[39:39+37])
+        numbers = map(int, data[38:38+37])
+        logging.debug(hexes)
+        logging.debug(numbers)
         robberpos = int(data[-1])
+        logging.debug(robberpos)
         return BoardLayoutMessage(game, hexes, numbers, robberpos)
 
 class DeleteGameMessage(Message):
