@@ -678,7 +678,7 @@ class Planner:
                         left_to_trade -= 1
 
                     if wheat_gives > 0 and left_to_trade > 0:
-                        if wheat_needed > 0:
+                        if clay_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[1,0,0,0,0]))
                             clay_needed -= 1
                         elif wood_needed > 0:
@@ -851,7 +851,7 @@ class Planner:
                         
                         if ore_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,1,0,0,0]))
-                            sheep_needed -= 1
+                            ore_needed -= 1
                         elif wheat_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,0,0,1,0]))
                             wheat_needed -= 1
@@ -863,7 +863,7 @@ class Planner:
 
                         if ore_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,1,0,0,0]))
-                            sheep_needed -= 1
+                            ore_needed -= 1
                         elif wheat_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,0,0,1,0]))
                             wheat_needed -= 1
@@ -874,7 +874,7 @@ class Planner:
 
                         if ore_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,1,0,0,0]))
-                            sheep_needed -= 1
+                            ore_needed -= 1
                         elif wheat_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,0,0,1,0]))
                             wheat_needed -= 1
@@ -886,7 +886,7 @@ class Planner:
 
                         if ore_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,1,0,0,0]))
-                            sheep_needed -= 1
+                            ore_needed -= 1
                         elif wheat_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,0,0,1,0]))
                             wheat_needed -= 1
@@ -898,7 +898,7 @@ class Planner:
 
                         if ore_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,1,0,0,0]))
-                            sheep_needed -= 1
+                            ore_needed -= 1
                         elif wheat_needed > 0:
                             self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,0,0,1,0]))
                             wheat_needed -= 1
