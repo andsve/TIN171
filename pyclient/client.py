@@ -118,7 +118,7 @@ class Client:
                 # We receive confirmation of a game created, available seats, etc
                 satdown = True
                 logging.info("Sitting down...")
-                m = game.SitDownMessage(gamename, nickname, 1, True)
+                m = game.SitDownMessage(gamename, nickname, 1, False)
                 self.send_msg(m)
                 
             elif msg == "ChangeFaceMessage" and not gamestarted:
@@ -148,8 +148,7 @@ class Client:
             elif msg == "RobotDismissMessage":
                 import pdb
                 import messages
-                m = messages.LeaveGameMessage(nickname, socket.gethostname(), gamename)
-                self.send_msg(m)
+                self.send_msg(messages.LeaveGameMessage(nickname, socket.gethostname(), gamename))
                 g = self.game
                 a = self.agent
                 logging.info(a.resources)
