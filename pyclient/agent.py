@@ -317,8 +317,28 @@ class Agent:
 
             self.client.send_msg(response)
             
+        # We need to move the robber, lets find a good spot!
         elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 33:
-
+            
+            # Iterate over all tiles
+            for k,v in game.boardLayout.tiles.items():
+                
+                robber_scale = 0
+                tile_number = v.number
+                tile_resource = v.resource
+                
+                # Store all nodes around this tile for future refernce
+                n1 = game.boardLayout.nodes(v.n1)
+                n2 = game.boardLayout.nodes(v.n2)
+                n3 = game.boardLayout.nodes(v.n3)
+                n4 = game.boardLayout.nodes(v.n4)
+                n5 = game.boardLayout.nodes(v.n5)
+                n6 = game.boardLayout.nodes(v.n6)
+                
+                # Iterate over all players around this tile
+                #if (n1 != None
+                
+            
             # Move robber to 0x55 or 0x33
             # TODO: Dont do this randomly
             if self.game.boardLayout.robberpos == int(0x55):
