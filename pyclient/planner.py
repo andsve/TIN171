@@ -79,7 +79,7 @@ class Planner:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
                     self.scores[res_name] -= score_mod
-                    self.scores[res_name + "H"] += 2 * score_mod
+                    self.scores[res_name + "H"] += 1.5 * score_mod
            
         self.node_scores = {}
         possible_roads = [] # use a set?
