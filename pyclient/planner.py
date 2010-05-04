@@ -94,53 +94,39 @@ class Planner:
         for r in possible_roads:
             self.calcNeighbourScore(r, 0)
 
-        bestNode = None
+        best_node = None
         if len(self.nodeScore) > 0:
-
-            def cmp_fun(a,b):
-                return int(int(1000*b[1]) - int(1000*a[1]))
-
-            tempList = sorted(self.nodeScore.items(), cmp=cmp_fun)
-            (bestNode, score) = tempList[0]
-            i = 1
-            for item in tempList:
+            tempList = sorted(self.nodeScore.items(), cmp=lambda a,b: int(1000*b[1]) - int(1000*a[1]))
+            (best_pos, score) = tempList[0]
+            best_node = self.game.boardLayout.nodes[best_pos]
+            for i, item in enumerate(tempList):
                 (node,score) = item
                 self.debug_print("{0}. {1} ({2})".format(i,hex(node),score))
-                i += 1
-
         else:
-
             self.debug_print("No good spots found!")
 
-        #find out how to build to that node
-        if bestNode:
+        # Find out how to build to that node
+        if best_node:
+            self.debug_print("Best location: {0}".format(best_node.id))
+            
+            roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
+            for road in roads:
+                self.debug_print("Road {0} belongs to: {1}".format(road.id, road.owner))
 
-            self.debug_print("Best node at: {0}".format(hex(bestNode)))
+            #if all(r.owner and (r.owner == self.game.playernum) for r in roads):
 
-            r1 = self.game.boardLayout.nodes[bestNode].n1
-            r2 = self.game.boardLayout.nodes[bestNode].n2
-            r3 = self.game.boardLayout.nodes[bestNode].n3
-
-            self.debug_print("I am player {0}".format(self.game.playernum))
-
-            if r1:
-                self.debug_print("Road {0} belongs to: {1}".format(hex(r1), self.game.boardLayout.roads[r1].owner))
-
-            if r2:
-                self.debug_print("Road {0} belongs to: {1}".format(hex(r2), self.game.boardLayout.roads[r2].owner))
-
-            if r3:
-                self.debug_print("Road {0} belongs to: {1}".format(hex(r3), self.game.boardLayout.roads[r3].owner))
-
+            r1 = best_node.n1
+            r2 = best_node.n2
+            r3 = best_node.n3
             if ((r1 and self.game.boardLayout.roads[r1].owner and int(self.game.boardLayout.roads[r1].owner) == int(self.game.playernum))
                 or (r2 and self.game.boardLayout.roads[r2].owner and int(self.game.boardLayout.roads[r2].owner) == int(self.game.playernum))
                 or (r3 and self.game.boardLayout.roads[r3].owner and int(self.game.boardLayout.roads[r3].owner) == int(self.game.playernum))):
                 if self.canAffordSettlement() and self.resources["SETTLEMENTS"] > 0:
                     self.debug_print("Can build settlement, sending...")
-                    return (bestNode, 1)
+                    return (best_node.id, 1)
                 elif self.canAffordWithTrade(1) and self.resources["SETTLEMENTS"] > 0:
                     self.debug_print("Can afford s after trade...")
-                    return (bestNode, 1)
+                    return (best_node.id, 1)
                 else:
                     self.debug_print("Cannot afford settlement.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -280,11 +266,7 @@ class Planner:
                     self.cityScore[n] = tempScore
 
             if len(self.cityScore) > 0:
-
-                def cmp_fun(a,b):
-                    return int(int(1000*b[1]) - int(1000*a[1]))
-
-                cityList = sorted(self.cityScore.items(), cmp=cmp_fun)
+                cityList = sorted(self.cityScore.items(), cmp=lambda a,b: int(1000*b[1]) - int(1000*a[1]))
                 (bestNode, score) = cityList[0]
 
                 if bestNode:
