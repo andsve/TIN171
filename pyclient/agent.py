@@ -58,19 +58,21 @@ class Agent:
         if node.t1:
             t1 = self.game.boardLayout.tiles[node.t1]
             w1 = self.resource_weight(t1.resource) * dice_props[t1.number]
-            weight = weight + w1
+            self.debug_print("The original weight on tile1 is {0}, tile number is {1}, type is {2}".format(w1,t1.number,t1.resource))
         if node.t2:
             t2 = self.game.boardLayout.tiles[node.t2]
             w2 = self.resource_weight(t2.resource) * dice_props[t2.number]
+            self.debug_print("The original weight on tile2 is {0}, tile number is {1}, type is {2}".format(w2,t2.number,t2.resource))
             if (t2.resource == t1.resource):
                 if(w2>w1):
                     w1 = w1*0.8
                 else:
                     w2 = w2*0.8
-            weight = weight + w2    
+                
         if node.t3:
             t3 = self.game.boardLayout.tiles[node.t3]
             w3 = self.resource_weight(t3.resource) * dice_props[t3.number]
+            self.debug_print("The original weight on tile3 is {0}, tile number is {1}, type is {2}".format(w3,t3.number,t3.resource))
             if (t3.resource == t1.resource):
                 if(w3>w1):
                     w1 = w1*0.8
@@ -81,7 +83,8 @@ class Agent:
                     w2 = w2*0.8
                 else:
                     w3 = w3*0.8
-            weight = weight + w3
+
+        weight = w1+w2+w3
         
         return weight
 
