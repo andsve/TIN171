@@ -150,8 +150,10 @@ class Planner:
                 if node.type == 1:
                     harbour = node.harbor
                     
-                    if 0 < harbour < 7:
+                    if 0 < harbour < 6:
                         tempScore = self.scores[elementIdToType[harbour] + "H"]
+                    elif harbour == 6:
+                        tempScore = self.scores["3FOR1H"]
                     else:
                         tempScore = 0
 
