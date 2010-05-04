@@ -101,12 +101,11 @@ class Agent:
                     if(t1.resource!=t3.resource):
                         weight = weight + 5
         if (rl!=0):
-            if(resource_list[r1]==0):
+            if(resource_list[r1]+resource_list[r2]+resource_list[r3] <= 1):
                 weight = weight + 2
-            if(resource_list[r2]==0):
-                weight = weight + 2
-            if(resource_list[r3]==0):
-                weight = weight + 2
+                if(r1!=r2 or r1!=r3 or r2!=r3):
+                    weight = weight +2
+
         return weight
 
     def resource_weight(self, _type):
@@ -115,7 +114,7 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,30,20,25,25,30]
+        resource_weight = [0,30,25,25,25,30]
         return resource_weight[_type]
 
         
