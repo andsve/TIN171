@@ -180,7 +180,7 @@ class Planner:
                         tempScore = self.scores["WOODH"]
 
                     elif self.game.boardLayout.nodes[n].harbor == 6:
-                        tempScore = self.scores["3FOR1"]
+                        tempScore = self.scores["3FOR1H"]
 
                     else:
                         tempScore = 0
@@ -324,7 +324,7 @@ class Planner:
                 tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout.nodes[n1].harbor == 6:
-                tempScore = self.scores["3FOR1"]
+                tempScore = self.scores["3FOR1H"]
 
             else:
                 tempScore = 0
@@ -448,7 +448,7 @@ class Planner:
                 tempScore = self.scores["WOODH"]
 
             elif self.game.boardLayout.nodes[n2].harbor == 6:
-                tempScore = self.scores["3FOR1"]
+                tempScore = self.scores["3FOR1H"]
 
             else:
                 tempScore = 0
