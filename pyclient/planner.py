@@ -656,43 +656,93 @@ class Planner:
             self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
 
             if (wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives) >= (clay_needed + wood_needed + sheep_needed + wheat_needed):
-                ore_to_trade = 0
-                wheat_to_trade = 0
-                sheep_to_trade = 0
-                wood_to_trade = 0
-                clay_to_trade = 0
                 left_to_trade = clay_needed + wood_needed + sheep_needed + wheat_needed
 
                 while left_to_trade > 0:
                 
                     if ore_gives > 0 and left_to_trade > 0:
-                        ore_to_trade += ore_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+                        elif sheep_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,0,1,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         ore_gives -= 1
                         left_to_trade -= 1
 
                     if wheat_gives > 0 and left_to_trade > 0:
-                        wheat_to_trade += wheat_trade
+                        if wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+                        elif sheep_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,0,1,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         wheat_gives -= 1
                         left_to_trade -= 1
-
                     if sheep_gives > 0 and left_to_trade > 0:
-                        sheep_to_trade += sheep_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+                        elif sheep_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,0,1,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         sheep_gives -= 1
                         left_to_trade -= 1
 
                     if wood_gives > 0 and left_to_trade > 0:
-                        wood_to_trade += wood_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,0,0,0,1]))
+                            wood_needed -= 1
+                        elif sheep_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,0,1,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         wood_gives -= 1
                         left_to_trade -= 1
 
                     if clay_gives > 0 and left_to_trade > 0:
-                        clay_to_trade += clay_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+                        elif sheep_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,0,1,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         clay_gives -= 1
                         left_to_trade -= 1
-
-                response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed])
-                self.debug_print("Trade1: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed]))
-                self.client.send_msg(response)
 
                 return True 
 
@@ -714,44 +764,65 @@ class Planner:
             self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
 
             if wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives >= clay_needed + wood_needed:
-                ore_to_trade = 0
-                wheat_to_trade = 0
-                sheep_to_trade = 0
-                wood_to_trade = 0
-                clay_to_trade = 0
                 left_to_trade = clay_needed + wood_needed
 
                 while left_to_trade > 0:
                 
                     if ore_gives > 0 and left_to_trade > 0:
-                        ore_to_trade += ore_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+
                         ore_gives -= 1
                         left_to_trade -= 1
 
                     if wheat_gives > 0 and left_to_trade > 0:
-                        wheat_to_trade += wheat_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+
                         wheat_gives -= 1
                         left_to_trade -= 1
 
                     if sheep_gives > 0 and left_to_trade > 0:
-                        sheep_to_trade += sheep_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+
                         sheep_gives -= 1
                         left_to_trade -= 1
 
                     if wood_gives > 0 and left_to_trade > 0:
-                        wood_to_trade += wood_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,0,0,0,1]))
+                            wood_needed -= 1
+
                         wood_gives -= 1
                         left_to_trade -= 1
 
                     if clay_gives > 0 and left_to_trade > 0:
-                        clay_to_trade += clay_trade
+                        if clay_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[1,0,0,0,0]))
+                            clay_needed -= 1
+                        elif wood_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,0,0,0,1]))
+                            wood_needed -= 1
+
                         clay_gives -= 1
                         left_to_trade -= 1
-
-                response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed])
-                self.debug_print("Trade2: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed]))
-                self.client.send_msg(response)
-
+                        
                 return True
 
             return False
@@ -772,44 +843,69 @@ class Planner:
             self.debug_print("Might get:{0},{1},{2},{3},{4}".format(clay_gives,ore_gives,sheep_gives,wheat_gives,wood_gives))
 
             if (wood_gives + clay_gives + wheat_gives + ore_gives + sheep_gives) >= (wheat_needed + ore_needed):
-                ore_to_trade = 0
-                wheat_to_trade = 0
-                sheep_to_trade = 0
-                wood_to_trade = 0
-                clay_to_trade = 0
                 left_to_trade = wheat_needed + ore_needed
 
                 while left_to_trade > 0:
                 
                     if ore_gives > 0 and left_to_trade > 0:
-                        ore_to_trade += ore_trade
+                        
+                        if ore_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,1,0,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,ore_trade,0,0,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         ore_gives -= 1
                         left_to_trade -= 1
 
                     if wheat_gives > 0 and left_to_trade > 0:
-                        wheat_to_trade += wheat_trade
+
+                        if ore_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,1,0,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,wheat_trade,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         wheat_gives -= 1
                         left_to_trade -= 1
-
                     if sheep_gives > 0 and left_to_trade > 0:
-                        sheep_to_trade += sheep_trade
+
+                        if ore_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,1,0,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,sheep_trade,0,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         sheep_gives -= 1
                         left_to_trade -= 1
 
                     if wood_gives > 0 and left_to_trade > 0:
-                        wood_to_trade += wood_trade
+
+                        if ore_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,1,0,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[0,0,0,0,wood_trade],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         wood_gives -= 1
                         left_to_trade -= 1
 
                     if clay_gives > 0 and left_to_trade > 0:
-                        clay_to_trade += clay_trade
+
+                        if ore_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,1,0,0,0]))
+                            sheep_needed -= 1
+                        elif wheat_needed > 0:
+                            self.client.send_msg(BankTradeMessage(self.gamename,[clay_trade,0,0,0,0],[0,0,0,1,0]))
+                            wheat_needed -= 1
+
                         clay_gives -= 1
                         left_to_trade -= 1
-
-                response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[0,ore_needed,0,wheat_needed,0])
-                self.debug_print("Trade3: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[0,ore_needed,0,wheat_needed,0]))
-                self.client.send_msg(response)
-
+                        
                 return True
 
         return False
