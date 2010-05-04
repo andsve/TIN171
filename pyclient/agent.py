@@ -49,35 +49,58 @@ class Agent:
     # Auxiliary gameboard functions
     #
     
-    def calculate_new_settlement_weight(self, node, _round): # add the round number as parameter?
+    def calculate_new_settlement_weight(self, node): # add the round number as parameter?
         weight = 0
+        w1=0
+        w2=0
+        w3=0
+        
         if node.t1:
             t1 = self.game.boardLayout.tiles[node.t1]
-            weight = weight + self.resource_weight(t1.resource,_round) * dice_props[t1.number]
+            w1 = self.resource_weight(t1.resource) * dice_props[t1.number]
+            self.debug_print("The original weight on tile1 is {0}, tile number is {1}, type is {2}".format(w1,t1.number,t1.resource))
+
         if node.t2:
             t2 = self.game.boardLayout.tiles[node.t2]
-            weight = weight + self.resource_weight(t2.resource,_round) * dice_props[t2.number]
+            w2 = self.resource_weight(t2.resource) * dice_props[t2.number]
+            self.debug_print("The original weight on tile2 is {0}, tile number is {1}, type is {2}".format(w2,t2.number,t2.resource))
+            if (t2.resource == t1.resource):
+                if(w2>w1):
+                    w1 = w1*0.8
+                else:
+                    w2 = w2*0.8
+                
         if node.t3:
             t3 = self.game.boardLayout.tiles[node.t3]
-            weight = weight + self.resource_weight(t3.resource,_round) * dice_props[t3.number]   
-        
+            w3 = self.resource_weight(t3.resource) * dice_props[t3.number]
+            self.debug_print("The original weight on tile3 is {0}, tile number is {1}, type is {2}".format(w3,t3.number,t3.resource))
+            if (t3.resource == t1.resource):
+                if(w3>w1):
+                    w1 = w1*0.8
+                else:
+                    w3 = w3*0.8
+            elif (t3.resource == t2.resource):
+                if(w3>w2):
+                    w2 = w2*0.8
+                else:
+                    w3 = w3*0.8
+
+        weight = w1+w2+w3
         
         return weight
 
-    def resource_weight(self, _type, _round):
+    def resource_weight(self, _type):
         #1 = Clay
         #2 = Ore
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,20,20,20,20,20]
-        
-        if (_round!=1):
-            if (resource_list[_type]==0 and _type!=0):
-                return 40 # enhance the importance of the scarce resource
-        else:
-            resource_list[_type] = 1
+        resource_weight = [0,30,15,20,20,30]
+
+        if (resource_list[_type]==0 and _type!=0):
             return resource_weight[_type]
+        else:
+            return resource_weight[_type] * 0.4
         
     
     
@@ -93,9 +116,9 @@ class Agent:
                 
                 # look up node in gameboard
                 node = self.game.boardLayout.nodes[k]
-                
-                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node,1)})
-                
+                sw = self.calculate_new_settlement_weight(node)
+                good_nodes.append({'id': k, 'w': sw})
+                self.debug_print("The total weight on this point is {0}".format(sw))
                 # print neighbour roads
                 #self.debug_print("It has neighbours: {0}, {1}, {2}".format(node.n1, node.n2, node.n3))
                 """
