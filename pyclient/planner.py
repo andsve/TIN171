@@ -1,6 +1,7 @@
 from utils import cprint
 from messages import *
 import copy
+import logging
 
 class Planner:
     def __init__(self, game, gamename, resources, nodes, roads, client):
@@ -55,16 +56,16 @@ class Planner:
         # Determine what resources we are gaining
         for n in self.nodes:
             node = self.game.boardLayout.nodes[n]
-            type = node.harbor
-            type_name = elementIdToType.setdefault(str(type), "NO HARBOUR")
+            htype = node.harbor
+            htype_name = elementIdToType.setdefault(str(htype), "NO HARBOUR")
             
             # If we have a certain harbour, raise the score for that resource
-            if 0 < type < 6:
-                self.scores[type_name] += 1
+            if 0 < htype < 6:
+                self.scores[htype_name] += 1
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
-            elif type == 6:
-                self.scores[type_name] = 0.1
+            elif htype == 6:
+                self.scores[htype_name] = 0.1
                 
             tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
@@ -114,7 +115,7 @@ class Planner:
                 self.debug_print("Road {0} belongs to: {1}".format(hex(road.id), road.owner))
 
             # If we own any of the roads
-            if any(r.owner and r.owner == self.game.playernum for r in roads):
+            if any(r.owner and r.owner == int(self.game.playernum) for r in roads):
                 if self.resources["SETTLEMENTS"] > 0 and self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (best_node.id, 1)
@@ -151,7 +152,7 @@ class Planner:
                     harbour = node.harbor
                     
                     if 0 < harbour < 6:
-                        tempScore = self.scores[elementIdToType[harbour] + "H"]
+                        tempScore = self.scores[str(elementIdToType[harbour]) + "H"]
                     elif harbour == 6:
                         tempScore = self.scores["3FOR1H"]
                     else:
