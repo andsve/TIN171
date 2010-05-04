@@ -458,8 +458,29 @@ class Agent:
         elif self.gamestate == 8 and name == "ChoosePlayerRequestMessage":
 
             # Choose a player to steal from
+            
+            player_choices = []
+            self.debug_print("Steal list: {0}".format(message.choices))
+            for i,v in enumerate(message.choices):
+                if v == 'true':
+                    player_choices.append({'id': i, 'points': self.game.vp[i]})
+            
+            # Debug print steal list
+            self.debug_print("Steal list with points: {0}".format(player_choices))
+            
+            # Find the best one
+            best_id = -1
+            best_points = -1
+            for player in player_choices:
+                if player['points'] > best_points:
+                    best_points = player['points']
+                    best_id = player['id']
+            
+            response = ChoosePlayerMessage(self.gamename, best_id)
+            self.client.send_msg(response)
+            
             # TODO: Dont do this randomly
-            i = 0
+            """i = 0
             self.debug_print("Steal list: {0}".format(message.choices))
             for c in message.choices:
                 if c == 'true':
@@ -467,7 +488,7 @@ class Agent:
                     self.client.send_msg(response)
                     break
                 else:
-                    i += 1
+                    i += 1"""
 
         elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 20:
 
