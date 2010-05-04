@@ -144,7 +144,10 @@ class Client:
                     #self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
                     #self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
                     #self.send_msg(messages.EndTurnMessage(gamename))
-                    
+             
+            elif msg == "GameStateMessage":
+                logging.info("Switching gamestate to: {0}".format(message.state_name)
+             
             elif msg == "RobotDismissMessage":
                 import pdb
                 import messages
