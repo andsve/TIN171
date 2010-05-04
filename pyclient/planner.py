@@ -115,10 +115,11 @@ class Planner:
 
             # If we own any of the roads
             if any(r.owner and r.owner == self.game.playernum for r in roads):
-                if self.canAffordSettlement() and self.resources["SETTLEMENTS"] > 0:
+                
+                if self.resources["SETTLEMENTS"] > 0 and self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (best_node.id, 1)
-                elif self.canAffordWithTrade(1) and self.resources["SETTLEMENTS"] > 0:
+                elif self.resources["SETTLEMENTS"] > 0 and self.canAffordWithTrade(1):
                     self.debug_print("Can afford s after trade...")
                     return (best_node.id, 1)
                 else:
@@ -129,10 +130,10 @@ class Planner:
                     self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
 
             else:
-                if self.canAffordRoad() and self.resources["ROADS"] > 0:
+                if self.resources["ROADS"] > 0 and self.canAffordRoad():
                     self.debug_print("Can build road, sending...")
                     return self.findClosestBuildableRoad([road.id for road in roads])
-                elif self.canAffordWithTrade(0) and self.resources["ROADS"] > 0:
+                elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
                     self.debug_print("Can afford road after trade...")
                     return self.findClosestBuildableRoad([road.id for road in roads])
                 else:
@@ -677,6 +678,7 @@ class Planner:
                         left_to_trade -= 1
 
                 response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed])
+                self.debug_print("Trade1: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,sheep_needed,wheat_needed,wood_needed]))
                 self.client.send_msg(response)
 
                 return True 
@@ -734,6 +736,7 @@ class Planner:
                         left_to_trade -= 1
 
                 response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed])
+                self.debug_print("Trade2: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[clay_needed,0,0,0,wood_needed]))
                 self.client.send_msg(response)
 
                 return True
@@ -791,6 +794,7 @@ class Planner:
                         left_to_trade -= 1
 
                 response = BankTradeMessage(self.gamename,[clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[0,ore_needed,0,wheat_needed,0])
+                self.debug_print("Trade3: {0},{1}".format([clay_to_trade,ore_to_trade,sheep_to_trade,wheat_to_trade,wood_to_trade],[0,ore_needed,0,wheat_needed,0]))
                 self.client.send_msg(response)
 
                 return True

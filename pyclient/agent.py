@@ -49,35 +49,75 @@ class Agent:
     # Auxiliary gameboard functions
     #
     
-    def calculate_new_settlement_weight(self, node, _round): # add the round number as parameter?
+    def calculate_new_settlement_weight(self, node): # add the round number as parameter?
         weight = 0
+        w1=0
+        w2=0
+        w3=0
+        r1=0
+        r2=0
+        r3=0
         if node.t1:
             t1 = self.game.boardLayout.tiles[node.t1]
-            weight = weight + self.resource_weight(t1.resource,_round) * dice_props[t1.number]
+            r1 = t1.resource
+            w1 = self.resource_weight(r1) * dice_props[t1.number]
+            self.debug_print("The original weight on tile1 is {0}, tile number is {1}, type is {2}".format(w1,t1.number,t1.resource))
+
         if node.t2:
             t2 = self.game.boardLayout.tiles[node.t2]
-            weight = weight + self.resource_weight(t2.resource,_round) * dice_props[t2.number]
+            r2 = t2.resource
+            w2 = self.resource_weight(r2) * dice_props[t2.number]
+            self.debug_print("The original weight on tile2 is {0}, tile number is {1}, type is {2}".format(w2,t2.number,t2.resource))
+            if (r2 == r1):
+                if(w2>w1):
+                    w1 = w1*0.8
+                else:
+                    w2 = w2*0.8
+                
         if node.t3:
             t3 = self.game.boardLayout.tiles[node.t3]
-            weight = weight + self.resource_weight(t3.resource,_round) * dice_props[t3.number]   
-        
-        
+            r3 = t3.resource
+            w3 = self.resource_weight(r3) * dice_props[t3.number]
+            self.debug_print("The original weight on tile3 is {0}, tile number is {1}, type is {2}".format(w3,t3.number,t3.resource))
+            if (r3 == r1):
+                if(w3>w1):
+                    w1 = w1*0.8
+                else:
+                    w3 = w3*0.8
+            elif (r3 == r2):
+                if(w3>w2):
+                    w2 = w2*0.8
+                else:
+                    w3 = w3*0.8
+
+        weight = w1+w2+w3
+        # if it is the first settlement than force the robot to take three kinds of resource
+        rl=0
+        for i in resource_list:
+            rl= rl+i
+        if (rl==0):
+            if(r1!=0 and r2!=0 and r3!=0):
+                if(r1!=r2 and r2!=r3):
+                    if(t1.resource!=t3.resource):
+                        weight = weight + 5
+        if (rl!=0):
+            if(resource_list[r1]==0):
+                weight = weight + 2
+            if(resource_list[r2]==0):
+                weight = weight + 2
+            if(resource_list[r3]==0):
+                weight = weight + 2
         return weight
 
-    def resource_weight(self, _type, _round):
+    def resource_weight(self, _type):
         #1 = Clay
         #2 = Ore
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,20,20,20,20,20]
-        
-        if (_round!=1):
-            if (resource_list[_type]==0 and _type!=0):
-                return 40 # enhance the importance of the scarce resource
-        else:
-            resource_list[_type] = 1
-            return resource_weight[_type]
+        resource_weight = [0,30,20,20,20,30]
+        return resource_weight[_type]
+
         
     
     
@@ -93,9 +133,9 @@ class Agent:
                 
                 # look up node in gameboard
                 node = self.game.boardLayout.nodes[k]
-                
-                good_nodes.append({'id': k, 'w': self.calculate_new_settlement_weight(node,1)})
-                
+                sw = self.calculate_new_settlement_weight(node)
+                good_nodes.append({'id': k, 'w': sw})
+                self.debug_print("The total weight on this point is {0}".format(sw))
                 # print neighbour roads
                 #self.debug_print("It has neighbours: {0}, {1}, {2}".format(node.n1, node.n2, node.n3))
                 """
@@ -174,6 +214,7 @@ class Agent:
 
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
+        
         
         if name == "ResourceCountMessage":
             items = self.resources.items()
@@ -359,20 +400,40 @@ class Agent:
                 # We havn't built around this node, yay!
                 # The more settlements around the tile, the better to place here
                 num_settlements = 0.0
+                num_players = {0: False, 1: False, 2: False, 3: False}
+                num_different = 0.0
+                
                 if (n1.owner != None):
                     num_settlements += 1.0 * n1.type
+                    num_players[n1.owner] = True
                 if (n2.owner != None):
                     num_settlements += 1.0 * n2.type
+                    num_players[n2.owner] = True
                 if (n3.owner != None):
                     num_settlements += 1.0 * n3.type
+                    num_players[n3.owner] = True
                 if (n4.owner != None):
                     num_settlements += 1.0 * n4.type
+                    num_players[n4.owner] = True
                 if (n5.owner != None):
                     num_settlements += 1.0 * n5.type
+                    num_players[n5.owner] = True
                 if (n6.owner != None):
                     num_settlements += 1.0 * n6.type
+                    num_players[n6.owner] = True
+                    
+                if num_players[0]:
+                    num_different += 1.0
+                if num_players[1]:
+                    num_different += 1.0
+                if num_players[2]:
+                    num_different += 1.0
+                if num_players[3]:
+                    num_different += 1.0
                 
-                robber_scale = num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
+                robber_scale += num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
+                if (num_settlements > 0.0):
+                    robber_scale += 1.0 - num_different / 4.0
                 
                 # Append to possible tiles
                 possible_tiles.append({'id': k, 'scale': robber_scale})

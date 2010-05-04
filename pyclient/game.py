@@ -15,6 +15,10 @@ class Game:
         self.builtnodes = nodes
         self.builtroads = roads
         
+        # keep track of victory points for all players
+        self.vp = {0: 0, 1: 0, 2: 0, 3: 0}
+        self.longest_road = None
+        
 
     def debug_print(self, msg):
         logging.info(msg)
@@ -72,6 +76,22 @@ class Game:
 
         if id == "SitDownMessage" and message.nickname == self.nickname:
             self.playernum = message.playernum
+        
+        # Count longest round points
+        elif id == "LongestRoadMessage" and message.playernum >= 0:
+            if (self.longest_road):
+                self.vp[self.longest_road] -= 2
+            
+            self.longest_road = message.playernum
+            self.vp[self.longest_road] += 2
+        
+        # Keep track of largest army message
+        elif id == "LargestArmyMessage" and message.playernum >= 0:
+            if (self.largest_army):
+                self.vp[self.largest_army] -= 2
+            
+            self.largest_army = message.playernum
+            self.vp[self.largest_army] += 2
         
         elif id == "BoardLayoutMessage":
             # Set game board
@@ -144,6 +164,8 @@ class Game:
         elif id == "PutPieceMessage":
             logging.info("PutPiece (#{0}): Type = {1}, Coords = {2}".format(message.playernum, message.piecetype, hex(message.coords)))
             if message.piecetype == "SETTLEMENT":
+                self.vp[message.playernum] += 1
+                
                 self.boardLayout.nodes[message.coords].owner = message.playernum 
                 self.boardLayout.nodes[message.coords].type = 1
 
@@ -247,6 +269,8 @@ class Game:
                         self.debug_print("Built road at {0}. May build road on {1}".format(hex(message.coords),hex(r3)))
 
             elif message.piecetype == "CITY":
+                self.vp[message.playernum] += 1
+                
                 self.boardLayout.nodes[message.coords].type = 2
                 
                 # increase the number of settlements we have left to build
