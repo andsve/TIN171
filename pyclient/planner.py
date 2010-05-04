@@ -94,7 +94,7 @@ class Planner:
         for r in possible_roads:
             self.calcNeighbourScore(r, 0)
 
-      
+        bestNode = None
         if len(self.nodeScore) > 0:
 
             def cmp_fun(a,b):
