@@ -64,7 +64,7 @@ class Planner:
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
             elif htype == 6:
-                self.scores[htype_name] = 0.5
+                self.scores["3FOR1H"] = 0.5
                 
             tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
@@ -79,7 +79,7 @@ class Planner:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
                     self.scores[res_name] -= score_mod
-                    self.scores[res_name + "H"] += 2 * score_mod
+                    self.scores[res_name + "H"] += 1.5 * score_mod
            
         self.node_scores = {}
         possible_roads = [] # use a set?
@@ -306,6 +306,12 @@ class Planner:
         n1 = self.game.boardLayout.roads[road].n1
         n2 = self.game.boardLayout.roads[road].n2
 
+        #check if the road is actually unbuildable due to an enemy settlement
+        if road in self.game.buildableRoads.roads and ((self.game.boardLayout.nodes[n1].owner and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))):
+            return
+                    
+        
+
         if self.game.buildableNodes.nodes[n1]:
 
             if self.game.boardLayout.nodes[n1].harbor == 1:
@@ -408,15 +414,15 @@ class Planner:
                 if self.game.boardLayout.nodes[n1].harbor == 5:
                     tempScore += self.probabilites[self.game.boardLayout.tiles[t3].number]
 
-            tempScore += (4 - 2*depth)
+            tempScore += (3 - depth)
             if depth == 0 and self.game.boardLayout.roads[road].owner == None:
                 tempScore -= 1
 
             if n1 not in self.nodeScore or tempScore > self.nodeScore[n1]:
                 self.nodeScore[n1] = tempScore
                 
-        #only look for settlement point maximum 2 roads away
-        if depth < 2:
+        #only look for settlement point maximum 3 roads away
+        if depth < 3:
             d = 1
             if depth == 0 and self.game.boardLayout.roads[road].owner == None:
                 d = 2
@@ -532,7 +538,7 @@ class Planner:
                 if self.game.boardLayout.nodes[n2].harbor == 5:
                     tempScore += self.probabilities[self.game.boardLayout.tiles[t3].number]
 
-            tempScore += (4 - 2*depth)
+            tempScore += (3 - depth)
             if depth == 0 and self.game.boardLayout.roads[road].owner == None:
                 tempScore -= 1
 
@@ -540,7 +546,7 @@ class Planner:
                 self.nodeScore[n2] = tempScore
 
         #only look for settlement point maximum 2 roads away
-        if depth < 2:
+        if depth < 3:
             d = 1
             if depth == 0 and self.game.boardLayout.roads[road].owner == None:
                 d = 2
