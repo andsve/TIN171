@@ -26,7 +26,7 @@ class Agent:
         self.gamename = gamename
         self.client = client
         self.nickname = nickname
-        self.playernum = None
+        self.playernum = -1
 
         self.builtnodes = nodes
         self.builtroads = roads

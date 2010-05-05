@@ -855,7 +855,7 @@ class PotentialSettlementsMessage(Message):
         
     def to_cmd(self):
         return "{0}|{1},{2},{3}".format(self.id, self.game, self.playernum
-                                        ,','.join(self.settlements))
+                                        ,','.join(map(str, self.settlements)))
                  
     @staticmethod
     def parse(text):

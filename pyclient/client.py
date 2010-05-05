@@ -85,7 +85,8 @@ class Client:
         gamestarted = False
         
         nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
-        gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
+        gamename = "mgame2"
+        #gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         self.game = game.Game(nickname,self.resources,self.builtnodes,self.builtroads)
         self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
         
@@ -132,7 +133,7 @@ class Client:
                 gamestarted = True
                 logging.info("Starting game...")
                 m = game.StartGameMessage(gamename)
-                self.send_msg(m)
+                #self.send_msg(m)
             
             elif msg == "GameTextMsgMessage":
                 import pdb
@@ -186,9 +187,10 @@ def main(args):
         addr = args[0]
         port = int(args[1])
     else:
-        addr = "komugi.se"
-        port = 8880
-        #addr = "mkeyd.net"
+            addr = "komugi.se"
+            port = 8888 #new verrsion witout bots
+            #port = 8880 #old version with bots
+            #addr = "mkeyd.net"
         #port = 16000
     
     server = (addr, port)
