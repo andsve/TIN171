@@ -499,8 +499,8 @@ class Agent:
     # TODO: Intelligent stuff
     def make_play(self):
 
-        temp = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
-        plan = temp.make_plan()
+        planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
+        plan = planner.make_plan()
 
         if plan:
             (build_spot, build_type) = plan
@@ -510,6 +510,13 @@ class Agent:
             self.client.send_msg(response)
 
             response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
+            self.client.send_msg(response)
+
+        #cannot afford city. buy developement card.
+        # if we have more than 7 resources and has built on 4 or more spots
+        elif planner.canAffordCard() and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5:
+
+            response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
 
         else:        
