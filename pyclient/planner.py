@@ -124,8 +124,8 @@ class Planner:
                 if 0 < tile.resource < 6:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
-                    self.add_resource_score(tile.resource, -score_mod)
-                    self.add_harbour_score(tile.resource, 1.5 * score_mod)
+                    self.add_resource_score(tile.resource, -2.0 * score_mod)
+                    self.add_harbour_score(tile.resource, 1.0 * score_mod)
            
         possible_roads = []
         possible_roads += self.roads
@@ -181,7 +181,7 @@ class Planner:
                 else:
                     self.debug_print("Cannot afford road.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
-                    self.debug_print("Clay: {0}".format(self.resources["CLAY"]))
+                    self.debug_print("Clay: {0}".format(self.resources["CLAY"]))                
 
         # Cannot afford settlement and shouldn't/cannot build road. Try upgrading to city.
 
@@ -229,7 +229,8 @@ class Planner:
                     else:
                         self.debug_print("Cannot afford city.")
                         self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
-                        self.debug_print("Ore: {0}".format(self.resources["ORE"]))
+                        self.debug_print("Ore: {0}".format(self.resources["ORE"]))               
+        
         return None
 
 
@@ -249,6 +250,10 @@ class Planner:
     def canAffordCity(self):
 
         return self.resources["WHEAT"] >= 2 and self.resources["ORE"] >= 3
+
+    def canAffordCard(self):
+
+        return self.resources["WHEAT"] >= 1 and self.resources["ORE"] >= 1 and self.resources["SHEEP"] >= 1
     
     def calcNeighbourScore(self, road, depth):
 
