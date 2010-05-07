@@ -191,7 +191,6 @@ class Client:
                 self.send_msg(messages.LeaveGameMessage(nickname, socket.gethostname(), gamename))
                
             else:
-                # Output only unhandeled messages to stdout
                 if message == None:
                     logging.debug("{0} - NOT SUPPORTED".format(msg))
                     continue
