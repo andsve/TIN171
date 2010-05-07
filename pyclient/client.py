@@ -58,7 +58,23 @@ class Client:
         self.agent = None #= agent.Agent(self.game)
         self.game = None
 
-        self.resources = {}
+        self.resources = {"SHEEP": 0
+                        ,"VICTORY_CARDS": 0
+                        ,"WHEAT": 0
+                        ,"SETTLEMENTS": 5
+                        ,"MONOPOLY_CARDS": 0
+                        ,"KNIGHT_CARDS": 0
+                        ,"DEV_CARDS": 25
+                        ,"ROAD_CARDS": 0
+                        ,"MAY_PLAY_DEVCARD": False
+                        ,"WOOD": 0
+                        ,"CITIES": 4
+                        ,"CLAY": 0
+                        ,"ROADS": 15
+                        ,"NUMKNIGHTS": 0
+                        ,"ORE": 0
+                        ,"RESOURCE_CARDS": 0}
+                        
         self.builtnodes = []
         self.builtroads = []
 
