@@ -38,6 +38,17 @@ class Agent:
         self.resources["SHEEP"] = 0
         self.resources["WHEAT"] = 0
         self.resources["WOOD"] = 0
+        self.resources["DEV_CARDS"] = 25
+        self.resources["NUMKNIGHTS"] = 0
+        self.resources["KNIGHT_CARDS"] = 0
+        self.resources["VICTORY_CARDS"] = 0
+        self.resources["MONOPOLY_CARDS"] = 0
+        self.resources["ROAD_CARDS"] = 0
+        self.resources["RESOURCE_CARDS"] = 0
+        self.resources["MAY_PLAY_DEVCARD"] = False
+
+        self.played_knight = False
+        self.rob_several = False
         
         self.output_prefix = "[DEBUG] agent.py ->"
     
@@ -221,7 +232,48 @@ class Agent:
             for res, val in items[1:]:
                 if res != "UNKNOWN":
                     self.debug_print("                {0} = {1}".format(res, val))
-        
+
+        # updates the number of devcards left
+        if name == "DevCardCountMessage":
+            self.resources["DEV_CARDS"] = message.count
+
+        if name == "DevCardMessage":
+            # we gain a devcard
+            if int(message.playernum) == int(self.playernum) and int(message.action) == 0:
+
+                if int(message.cardtype) == 0:
+                    self.resources["KNIGHT_CARDS"] += 1
+
+                elif int(message.cardtype) == 1:
+                    self.resources["ROAD_CARDS"] += 1
+
+                elif int(message.cardtype) == 2:
+                    self.resources["RESOURCE_CARDS"] += 1
+
+                elif int(message.cardtype) == 3:
+                    self.resources["MONOPOLY_CARDS"] += 1
+
+                elif int(message.cardtype) >= 4 and int(message.cardtype) <= 8:
+                    self.resources["VICTORY_CARDS"] += 1
+
+            # we used a devcard
+            elif int(message.playernum) == int(self.playernum) and int(message.action) == 1:
+
+                if int(message.cardtype) == 0:
+                    self.resources["KNIGHT_CARDS"] -= 1
+
+                elif int(message.cardtype) == 1:
+                    self.resources["ROAD_CARDS"] -= 1
+
+                elif int(message.cardtype) == 2:
+                    self.resources["RESOURCE_CARDS"] -= 1
+
+                elif int(message.cardtype) == 3:
+                    self.resources["MONOPOLY_CARDS"] -= 1
+
+        if name == "SetPlayedDevCardMessage" and int(message.playernum) == int(self.playernum):
+            self.resources["MAY_PLAY_DEVCARD"] = not message.cardflag
+                    
         # Setup state 1    
         if self.gamestate == 1 and name == "TurnMessage" and message.playernum == self.playernum:
             new_settlement_place = self.find_buildable_node()
@@ -315,11 +367,25 @@ class Agent:
         # State 6 or 7 (not rolled dices yet, might be forced to throw away cards or handle trades)
         elif (self.gamestate == 7 and name == "TurnMessage" and int(message.playernum) == int(self.playernum)) or (self.gamestate == 6 and name == "GameStateMessage" and int(message.state) == 15):
 
-            # Roll Dices
-            response = RollDiceMessage(self.gamename)
-            self.client.send_msg(response)
+            # Play a knight card
+            n1 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n1
+            n2 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n2
+            n3 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n3
+            n4 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n4
+            n5 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n5
+            n6 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n6
+            owners = [self.game.boardLayout.nodes[n1].owner,self.game.boardLayout.nodes[n2].owner,self.game.boardLayout.nodes[n3].owner,self.game.boardLayout.nodes[n4].owner,self.game.boardLayout.nodes[n5].owner,self.game.boardLayout.nodes[n6].owner]
 
-            self.gamestate = 8
+            if self.resources["KNIGHT_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and int(self.playernum) in owners:
+                response = PlayDevCardRequestMessage(self.gamename, 0)
+                self.client.send_msg(response)
+                self.played_knight = True
+
+            else:            
+                # Roll Dices
+                self.roll_dices()
+
+                self.gamestate = 8
             
         elif self.gamestate == 7 and name == "DiscardRequestMessage":
             
@@ -358,103 +424,16 @@ class Agent:
             self.client.send_msg(response)
             
         # We need to move the robber, lets find a good spot!
-        elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 33:
-            
-            # List to store possible tiles in
-            possible_tiles = []
-            
-            # Iterate over all tiles
-            for k,v in self.game.boardLayout.tiles.items():
-                
-                robber_scale = 0
-                tile_number = v.number
-                tile_resource = v.resource
-                
-                # We can't move it to the same tile again
-                if (self.game.boardLayout.robberpos == int(k)):
-                    continue
-                
-                # Store all nodes around this tile for future refernce
-                n1 = self.game.boardLayout.nodes[v.n1]
-                n2 = self.game.boardLayout.nodes[v.n2]
-                n3 = self.game.boardLayout.nodes[v.n3]
-                n4 = self.game.boardLayout.nodes[v.n4]
-                n5 = self.game.boardLayout.nodes[v.n5]
-                n6 = self.game.boardLayout.nodes[v.n6]
-                
-                # Check so we dont try to block ourselves!
-                if (n1.owner != None and int(n1.owner) == int(self.playernum)):
-                    continue
-                if (n2.owner != None and int(n2.owner) == int(self.playernum)):
-                    continue
-                if (n3.owner != None and int(n3.owner) == int(self.playernum)):
-                    continue
-                if (n4.owner != None and int(n4.owner) == int(self.playernum)):
-                    continue
-                if (n5.owner != None and int(n5.owner) == int(self.playernum)):
-                    continue
-                if (n6.owner != None and int(n6.owner) == int(self.playernum)):
-                    continue
-                
-                # We havn't built around this node, yay!
-                # The more settlements around the tile, the better to place here
-                num_settlements = 0.0
-                num_players = {0: False, 1: False, 2: False, 3: False}
-                num_different = 0.0
-                
-                if (n1.owner != None):
-                    num_settlements += 1.0 * n1.type
-                    num_players[n1.owner] = True
-                if (n2.owner != None):
-                    num_settlements += 1.0 * n2.type
-                    num_players[n2.owner] = True
-                if (n3.owner != None):
-                    num_settlements += 1.0 * n3.type
-                    num_players[n3.owner] = True
-                if (n4.owner != None):
-                    num_settlements += 1.0 * n4.type
-                    num_players[n4.owner] = True
-                if (n5.owner != None):
-                    num_settlements += 1.0 * n5.type
-                    num_players[n5.owner] = True
-                if (n6.owner != None):
-                    num_settlements += 1.0 * n6.type
-                    num_players[n6.owner] = True
-                    
-                if num_players[0]:
-                    num_different += 1.0
-                if num_players[1]:
-                    num_different += 1.0
-                if num_players[2]:
-                    num_different += 1.0
-                if num_players[3]:
-                    num_different += 1.0
-                
-                robber_scale += num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
-                if (num_settlements > 0.0):
-                    robber_scale += 1.0 - num_different / 4.0
-                
-                # Append to possible tiles
-                possible_tiles.append({'id': k, 'scale': robber_scale})
-            
-            # Loop possible_tiles and find best one
-            best_tile_id = -1
-            best_tile_scale = -1
-            
-            self.debug_print("Possible tiles to move robber to:")
-            for tile in possible_tiles:
-                self.debug_print("       id: {0}, scale: {1}".format(hex(tile['id']), tile['scale']))
-                if (tile['scale'] > best_tile_scale):
-                    best_tile_scale = tile['scale']
-                    best_tile_id = tile['id']
-            self.debug_print("       ---")
-            self.debug_print("       id: {0}, scale: {1} Seemed best!".format(hex(best_tile_id), best_tile_scale))
-            
-            # Now move robber to the best spot!
-            response = MoveRobberMessage(self.gamename, self.playernum, best_tile_id)
-            self.client.send_msg(response)
+        elif (self.played_knight or self.gamestate == 8) and name == "GameStateMessage" and int(message.state) == 33:
 
-        elif self.gamestate == 8 and name == "ChoosePlayerRequestMessage":
+            self.play_robber()
+
+            if not self.rob_several and self.played_knight:
+                self.roll_dices()
+                self.played_knight = False
+                self.gamestate = 8
+           
+        elif (self.rob_several or self.gamestate == 8) and name == "ChoosePlayerRequestMessage":
 
             # Choose a player to steal from
             
@@ -478,16 +457,11 @@ class Agent:
             response = ChoosePlayerMessage(self.gamename, best_id)
             self.client.send_msg(response)
             
-            # TODO: Dont do this randomly
-            """i = 0
-            self.debug_print("Steal list: {0}".format(message.choices))
-            for c in message.choices:
-                if c == 'true':
-                    response = ChoosePlayerMessage(self.gamename, i)
-                    self.client.send_msg(response)
-                    break
-                else:
-                    i += 1"""
+            if self.played_knight:
+                self.roll_dices()
+                self.rob_several = False
+                self.played_knight = False
+                self.gamestate = 8
 
         elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 20:
 
@@ -514,7 +488,7 @@ class Agent:
 
         #cannot afford city. buy developement card.
         # if we have more than 7 resources and has built on 4 or more spots
-        elif planner.canAffordCard() and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5:
+        elif self.resources["DEV_CARDS"] > 0 and planner.canAffordCard() and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 6:
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
@@ -543,3 +517,107 @@ class Agent:
         # returns 0 if the node isn't a harbour node.
         pass
     
+    def play_robber(self):
+
+        # List to store possible tiles in
+        possible_tiles = []
+            
+        # Iterate over all tiles
+        for k,v in self.game.boardLayout.tiles.items():
+               
+            robber_scale = 0
+            tile_number = v.number
+            tile_resource = v.resource
+             
+            # We can't move it to the same tile again
+            if (self.game.boardLayout.robberpos == int(k)):
+                continue
+              
+            # Store all nodes around this tile for future refernce
+            n1 = self.game.boardLayout.nodes[v.n1]
+            n2 = self.game.boardLayout.nodes[v.n2]
+            n3 = self.game.boardLayout.nodes[v.n3]
+            n4 = self.game.boardLayout.nodes[v.n4]
+            n5 = self.game.boardLayout.nodes[v.n5]
+            n6 = self.game.boardLayout.nodes[v.n6]
+              
+            # Check so we dont try to block ourselves!
+            if (n1.owner != None and int(n1.owner) == int(self.playernum)):
+                continue
+            if (n2.owner != None and int(n2.owner) == int(self.playernum)):
+                continue
+            if (n3.owner != None and int(n3.owner) == int(self.playernum)):
+                continue
+            if (n4.owner != None and int(n4.owner) == int(self.playernum)):
+                continue
+            if (n5.owner != None and int(n5.owner) == int(self.playernum)):
+                continue
+            if (n6.owner != None and int(n6.owner) == int(self.playernum)):
+                continue
+             
+            # We havn't built around this node, yay!
+            # The more settlements around the tile, the better to place here
+            num_settlements = 0.0
+            num_players = {0: False, 1: False, 2: False, 3: False}
+            num_different = 0.0
+                
+            if (n1.owner != None):
+                num_settlements += 1.0 * n1.type
+                num_players[n1.owner] = True
+            if (n2.owner != None):
+                num_settlements += 1.0 * n2.type
+                num_players[n2.owner] = True
+            if (n3.owner != None):
+                num_settlements += 1.0 * n3.type
+                num_players[n3.owner] = True
+            if (n4.owner != None):
+                num_settlements += 1.0 * n4.type
+                num_players[n4.owner] = True
+            if (n5.owner != None):
+                num_settlements += 1.0 * n5.type
+                num_players[n5.owner] = True
+            if (n6.owner != None):
+                num_settlements += 1.0 * n6.type
+                num_players[n6.owner] = True
+                    
+            if num_players[0]:
+                num_different += 1.0
+            if num_players[1]:
+                num_different += 1.0
+            if num_players[2]:
+                num_different += 1.0
+            if num_players[3]:
+                num_different += 1.0               
+                
+            robber_scale += num_settlements / 6.0 # (Maximum number of settlements around a tile is 3!)
+            if (num_settlements > 0.0):
+                robber_scale += 1.0 - num_different / 4.0
+                
+            # Append to possible tiles
+            possible_tiles.append({'id': k, 'scale': robber_scale, 'num_players': num_different})
+            
+        # Loop possible_tiles and find best one
+        best_tile_id = -1
+        best_tile_scale = -1
+        best_choice = None
+            
+        self.debug_print("Possible tiles to move robber to:")
+        for tile in possible_tiles:
+            self.debug_print("       id: {0}, scale: {1}".format(hex(tile['id']), tile['scale']))
+            if (tile['scale'] > best_tile_scale):
+                best_tile_scale = tile['scale']
+                best_tile_id = tile['id']
+                best_choice = tile
+        self.debug_print("       ---")
+        self.debug_print("       id: {0}, scale: {1} Seemed best!".format(hex(best_tile_id), best_tile_scale))
+            
+        # Now move robber to the best spot!
+        response = MoveRobberMessage(self.gamename, self.playernum, best_tile_id)
+        self.client.send_msg(response)
+
+        if self.played_knight and best_choice['num_players'] > 1.0:
+            self.rob_several = True
+
+    def roll_dices(self):
+        response = RollDiceMessage(self.gamename)
+        self.client.send_msg(response)
