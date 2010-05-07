@@ -381,15 +381,19 @@ class Planner:
         given_resources = set(("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD"))
         
         # If we don't have any settlements left to build, don't trade wheat and ore
+        keep = set()
         if self.resources["SETTLEMENTS"] == 0:
-            given_resources = given_resources - set(("WHEAT", "ORE"))
+            keep = set(("WHEAT", "ORE"))
+#            given_resources = given_resources - set(("WHEAT", "ORE"))
+#            needed_resources = needed_resources - set(("WHEAT", "ORE"))
+        given_resources = given_resources - keep
         
         for resource in needed_resources:
             needed[resource] = max(0, needed_count[resource] - self.resources[resource])
             
         for resource in needed_resources:
             gives[resource] = max(0, self.resources[resource] - needed_count[resource]) / min(trade_cost[resource], trade_cost["3FOR1"], 4)
-        for resource in given_resources - needed_resources:
+        for resource in given_resources - needed_resources - keep:
             gives[resource] = self.resources[resource] / min(trade_cost[resource], trade_cost["3FOR1"], 4)
 
         logging.info("Needed..: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in needed.items())))
@@ -408,7 +412,7 @@ class Planner:
                     logging.critical("needed: {0}".format(needed))
                     logging.critical("given_resources: {0}".format(given_resources))
                     logging.critical("needed_resources: {0}".format(needed_resources))
-                    break
+                    return False
                     
                 for gres in given_resources:
                     if gives[gres] > 0 and left_to_trade > 0:
