@@ -251,7 +251,7 @@ class Agent:
         elif self.gamestate == 2 and name == "GameStateMessage" and int(message.state) == 6:
     
             #arbitarly build a first road
-        for r in self.game.buildableRoads.roads:
+            for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r]:
                     response = PutPieceMessage(self.gamename, self.playernum, 0, r)
                     self.client.send_msg(response)
@@ -298,7 +298,7 @@ class Agent:
         
             #arbitarly build a second road
             #must be connected to second settlement
-        for r in self.game.buildableRoads.roads:
+            for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r] and (self.game.boardLayout.roads[r].n1 == self.builtnodes[1] or self.game.boardLayout.roads[r].n2 == self.builtnodes[1]):
                     response = PutPieceMessage(self.gamename, self.playernum, 0, r)
                     self.client.send_msg(response)
