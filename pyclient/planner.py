@@ -198,10 +198,6 @@ class Planner:
             for n in self.nodes:
                 node = self.game.boardLayout.nodes[n]
                 if node.type == 1:
-                    if 0 < node.harbor < 7:
-                        temp_score = self.get_harbour_score(node.harbor)
-                    else:
-                        temp_score = 0
                     
                     tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
                     
@@ -259,7 +255,7 @@ class Planner:
         increase_longest = i_l
 
         if increase_longest == 0 and (self.longest_length == 1 or self.increases_longest(road)):
-            increase_longest = 1
+            increase_longest = 2
 
         #check if the road is actually unbuildable due to an enemy settlement
         if road in self.game.buildableRoads.roads and ((self.game.boardLayout.nodes[n1].owner and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))):
