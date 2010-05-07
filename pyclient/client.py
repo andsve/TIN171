@@ -79,13 +79,13 @@ class Client:
         logging.debug("Sending: {0}".format(msg.to_cmd()))
         self.client.send(self.make_message(msg.to_cmd()))
             
-    def run(self):
+    def run(self, seat_num = 1):
         gamejoined = False
         satdown = False
         gamestarted = False
         
         nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
-        #gamename = "mgame2" #use static name for testing against others
+        #gamename = "sventest" #use static name for testing against others
         gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         self.game = game.Game(nickname,self.resources,self.builtnodes,self.builtroads)
         self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
@@ -125,7 +125,7 @@ class Client:
                 # We receive confirmation of a game created, available seats, etc
                 satdown = True
                 logging.info("Sitting down...")
-                m = game.SitDownMessage(gamename, nickname, 1, False)
+                m = game.SitDownMessage(gamename, nickname, seat_num, False)
                 self.send_msg(m)
                 
             elif msg == "ChangeFaceMessage" and not gamestarted:
