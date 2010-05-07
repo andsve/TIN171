@@ -101,10 +101,11 @@ class Agent:
                     if(t1.resource!=t3.resource):
                         weight = weight + 5
         if (rl!=0):
-            if(resource_list[r1]+resource_list[r2]+resource_list[r3] <= 1):
-                weight = weight + 2
-                if(r1!=r2 or r1!=r3 or r2!=r3):
-                    weight = weight +2
+            if(r1!=0 and r2!=0 and r3!=0):
+                if(resource_list[r1]+resource_list[r2]+resource_list[r3] <= 1):
+                    weight = weight + 2
+                    if(r1!=r2 or r1!=r3 or r2!=r3):
+                        weight = weight +2
 
         return weight
 
