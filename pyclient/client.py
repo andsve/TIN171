@@ -155,6 +155,12 @@ class Client:
              
             elif msg == "GameStateMessage":
                 logging.info("Switching gamestate to: {0}".format(message.state_name))
+                
+                if message.state_name == "OVER":
+                    logging.info("The game is over.")
+                    logging.info("Victory points: {0}".format(self.game.vp))
+                    logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
+
              
             elif msg == "RobotDismissMessage":
                 import pdb
@@ -164,12 +170,7 @@ class Client:
                 a = self.agent
                 logging.info(a.resources)
                 pdb.set_trace()
-                
-            elif msg == "GameStateMessage" and message.state_name == "OVER":
-                logging.info("The game is over.")
-                logging.info("Victory points: {0}".format(self.game.vp))
-                logging.info("Victory cards: {0}".format(agent.resources["VICTORY_CARDS"]))
-
+               
             else:
                 # Output only unhandeled messages to stdout
                 if message == None:
