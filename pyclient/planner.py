@@ -35,16 +35,16 @@ class Planner:
         #resources["WOOD"]
 
         self.default_scores = {
-             "WOOD":   1
-            ,"CLAY":   1
-            ,"SHEEP":  1
-            ,"WHEAT":  1
-            ,"ORE":    1
-            ,"WOODH":  1
-            ,"CLAYH":  1
-            ,"SHEEPH": 1
-            ,"WHEATH": 1
-            ,"OREH":   1
+             "WOOD":   3
+            ,"CLAY":   3
+            ,"SHEEP":  3
+            ,"WHEAT":  3
+            ,"ORE":    3
+            ,"WOODH":  0
+            ,"CLAYH":  0
+            ,"SHEEPH": 0
+            ,"WHEATH": 0
+            ,"OREH":   0
             ,"3FOR1H": 1
         }
         
@@ -105,11 +105,11 @@ class Planner:
             
             # If we have a certain harbour, raise the score for that resource
             if 0 < node.harbor < 6:
-                self.add_resource_score(node.harbor, 1)
+                self.add_resource_score(node.harbor, 3)
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
             elif node.harbor == 6:
-                self.set_harbour_score(node.harbor, 0.1)
+                self.set_harbour_score(node.harbor, 0)
                 
             tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
@@ -123,8 +123,8 @@ class Planner:
                 if 0 < tile.resource < 6:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
-                    self.add_resource_score(tile.resource, -1.0 * score_mod)
-                    self.add_harbour_score(tile.resource, 0.5 * score_mod)
+                    self.add_resource_score(tile.resource, -10 * score_mod)
+                    self.add_harbour_score(tile.resource, 10*score_mod)
            
         possible_roads = []
         possible_roads += self.roads
@@ -139,9 +139,10 @@ class Planner:
             self.calcNeighbourScore(r, 0)
 
         best_node = None
+        best_score = 0
         if len(self.nodeScore) > 0:
             tempList = sorted(self.nodeScore.items(), cmp=lambda a,b: int(1000*b[1]) - int(1000*a[1]))
-            (best_pos, score) = tempList[0]
+            (best_pos, best_score) = tempList[0]
             best_node = self.game.boardLayout.nodes[best_pos]
             for i, item in enumerate(tempList):
                 (node,score) = item
@@ -150,7 +151,7 @@ class Planner:
             self.debug_print("No good spots found!")
 
         # Find out how to build to that node
-        if best_node:
+        if best_node and self.resources["SETTLEMENTS"] > 0 and best_score >= 3:
             self.debug_print("Best location: {0}".format(best_node.id))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
@@ -267,10 +268,6 @@ class Planner:
                     if 0 < tile.resource < 6:
                         # Add resource score for all resource types
                         temp_score += self.get_resource_score(tile.resource)
-                        
-                        # If it's a harbour (?), add probability assigned to the neighbouring tile.
-                        if 0 < node.harbor < 6:
-                            temp_score += self.probabilities[tile.number]
 
                 temp_score += (3 - depth)
                 if depth == 0 and road_node.owner == None:
