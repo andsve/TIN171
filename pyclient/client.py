@@ -58,7 +58,23 @@ class Client:
         self.agent = None #= agent.Agent(self.game)
         self.game = None
 
-        self.resources = {}
+        self.resources = {"SHEEP": 0
+                        ,"VICTORY_CARDS": 0
+                        ,"WHEAT": 0
+                        ,"SETTLEMENTS": 5
+                        ,"MONOPOLY_CARDS": 0
+                        ,"KNIGHT_CARDS": 0
+                        ,"DEV_CARDS": 25
+                        ,"ROAD_CARDS": 0
+                        ,"MAY_PLAY_DEVCARD": False
+                        ,"WOOD": 0
+                        ,"CITIES": 4
+                        ,"CLAY": 0
+                        ,"ROADS": 15
+                        ,"NUMKNIGHTS": 0
+                        ,"ORE": 0
+                        ,"RESOURCE_CARDS": 0}
+                        
         self.builtnodes = []
         self.builtroads = []
 
@@ -145,8 +161,12 @@ class Client:
                 logging.info("(Chat) {0}".format(message.message))
                 g = self.game
                 a = self.agent
-                if message.message.upper().startswith("*PDB*"):
+                if message.message.upper().startswith("PDB"):
                     pdb.set_trace()
+                elif message.message.upper().startswith("QUIT"):
+                    logging.info("Server told me to quit!")
+                    import sys
+                    sys.exit(0)
                     
                 elif "can't build" in message.message:
                     logging.critical("BUG: Can not build, canceling all build requests!")
@@ -166,13 +186,9 @@ class Client:
 
              
             elif msg == "RobotDismissMessage":
-                import pdb
                 import messages
+                logging.info("I AM OUT OF HERE, NO ROBOTS ALLOWED")
                 self.send_msg(messages.LeaveGameMessage(nickname, socket.gethostname(), gamename))
-                g = self.game
-                a = self.agent
-                logging.info(a.resources)
-                pdb.set_trace()
                
             else:
                 # Output only unhandeled messages to stdout
@@ -226,7 +242,5 @@ if __name__ == '__main__':
     try:
         main(sys.argv[1:])
     except:
-        import pdb
         import traceback
         traceback.print_exc(file=sys.stdout)
-        pdb.set_trace()
