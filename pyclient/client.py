@@ -165,8 +165,7 @@ class Client:
                     pdb.set_trace()
                 elif message.message.upper().startswith("QUIT"):
                     logging.info("Server told me to quit!")
-                    import sys
-                    sys.exit(0)
+                    return
                     
                 elif "can't build" in message.message:
                     logging.critical("BUG: Can not build, canceling all build requests!")
@@ -191,7 +190,6 @@ class Client:
                 self.send_msg(messages.LeaveGameMessage(nickname, socket.gethostname(), gamename))
                
             else:
-                # Output only unhandeled messages to stdout
                 if message == None:
                     logging.debug("{0} - NOT SUPPORTED".format(msg))
                     continue
@@ -242,5 +240,7 @@ if __name__ == '__main__':
     try:
         main(sys.argv[1:])
     except:
+        import pdb
         import traceback
         traceback.print_exc(file=sys.stdout)
+        pdb.set_trace()
