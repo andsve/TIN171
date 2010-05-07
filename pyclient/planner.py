@@ -395,9 +395,6 @@ class Planner:
         keep = set()
         if self.resources["SETTLEMENTS"] == 0:
             keep = set(("WHEAT", "ORE"))
-#            given_resources = given_resources - set(("WHEAT", "ORE"))
-#            needed_resources = needed_resources - set(("WHEAT", "ORE"))
-#        given_resources = given_resources - keep
         
         for resource in needed_resources:
             needed[resource] = max(0, needed_count[resource] - self.resources[resource])
