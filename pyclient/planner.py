@@ -157,7 +157,7 @@ class Planner:
             self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
-        if best_node and self.resources["SETTLEMENTS"] > 0 and best_score >= 3:
+        if best_node and self.resources["SETTLEMENTS"] > 0 and best_score >= 3.5:
             self.debug_print("Best location: {0}".format(best_node.id))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
@@ -308,6 +308,11 @@ class Planner:
     def findClosestBuildableRoad(self, parents):
         for r in parents:
 
+            if self.game.buildableRoads.roads[r] and self.increases_longest(r):
+                return(r,0)
+
+        for r in parents:
+
             if self.game.buildableRoads.roads[r]:
                 return(r,0)
             
@@ -315,6 +320,32 @@ class Planner:
 
             n1 = self.game.boardLayout.roads[r].n1
             n2 = self.game.boardLayout.roads[r].n2
+
+            r1 = self.game.boardLayout.nodes[n1].n1
+            r2 = self.game.boardLayout.nodes[n1].n2
+            r3 = self.game.boardLayout.nodes[n1].n3
+
+            if r1 and self.game.buildableRoads.roads[r1] and self.increases_longest(r1):
+                return (r1, 0) 
+
+            if r2 and self.game.buildableRoads.roads[r2] and self.increases_longest(r2):
+                return (r2, 0)
+
+            if r3 and self.game.buildableRoads.roads[r3] and self.increases_longest(r3):
+                return (r3, 0)
+
+            r1 = self.game.boardLayout.nodes[n2].n1
+            r2 = self.game.boardLayout.nodes[n2].n2
+            r3 = self.game.boardLayout.nodes[n2].n3
+
+            if r1 and self.game.buildableRoads.roads[r1]:
+                return (r1, 0) 
+
+            if r2 and self.game.buildableRoads.roads[r2]:
+                return (r2, 0)
+
+            if r3 and self.game.buildableRoads.roads[r3]:
+                return (r3, 0)
 
             r1 = self.game.boardLayout.nodes[n1].n1
             r2 = self.game.boardLayout.nodes[n1].n2
@@ -467,6 +498,8 @@ class Planner:
             if len(temp) > len(longest):
                 longest = copy.deepcopy(temp)
 
+        self.longest_length = len(longest)
+
         return(longest[0], longest[-1], len(longest))
 
     def longest_path(self, visited):
@@ -512,7 +545,7 @@ class Planner:
         
         temp = self.longest_path([road])
 
-        if len(temp) > self.longest_length:
+        if len(temp) >= self.longest_length:
             return True
 
         return False
