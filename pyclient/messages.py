@@ -299,7 +299,10 @@ class GameMembersMessage(Message):
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        game = data[0]
+        members = data[1:]
+        return GameMembersMessage(game, members)
 
 class StartGameMessage(Message):
     id = 1018
