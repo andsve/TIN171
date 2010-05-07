@@ -182,13 +182,9 @@ class Client:
 
              
             elif msg == "RobotDismissMessage":
-                import pdb
                 import messages
+                logging.info("I AM OUT OF HERE, NO ROBOTS ALLOWED")
                 self.send_msg(messages.LeaveGameMessage(nickname, socket.gethostname(), gamename))
-                g = self.game
-                a = self.agent
-                logging.info(a.resources)
-                pdb.set_trace()
                
             else:
                 # Output only unhandeled messages to stdout
@@ -242,7 +238,5 @@ if __name__ == '__main__':
     try:
         main(sys.argv[1:])
     except:
-        import pdb
         import traceback
         traceback.print_exc(file=sys.stdout)
-        pdb.set_trace()
