@@ -363,32 +363,37 @@ class Planner:
 
         if _type == 0:
             self.debug_print("Trying to trade for road...")
-            needed_resources = ("CLAY", "WOOD")
+            needed_resources = set(("CLAY", "WOOD"))
             needed_count = {"CLAY": 1, "WOOD": 1}
             
         elif _type == 1:
             self.debug_print("Trying to trade for settlement...")
-            needed_resources = ("CLAY", "SHEEP", "WHEAT", "WOOD")
+            needed_resources = set(("CLAY", "SHEEP", "WHEAT", "WOOD"))
             needed_count = {"CLAY": 1, "SHEEP": 1, "WHEAT": 1, "WOOD": 1}
             
         elif _type == 2:
             self.debug_print("Trying to trade for city...")
-            needed_resources = ("WHEAT", "ORE")
+            needed_resources = set(("WHEAT", "ORE"))
             needed_count = {"WHEAT": 2, "ORE": 3}
-            
+        
         gives = {}
         needed = {}
-        given_resources = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
-            
+        given_resources = set(("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD"))
+        
+        # If we don't have any settlements left to build, don't trade wheat and ore
+        if self.resources["SETTLEMENTS"] == 0:
+            given_resources = given_resources - set(("WHEAT", "ORE"))
+        
         for resource in needed_resources:
             needed[resource] = max(0, needed_count[resource] - self.resources[resource])
             
         for resource in needed_resources:
             gives[resource] = max(0, self.resources[resource] - needed_count[resource]) / min(trade_cost[resource], trade_cost["3FOR1"], 4)
-        for resource in set(given_resources) - set(needed_resources):
+        for resource in given_resources - needed_resources:
             gives[resource] = self.resources[resource] / min(trade_cost[resource], trade_cost["3FOR1"], 4)
 
         logging.info("Needed..: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in needed.items())))
+        logging.info("Can give: {0}".format(", ".join(given_resources)))
         logging.info("Gives...: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in gives.items())))
 
         if sum(gives.values()) >= sum(needed.values()):
@@ -400,7 +405,8 @@ class Planner:
                         for nres in needed_resources:
                             if needed[nres] > 0 and left_to_trade > 0:
                                 def get_resource_index(name):
-                                    for i, n in enumerate(given_resources):
+                                    rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
+                                    for i, n in enumerate(rlist):
                                         if n == name:
                                             return i
                                         
