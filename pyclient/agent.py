@@ -489,7 +489,7 @@ class Agent:
 
         #cannot afford city. buy developement card.
         # if we have more than 7 resources and has built on 4 or more spots
-        elif self.resources["DEV_CARDS"] > 0 and planner.canAffordCard() and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 6:
+        elif self.resources["DEV_CARDS"] > 0 and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 6 and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
@@ -532,6 +532,10 @@ class Agent:
              
             # We can't move it to the same tile again
             if (self.game.boardLayout.robberpos == int(k)):
+                continue
+            
+            # We don't want to place it on the desert
+            if (tile_number == 0):
                 continue
               
             # Store all nodes around this tile for future refernce

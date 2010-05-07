@@ -18,6 +18,7 @@ class Game:
         # keep track of victory points for all players
         self.vp = {0: 0, 1: 0, 2: 0, 3: 0}
         self.longest_road = None
+        self.largest_army = None
         
 
     def debug_print(self, msg):
