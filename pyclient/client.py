@@ -161,8 +161,12 @@ class Client:
                 logging.info("(Chat) {0}".format(message.message))
                 g = self.game
                 a = self.agent
-                if message.message.upper().startswith("*PDB*"):
+                if message.message.upper().startswith("PDB"):
                     pdb.set_trace()
+                elif message.message.upper().startswith("QUIT"):
+                    logging.info("Server told me to quit!")
+                    import sys
+                    sys.exit(0)
                     
                 elif "can't build" in message.message:
                     logging.critical("BUG: Can not build, canceling all build requests!")
