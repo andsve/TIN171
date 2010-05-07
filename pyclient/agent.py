@@ -44,8 +44,8 @@ class Agent:
     def debug_print(self, msg):
         logging.info(msg)
         #cprint("{0} {1}".format(self.output_prefix, msg), 'red')
-	
-	#
+    
+    #
     # Auxiliary gameboard functions
     #
     
@@ -251,7 +251,7 @@ class Agent:
         elif self.gamestate == 2 and name == "GameStateMessage" and int(message.state) == 6:
     
             #arbitarly build a first road
-	    for r in self.game.buildableRoads.roads:
+        for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r]:
                     response = PutPieceMessage(self.gamename, self.playernum, 0, r)
                     self.client.send_msg(response)
@@ -268,7 +268,7 @@ class Agent:
         #Setup state 3 or 4
         #(state 3 normally. state 4 if we were the last to play and it's our turn again)
         elif (self.gamestate == 3 and name == "TurnMessage" and int(message.playernum) == int(self.playernum)) or (self.gamestate == 4 and name == "GameStateMessage" and int(message.state) == 10):
-	    new_settlement_place = self.find_buildable_node()
+            new_settlement_place = self.find_buildable_node()
             # change the resource_list to see which kind of resources are taken
             node = self.game.boardLayout.nodes[new_settlement_place]
             if node.t1:
@@ -298,7 +298,7 @@ class Agent:
         
             #arbitarly build a second road
             #must be connected to second settlement
-	    for r in self.game.buildableRoads.roads:
+        for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r] and (self.game.boardLayout.roads[r].n1 == self.builtnodes[1] or self.game.boardLayout.roads[r].n2 == self.builtnodes[1]):
                     response = PutPieceMessage(self.gamename, self.playernum, 0, r)
                     self.client.send_msg(response)
@@ -524,7 +524,7 @@ class Agent:
             response = EndTurnMessage(self.gamename)
             self.client.send_msg(response)
             self.gamestate = 7
-		
+            
     def can_build_at_node(self, node):
         # Returns 1 if it is possible to build a settlement at
         # this node, 0 otherwize.
