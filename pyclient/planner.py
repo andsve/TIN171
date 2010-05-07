@@ -158,7 +158,7 @@ class Planner:
 
         # Find out how to build to that node
         if best_node and self.resources["SETTLEMENTS"] > 0 and best_score >= 3.5:
-            self.debug_print("Best location: {0}".format(best_node.id))
+            self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
             for road in roads:
@@ -181,7 +181,7 @@ class Planner:
             else:
                 if self.resources["ROADS"] > 0 and self.canAffordRoad():
                     self.debug_print("Can build road, sending...")
-                    return self.findClosestBuildableRoad([road.id for road in roads])
+                    return self.findClosestBuildableRoad([road.id for road in roads if road.owner == None])
                 elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
                     self.debug_print("Can afford road after trade...")
                     return self.findClosestBuildableRoad([road.id for road in roads])
@@ -228,7 +228,32 @@ class Planner:
                     else:
                         self.debug_print("Cannot afford city.")
                         self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
-                        self.debug_print("Ore: {0}".format(self.resources["ORE"]))               
+                        self.debug_print("Ore: {0}".format(self.resources["ORE"]))
+
+        # try and build to build the longest road
+        tempLongestRoad = 0
+        tempRoad = None
+        if self.canAffordRoad():
+            self.debug_print("Try to connect settlement hubs.")
+            for road in self.game.buildableRoads.roads:
+                for road2 in self.game.buildableRoads.roads:
+                    if self.game.buildableRoads.roads[road] and self.game.buildableRoads.roads[road2]:
+                        self.debug_print("Changing owner for: {0} and {1}".format(hex(road),hex(road2)))
+                        self.game.boardLayout.roads[road].owner = int(self.game.playernum)
+                        self.game.boardLayout.roads[road2].owner = int(self.game.playernum)
+
+                        (start, end, tempLength) = self.find_longest_road()
+
+                        self.game.boardLayout.roads[road].owner = None
+                        self.game.boardLayout.roads[road2].owner = None
+
+                        if tempLength > self.longest_length and tempLength > tempLongestRoad:
+                            tempLongestRoad = tempLength
+                            tempRoad = road
+                            self.debug_print("Found a connection by {0} and {1}.".format(hex(road),hex(road2)))
+
+        if tempLongestRoad > self.longest_length:
+            return (tempRoad, 0)
         
         return None
 
@@ -497,8 +522,6 @@ class Planner:
 
             if len(temp) > len(longest):
                 longest = copy.deepcopy(temp)
-
-        self.longest_length = len(longest)
 
         return(longest[0], longest[-1], len(longest))
 

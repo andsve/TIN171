@@ -484,6 +484,8 @@ class Agent:
         
         plan = planner.make_plan()
 
+        self.debug_print(plan)
+
         if plan:
             (build_spot, build_type) = plan
 
@@ -496,7 +498,7 @@ class Agent:
 
         #cannot afford city. buy developement card.
         # if we have more than 7 resources and has built on 4 or more spots
-        elif self.resources["DEV_CARDS"] > 0 and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 6 and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
+        elif self.resources["DEV_CARDS"] > 0 and self.resources["ORE"] > 1 and self.resources["WHEAT"] > 1 and self.resources["SETTLEMENTS"] > 0 and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
