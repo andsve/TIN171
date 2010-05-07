@@ -399,7 +399,17 @@ class Planner:
         if sum(gives.values()) >= sum(needed.values()):
             left_to_trade = sum(needed.values())
 
+            max_iterations = 10
+            num_iterations = 0
             while left_to_trade > 0:
+                if num_iterations > max_iterations:
+                    logging.critical("WOOPSIE: Terminating loop.")
+                    logging.critical("gives: {0}".format(gives))
+                    logging.critical("needed: {0}".format(needed))
+                    logging.critical("given_resources: {0}".format(given_resources))
+                    logging.critical("needed_resources: {0}".format(needed_resources))
+                    break
+                    
                 for gres in given_resources:
                     if gives[gres] > 0 and left_to_trade > 0:
                         for nres in needed_resources:
@@ -420,5 +430,6 @@ class Planner:
                                 break
                         gives[gres] -= 1
                         left_to_trade -= 1
+                num_iterations += 1
             return True
         return False

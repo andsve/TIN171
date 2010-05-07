@@ -110,9 +110,9 @@ class Client:
                 (msg, message) = parsed
             
             # Graph dump on these messages
-            if msg in ["PutPieceMessage", "BoardLayoutMessage"]:
-                if HAS_GRAPHWIZ:
-                    graphdump.generate_graph(self.game)
+#            if msg in ["PutPieceMessage", "BoardLayoutMessage"]:
+#                if HAS_GRAPHWIZ:
+#                    graphdump.generate_graph(self.game)
             
             if msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
@@ -164,7 +164,11 @@ class Client:
                 a = self.agent
                 logging.info(a.resources)
                 pdb.set_trace()
-
+                
+            elif msg == "GameStateMessage" and message.state_name == "OVER":
+                logging.info("The game is over.")
+                logging.info("Victory points: {0}".format(self.game.vp))
+                logging.info("Victory cards: {0}".format(agent.resources["VICTORY_CARDS"]))
 
             else:
                 # Output only unhandeled messages to stdout
