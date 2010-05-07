@@ -109,7 +109,7 @@ class Planner:
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
             elif node.harbor == 6:
-                self.set_harbour_score(node.harbor, 0.5)
+                self.set_harbour_score(node.harbor, 0.1)
                 
             tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
 
@@ -123,8 +123,8 @@ class Planner:
                 if 0 < tile.resource < 6:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
-                    self.add_resource_score(tile.resource, -2.0 * score_mod)
-                    self.add_harbour_score(tile.resource, 1.0 * score_mod)
+                    self.add_resource_score(tile.resource, -1.0 * score_mod)
+                    self.add_harbour_score(tile.resource, 0.5 * score_mod)
            
         possible_roads = []
         possible_roads += self.roads
