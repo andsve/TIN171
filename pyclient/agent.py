@@ -533,6 +533,10 @@ class Agent:
             # We can't move it to the same tile again
             if (self.game.boardLayout.robberpos == int(k)):
                 continue
+            
+            # We don't want to place it on the desert
+            if (tile_number == 0):
+                continue
               
             # Store all nodes around this tile for future refernce
             n1 = self.game.boardLayout.nodes[v.n1]
