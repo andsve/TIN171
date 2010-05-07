@@ -188,7 +188,8 @@ def main(args):
         addr = args[0]
         port = int(args[1])
     else:
-            addr = "komugi.se"
+            #addr = "komugi.se"
+            addr = "home.md5.se" # speedjsettlers server
             #port = 8888 #new verrsion witout bots
             port = 8880 #old version with bots
             #addr = "mkeyd.net"
