@@ -188,10 +188,10 @@ def main(args):
         addr = args[0]
         port = int(args[1])
     else:
-            addr = "komugi.se"
-            #port = 8888 #new verrsion witout bots
-            port = 8880 #old version with bots
-            #addr = "mkeyd.net"
+        addr = "komugi.se"
+        #port = 8888 #new verrsion witout bots
+        port = 8880 #old version with bots
+        #addr = "mkeyd.net"
         #port = 16000
     
     server = (addr, port)
