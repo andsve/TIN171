@@ -79,14 +79,17 @@ class Client:
         logging.debug("Sending: {0}".format(msg.to_cmd()))
         self.client.send(self.make_message(msg.to_cmd()))
             
-    def run(self, seat_num = 1):
+    def run(self, gamename, autostart, seat_num):
         gamejoined = False
         satdown = False
         gamestarted = False
         
         nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         #gamename = "sventest" #use static name for testing against others
-        gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
+        
+        if gamename == None:
+            gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
+        
         self.game = game.Game(nickname,self.resources,self.builtnodes,self.builtroads)
         self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
         
@@ -132,9 +135,9 @@ class Client:
                 # We receive starting values, 0 of each resource, game state and game face
                 gamestarted = True
                 logging.info("Starting game...")
-                m = game.StartGameMessage(gamename)
-                #start the game. disable to let other start. 
-                self.send_msg(m)
+                if autostart:
+                    m = game.StartGameMessage(gamename)
+                    self.send_msg(m)
             
             elif msg == "GameTextMsgMessage":
                 import pdb
@@ -188,34 +191,34 @@ class Client:
 
 def main(args):
     from sys import exit
+    from optparse import OptionParser
     
-    if len(args) == 2:
-        addr = args[0]
-        port = int(args[1])
-    else:
-        addr = "home.md5.se" # SpeedJSettlers!
-        #addr = "komugi.se"
-        #port = 8888 #new verrsion witout bots
-        port = 8880 #old version with bots
-        #addr = "mkeyd.net"
-        #port = 16000
+    parser = OptionParser()
+    parser.add_option("-a", "--addr", default = "home.md5.se:8880")
+    parser.add_option("-s", "--seat", type="int", default = 1)
+    parser.add_option("-g", "--game", default = None)
+    parser.add_option("-w", "--wait", action="store_true", default = False)
     
-    server = (addr, port)
+    (options, args) = parser.parse_args()
+    
+    print options
+    
+    if ":" not in options.addr:
+        print "try using host:port"
+        sys.exit(-1)
+    host, port = options.addr.split(":")
+    
     client = Client()
-    if not client.connect(server):
-        print("Could not connect to: {0}".format(server))
+    if not client.connect((host, int(port))):
+        print("Could not connect to: {0}".format(options.addr))
         exit(-1)
         
-    client.run()
+    client.run(options.game, not options.wait, options.seat)
 
 if __name__ == '__main__':
     import sys
     import os
-    from optparse import OptionParser
-    
-    parser = OptionParser()
-    parser.add_option("-a", "--address")
-    
+
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
