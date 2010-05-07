@@ -186,7 +186,6 @@ class Planner:
         # Cannot afford settlement and shouldn't/cannot build road. Try upgrading to city.
 
         if self.resources["CITIES"] > 0:
-
             self.cityScore = {}
 
             for n in self.nodes:
@@ -199,11 +198,6 @@ class Planner:
                     
                     tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
                     
-                   # Reference
-                   # elif t1 and self.game.boardLayout.tiles[t1].resource == 3:
-                   #     tempScore += self.scores["SHEEP"]
-                   #     if node.harbor == 3:
-                   #         tempScore += self.probabilities[self.game.boardLayout.tiles[t1].number]
                     for tile in tiles:
                         if 0 < tile.resource < 6:
                             # Add resource score for all resource types
@@ -224,7 +218,7 @@ class Planner:
                         self.debug_print("Can build city, sending...")
                         return (bestNode, 2)
                     elif self.canAffordWithTrade(2):
-                        self.debug_print("Can afford c after trade...")
+                        self.debug_print("Can afford city after trade...")
                         return (bestNode, 2)
                     else:
                         self.debug_print("Cannot afford city.")
@@ -232,8 +226,6 @@ class Planner:
                         self.debug_print("Ore: {0}".format(self.resources["ORE"]))               
         
         return None
-
-
 
     def debug_print(self, msg):
         import logging
