@@ -48,7 +48,9 @@ class Agent:
         self.resources["MAY_PLAY_DEVCARD"] = False
 
         self.played_knight = False
+        self.debug_print("self.played_knight = True (1)")
         self.rob_several = False
+        self.debug_print("self.rob_several = False (1)")
         
         self.output_prefix = "[DEBUG] agent.py ->"
     
@@ -381,6 +383,7 @@ class Agent:
                 response = PlayDevCardRequestMessage(self.gamename, 0)
                 self.client.send_msg(response)
                 self.played_knight = True
+                self.debug_print("self.played_knight = True (2)")
 
             else:            
                 # Roll Dices
@@ -432,6 +435,7 @@ class Agent:
             if not self.rob_several and self.played_knight:
                 self.roll_dices()
                 self.played_knight = False
+                self.debug_print("self.played_knight = False (3)")
                 self.gamestate = 8
            
         elif (self.rob_several or self.gamestate == 8) and name == "ChoosePlayerRequestMessage":
@@ -461,7 +465,9 @@ class Agent:
             if self.played_knight:
                 self.roll_dices()
                 self.rob_several = False
+                self.debug_print("self.rob_several = False (2)")
                 self.played_knight = False
+                self.debug_print("self.played_knight = False (4)")
                 self.gamestate = 8
 
         elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 20:
@@ -623,6 +629,7 @@ class Agent:
 
         if self.played_knight and best_choice['num_players'] > 1.0:
             self.rob_several = True
+            self.debug_print("self.rob_several = True (3)")
 
     def roll_dices(self):
         response = RollDiceMessage(self.gamename)
