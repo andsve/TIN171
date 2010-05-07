@@ -211,6 +211,10 @@ def main(args):
 if __name__ == '__main__':
     import sys
     import os
+    from optparse import OptionParser
+    
+    parser = OptionParser()
+    parser.add_option("-a", "--address")
     
     if os.name == 'nt':
         os.system("mode 80,60")
