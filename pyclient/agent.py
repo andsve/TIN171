@@ -475,6 +475,7 @@ class Agent:
     def make_play(self):
 
         planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
+        
         plan = planner.make_plan()
 
         if plan:

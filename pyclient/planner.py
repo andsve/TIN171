@@ -49,6 +49,10 @@ class Planner:
         }
         
         self.scores = {}
+
+        self.longest_start = None
+        self.longest_end = None
+        self.longest_length = 0
         
     def get_resource_name(self, name, is_harbour = False):
         if is_harbour:
@@ -98,6 +102,8 @@ class Planner:
     def make_plan(self):
         from jsettlers_utils import  elementIdToType, pieceToType
         self.scores = copy.deepcopy(self.default_scores)
+
+        (self.longest_start, self.longest_end, self.longest_length) = self.find_longest_road()
         
         # Determine what resources we are gaining
         for n in self.nodes:
@@ -136,7 +142,7 @@ class Planner:
         self.nodeScore = {} 
         logging.info("Possible roads: {0}".format(map(hex, possible_roads)))
         for r in possible_roads:
-            self.calcNeighbourScore(r, 0)
+            self.calcNeighbourScore(r, 0, 0)
 
         best_node = None
         best_score = 0
@@ -148,7 +154,7 @@ class Planner:
                 (node,score) = item
                 self.debug_print("{0}. {1} ({2})".format(i,hex(node),score))
         else:
-            self.debug_print("No good spots found!")
+            self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
         if best_node and self.resources["SETTLEMENTS"] > 0 and best_score >= 3:
@@ -244,10 +250,16 @@ class Planner:
         return self.resources["WHEAT"] >= 1 and self.resources["ORE"] >= 1 and self.resources["SHEEP"] >= 1
     
 
-    def calcNeighbourScore(self, road, depth):
+    def calcNeighbourScore(self, road, depth, i_l):
+        
         n1 = self.game.boardLayout.roads[road].n1
         n2 = self.game.boardLayout.roads[road].n2
         road_node = self.game.boardLayout.roads[road]
+
+        increase_longest = i_l
+
+        if increase_longest == 0 and (self.longest_length == 1 or self.increases_longest(road)):
+            increase_longest = 1
 
         #check if the road is actually unbuildable due to an enemy settlement
         if road in self.game.buildableRoads.roads and ((self.game.boardLayout.nodes[n1].owner and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))):
@@ -262,6 +274,8 @@ class Planner:
                     temp_score = self.get_harbour_score(node.harbor)
                 else:
                     temp_score = 0
+
+                temp_score += increase_longest
                 
                 tiles = [self.game.boardLayout.tiles[t] for t in [node.t1, node.t2, node.t3] if t != None]
                 for tile in tiles:
@@ -288,7 +302,7 @@ class Planner:
                 # Explore roads
                 for r in roads:
                     if r.owner == None:
-                        self.calcNeighbourScore(r.id, depth + d)
+                        self.calcNeighbourScore(r.id, depth + d, increase_longest)
                 
         return
 
@@ -441,3 +455,67 @@ class Planner:
                 num_iterations += 1
             return True
         return False
+
+    def find_longest_road(self):
+
+        import copy
+
+        longest = []
+
+        for r in self.roads:
+
+            temp = self.longest_path([r])
+
+            if len(temp) > len(longest):
+                longest = copy.deepcopy(temp)
+
+        return(longest[0], longest[-1], len(longest))
+
+    def longest_path(self, visited):
+
+        import copy
+
+        r = visited[-1]
+
+        nodes = [self.game.boardLayout.roads[r].n1,self.game.boardLayout.roads[r].n2]
+        longest = copy.deepcopy(visited)
+       
+        for n in nodes:
+
+            if self.game.boardLayout.nodes[n].owner == None or self.game.boardLayout.nodes[n].owner == int(self.game.playernum):
+
+                if self.game.boardLayout.nodes[n].n1 and self.game.boardLayout.nodes[n].n1 not in visited and self.game.boardLayout.roads[self.game.boardLayout.nodes[n].n1].owner == int(self.game.playernum):
+                    new_visited = copy.deepcopy(visited)
+                    new_visited.append(self.game.boardLayout.nodes[n].n1)
+                    temp = self.longest_path(new_visited)
+
+                    if len(temp) > len(longest):
+                        longest = copy.deepcopy(temp)
+
+                if self.game.boardLayout.nodes[n].n2 and self.game.boardLayout.nodes[n].n2 not in visited and self.game.boardLayout.roads[self.game.boardLayout.nodes[n].n2].owner == int(self.game.playernum):
+                    new_visited = copy.deepcopy(visited)
+                    new_visited.append(self.game.boardLayout.nodes[n].n2)
+                    temp = self.longest_path(new_visited)
+
+                    if len(temp) > len(longest):
+                        longest = copy.deepcopy(temp)
+
+                if self.game.boardLayout.nodes[n].n3 and self.game.boardLayout.nodes[n].n3 not in visited and self.game.boardLayout.roads[self.game.boardLayout.nodes[n].n3].owner == int(self.game.playernum):
+                    new_visited = copy.deepcopy(visited)
+                    new_visited.append(self.game.boardLayout.nodes[n].n3)
+                    temp = self.longest_path(new_visited)
+
+                    if len(temp) > len(longest):
+                        longest = copy.deepcopy(temp)
+
+        return longest
+
+    def increases_longest(self, road):
+        
+        temp = self.longest_path([road])
+
+        if len(temp) > self.longest_length:
+            return True
+
+        return False
+        
