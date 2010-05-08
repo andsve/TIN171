@@ -3,7 +3,7 @@ from threading import *
 from client import *
 
 # Number of total threads at any time
-total_threads = 5
+total_threads = 10
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     logging.disable(logging.INFO)
     
     try:
-        h = "home.md5.se"
+        h = "doff.csbnet.se"
         p = 8880
         
         for i in range(num_games):
