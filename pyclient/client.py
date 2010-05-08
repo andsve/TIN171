@@ -47,11 +47,6 @@ class ConsolePrettyPrinter(logging.Handler):
 logconsole = ConsolePrettyPrinter()
 logconsole.setLevel(logging.INFO)
 
-js_logger = logging.getLogger("")
-logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
-js_logger.addHandler(logconsole)
-
-
 class Client:
     def __init__(self):
         self.socket = None
@@ -114,10 +109,14 @@ class Client:
         self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
         
         while True:
-            highByte = ord(self.client.recv(1))
-            lowByte = ord(self.client.recv(1))
-            transLength = highByte * 256 + lowByte
-            msg = self.client.recv(transLength)
+            try:
+                highByte = ord(self.client.recv(1))
+                lowByte = ord(self.client.recv(1))
+                transLength = highByte * 256 + lowByte
+                msg = self.client.recv(transLength)
+            except socket.timeout:
+                logger.critical("recv operation timed out.")
+                return None
 
             try:
                 parsed = self.game.parse_message(msg)
@@ -180,7 +179,7 @@ class Client:
                     return -1
                     
                 elif "can't" in message.message:
-                    self.send_msg(messages.GameTextMsgMessage(gamename, message.message))
+                    self.send_msg(messages.GameTextMsgMessage(gamename, nickname, message.message))
                     logging.critical(message.message)
                     logging.critical(a.resources)
                     self.client.close()
@@ -231,9 +230,15 @@ class Client:
 def main(args):
     from sys import exit
     from optparse import OptionParser
+    import logging
+    
+    js_logger = logging.getLogger("")
+    logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(logconsole)
+    
     
     parser = OptionParser()
-    parser.add_option("-a", "--addr", default = "home.md5.se:8880")
+    parser.add_option("-a", "--addr", default = "localhost:8880")
     parser.add_option("-s", "--seat", type="int", default = 1)
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)

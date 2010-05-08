@@ -5,8 +5,11 @@ import socket
 
 import multiprocessing
 
+# Timeout before assuming game is dead
+G_TIMEOUT = 60 * 3
+
 # Number of total threads at any time
-total_threads = 8
+total_threads = 10
 num_simul = threading.Semaphore(total_threads)
 
 # Total number of games to run
@@ -54,7 +57,9 @@ def run_client(i):
 if __name__ == '__main__':
     import sys
     import os
-
+    import socket
+    socket.setdefaulttimeout(G_TIMEOUT)
+    
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
@@ -67,7 +72,7 @@ if __name__ == '__main__':
         i = -1
         while i != None:
             try:
-                i = it.next(timeout = 60*3)
+                i = it.next(timeout = G_TIMEOUT)
                 res.append(i)
             except TypeError:
                 tprint("Well WUT, that is really annoying isn't it? Fix plx.")
@@ -79,10 +84,8 @@ if __name__ == '__main__':
         
         # Display results
         tprint("------------------------------------")
-        tprint("Results from {0} games...\n".format(num_games))
-        print res
-        for i, v in enumerate(res):
-            tprint("{0}: {1}".format(i+1, v))
+        tprint("Results from {0} games...\n".format(len(res)))
+
             
         try:
             import pylab
