@@ -123,7 +123,8 @@ class Client:
             except:
                 logging.critical("Failed to parse this message: {0}".format(msg))
                 # TODO: Attempt to skip message
-                continue
+                self.client.close()
+                return None
                 
             if parsed == None:
                 logging.debug("Message not supported -- {0}".format(msg))
