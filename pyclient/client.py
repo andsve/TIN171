@@ -95,6 +95,9 @@ class Client:
         logging.debug("Sending: {0}".format(msg.to_cmd()))
         self.client.send(self.make_message(msg.to_cmd()))
             
+    def __call__(self, gamename, autostart, seat_num):
+        self.run(gamename, autostart, seat_num)
+        
     def run(self, gamename, autostart, seat_num):
         gamejoined = False
         satdown = False
@@ -165,7 +168,7 @@ class Client:
                     pdb.set_trace()
                 elif message.message.upper().startswith("QUIT"):
                     logging.info("Server told me to quit!")
-                    return
+                    return -1
                     
                 elif "can't build" in message.message:
                     logging.critical("BUG: Can not build, canceling all build requests!")
@@ -182,6 +185,12 @@ class Client:
                     logging.info("The game is over.")
                     logging.info("Victory points: {0}".format(self.game.vp))
                     logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
+                    
+                    # TODO: Count our longest road?
+                    
+                    # Return the number of points we know we got
+                    self.client.close()
+                    return self.game.vp[int(self.game.playernum)] + self.agent.resources["VICTORY_CARDS"]
 
              
             elif msg == "RobotDismissMessage":
