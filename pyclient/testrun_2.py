@@ -1,5 +1,5 @@
 import logging
-from threading import *
+import threading
 from client import *
 import socket
 
@@ -7,23 +7,23 @@ import multiprocessing
 
 # Number of total threads at any time
 total_threads = 8
-num_simul = Semaphore(total_threads)
+num_simul = threading.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 20
+num_games = 100
 
 # Score results are saved in this list
 res = []
 
 # somewhat of a threadsafe print function
-print_sem = Semaphore()
+print_sem = threading.Semaphore()
 def tprint(txt):
     print_sem.acquire()
     print(txt)
     print_sem.release()
 
 # Save score (threadsafe lols)
-save_sem = Semaphore()
+save_sem = threading.Semaphore()
 def save_score(i, v):
     save_sem.acquire()
     res[i] = v
@@ -80,8 +80,9 @@ if __name__ == '__main__':
         # Display results
         tprint("------------------------------------")
         tprint("Results from {0} games...\n".format(num_games))
-        for i in range(num_games):
-            tprint("{0}: {1}".format(i+1, res[i]))
+        print res
+        for i, v in enumerate(res):
+            tprint("{0}: {1}".format(i+1, v))
             
         try:
             import pylab
