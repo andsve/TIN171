@@ -19,6 +19,8 @@ dice_props[12] = 0.0278
 
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
+resource_weight = [0,35,15,25,25,35]
+
 class Agent:
     def __init__(self, nickname, gamename, game, client, resources,nodes,roads):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
@@ -128,11 +130,76 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,30,25,25,25,30]
+        resource_weight = [0,35,15,25,25,35]
         return resource_weight[_type]
 
-        
-    
+    def find_first_settlement(self):        
+
+        node_score = {}
+
+        for n in self.game.buildableNodes.nodes:
+
+            if self.game.buildableNodes.nodes[n]:
+
+                tempScore = 0
+                tempList = [0,0,0,0,0,0]
+
+                t1 = self.game.boardLayout.nodes[n].t1
+                t2 = self.game.boardLayout.nodes[n].t2
+                t3 = self.game.boardLayout.nodes[n].t3
+
+                for t in [t1,t2,t3]:
+
+                    if t and self.game.boardLayout.tiles[t].resource != 0:
+                        tempScore += dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
+                        tempList[self.game.boardLayout.tiles[t].resource] = 1
+
+                node_score[n] = tempScore * (tempList[1] + tempList[2] + tempList[3] + tempList[4] + tempList[5])
+
+        bestNode = None
+        highest = 0
+
+        for n in node_score:
+            self.debug_print("Node {0} has {1} score.".format(hex(n),node_score[n]))
+            if node_score[n] > highest:
+                highest = node_score[n]
+                bestNode = n
+
+        return bestNode
+
+    def find_second_settlement(self):
+
+        node_score = {}
+
+        for n in self.game.buildableNodes.nodes:
+
+            if self.game.buildableNodes.nodes[n]:
+
+                tempScore = 0
+                tempList = [0,0,0,0,0,0]
+
+                t1 = self.game.boardLayout.nodes[n].t1
+                t2 = self.game.boardLayout.nodes[n].t2
+                t3 = self.game.boardLayout.nodes[n].t3
+
+                for t in [t1,t2,t3]:
+
+                    if t and self.game.boardLayout.tiles[t].resource != 0:
+                        tempScore += dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource] + ((1 - max(tempList[self.game.boardLayout.tiles[t].resource],resource_list[self.game.boardLayout.tiles[t].resource])) * 10)
+                        tempList[self.game.boardLayout.tiles[t].resource] = 1
+
+                node_score[n] = tempScore * (tempList[1] + tempList[2] + tempList[3] + tempList[4] + tempList[5])
+
+        bestNode = None
+        highest = 0
+
+        for n in node_score:
+            self.debug_print("Node {0} has {1} score.".format(hex(n),node_score[n]))
+            if node_score[n] > highest:
+                highest = node_score[n]
+                bestNode = n
+                
+        return bestNode
     
     def find_buildable_node(self):
         # Returns the best buildable new node!
@@ -279,8 +346,9 @@ class Agent:
                     
         # Setup state 1    
         if self.gamestate == 1 and name == "TurnMessage" and message.playernum == self.playernum:
-            new_settlement_place = self.find_buildable_node()
+            """new_settlement_place = self.find_buildable_node()"""
             # change the resource_list to see which kind of resources are taken
+            new_settlement_place = self.find_first_settlement() #new function
             node = self.game.boardLayout.nodes[new_settlement_place]
             if node.t1:
                 t1 = self.game.boardLayout.tiles[node.t1]
@@ -292,7 +360,7 @@ class Agent:
                 t3 = self.game.boardLayout.tiles[node.t3]
                 resource_list[t3.resource]=1  
                 
-            self.debug_print("We should place our settlements now!")
+            self.debug_print("We should place our settlements now!")            
                 
             response = PutPieceMessage(self.gamename, self.playernum, 1, new_settlement_place)
             self.client.send_msg(response)
@@ -323,9 +391,10 @@ class Agent:
         #Setup state 3 or 4
         #(state 3 normally. state 4 if we were the last to play and it's our turn again)
         elif (self.gamestate == 3 and name == "TurnMessage" and int(message.playernum) == int(self.playernum)) or (self.gamestate == 4 and name == "GameStateMessage" and int(message.state) == 10):
-            new_settlement_place = self.find_buildable_node()
+            """new_settlement_place = self.find_buildable_node()"""
+            new_settlement_place = self.find_second_settlement() #new function
             # change the resource_list to see which kind of resources are taken
-            node = self.game.boardLayout.nodes[new_settlement_place]
+            """node = self.game.boardLayout.nodes[new_settlement_place]
             if node.t1:
                 t1 = self.game.boardLayout.tiles[node.t1]
                 resource_list[t1.resource]=1
@@ -334,7 +403,7 @@ class Agent:
                 resource_list[t2.resource]=1
             if node.t3:
                 t3 = self.game.boardLayout.tiles[node.t3]
-                resource_list[t3.resource]=1          
+                resource_list[t3.resource]=1"""
                 
             self.debug_print("We should place our settlements now!")
                 
@@ -392,18 +461,9 @@ class Agent:
                 self.gamestate = 8
             
         elif self.gamestate == 7 and name == "DiscardRequestMessage":
-            
-            # Throw away cards here (message.numcards)
-            numcards = int(message.numcards)
-           
-            ore = min(self.resources["ORE"], numcards)           
-            clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
-            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - ore)
-            wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
-            wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
-            response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
 
-            self.client.send_msg(response)
+            # Throw away cards here (message.numcards)
+            self.discard_cards(int(message.numcards))
         
         elif self.gamestate == 7 and name == "MakeOfferMessage":
 
@@ -414,18 +474,9 @@ class Agent:
 
         # State 8 (dices have been rolled, might be forced to throw away cards, move the robber, choose player to steal from. otherwise play normally.
         elif self.gamestate == 8 and name == "DiscardRequestMessage":
+
             # Throw away cards here (message.numcards)
-
-            numcards = int(message.numcards)
-
-            ore = min(self.resources["ORE"], numcards)           
-            clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
-            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - ore)
-            wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
-            wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
-            response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
-
-            self.client.send_msg(response)
+            self.discard_cards(int(message.numcards))
             
         # We need to move the robber, lets find a good spot!
         elif (self.played_knight or self.gamestate == 8) and name == "GameStateMessage" and int(message.state) == 33:
@@ -498,7 +549,7 @@ class Agent:
 
         #cannot afford city. buy developement card.
         # if we have more than 7 resources and has built on 4 or more spots
-        elif self.resources["DEV_CARDS"] > 0 and self.resources["ORE"] > 1 and self.resources["WHEAT"] > 1 and self.resources["SETTLEMENTS"] > 0 and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 7 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
+        elif self.resources["DEV_CARDS"] > 0 and self.resources["SETTLEMENTS"] > 0 and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 6 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 6 and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
@@ -635,4 +686,37 @@ class Agent:
 
     def roll_dices(self):
         response = RollDiceMessage(self.gamename)
+        self.client.send_msg(response)
+
+    def discard_cards(self, numcards):
+
+        response = None
+
+        # got many settlements out and cities left to build
+        if self.resources["SETTLEMENTS"] <= 1 and self.resources["CITIES"] > 0:
+
+            clay = min(self.resources["CLAY"], numcards)
+            wood = min(self.resources["WOOD"], numcards - clay)
+            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - wood)
+            ore = min(max(self.resources["ORE"] - 3,0), numcards - clay - wood - sheep)
+            wheat = min(max(self.resources["WHEAT"] - 2,0), numcards - clay - wood - sheep - ore)
+
+            if clay + wood + sheep + ore + wheat < numcards:
+                sheep = self.resources["SHEEP"]
+
+            if clay + wood + sheep + ore + wheat < numcards:
+                ore = min(max(self.resources["ORE"] - 2,0), numcards - clay - wood - sheep)
+
+            response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
+            
+        else:
+
+            ore = min(self.resources["ORE"], numcards)           
+            clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
+            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - ore)
+            wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
+            wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
+
+            response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
+
         self.client.send_msg(response)
