@@ -6,7 +6,7 @@ import socket
 import multiprocessing
 
 # Number of total threads at any time
-total_threads = 10
+total_threads = 8
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
@@ -30,6 +30,8 @@ def save_score(i, v):
     save_sem.release()
 
 def run_client(i):
+    import time
+    start_time = time.time()
     tprint("Starting game {0}".format(i))
     logging.disable(logging.INFO)
     h = "doff.csbnet.se"
@@ -41,8 +43,12 @@ def run_client(i):
         client = Client()
         client.connect((h, p)) 
         score = client.run(n, True, 1, n)
+        
+        if not score:
+            tprint("Failed game {0}".format(i))
+        
         try_num += 1
-    tprint("Finished game {0}: {1}".format(i, score))
+    tprint("Finished game {0}: {1}, {2} seconds".format(i, score, time.time() - start_time))
     return score
     
 if __name__ == '__main__':
@@ -57,7 +63,16 @@ if __name__ == '__main__':
     
     try:
         pool = multiprocessing.Pool(processes = total_threads)
-        res = pool.map(run_client, range(num_games))
+        it = pool.imap(run_client, range(num_games), 1)
+        i = -1
+        while i != None:
+            try:
+                i = it.next(timeout = 60*3)
+                res.append(i)
+            except multiprocessing.TimeoutError:
+                tprint("Hmz, timeout error!")
+                res.append(None)
+
         
         # Display results
         tprint("------------------------------------")
