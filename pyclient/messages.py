@@ -1005,12 +1005,15 @@ class SetSeatLockMessage(Message):
 
 class StatusMessageMessage(Message):
     id = 1069
-    def __init__(self):
-        pass
+    def __init__(self, status):
+        self.status = status
+        
+    def to_cmd(self):
+        return "{0}|{1}".format(self.id, self.status)
         
     @staticmethod
     def parse(text):
-        pass
+        return StatusMessageMessage(text)
 
 class CreateAccountMessage(Message):
     id = 1070
