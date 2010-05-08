@@ -7,7 +7,7 @@ total_threads = 10
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 10
+num_games = 100
 
 # Score results are saved in this list
 res = []
@@ -30,29 +30,21 @@ def save_score(i, v):
 class ThreadClient(Thread):
     def __init__(self, game_id, host, port):
         Thread.__init__(self)
-        self.host = host
-        self.port = port
         self.game_id = game_id
+        self.client = Client()
+        
+        if not self.client.connect((host, int(port))):
+            print("Could not connect to: {0}".format(options.addr))
+            exit(-1)
         
     def run(self):
         # Acquire a new thread semaphore
         num_simul.acquire()
         
-        score = None
-        while (score == None):
-            self.client = Client()
-        
-            if not self.client.connect((self.host, int(self.port))):
-                print("Could not connect to: {0}".format(self.host))
-                exit(-1)
-            
-            tprint("Starting simulation client {0}...".format(self.game_id))
-            score = self.client.run(None, True, 1)
-            self.client = None
-            if (score == None):
-                tprint("Simulation client {0} has failed! Reported score: {1}".format(self.game_id, score))
-            else:
-                tprint("Simulation client {0} has finished. Reported score: {1}".format(self.game_id, score))
+        tprint("Starting simulation client {0}...".format(self.game_id))
+        score = self.client.run(None, True, 1)
+        self.client = None
+        tprint("Simulation client {0} has finished. Reported score: {1}".format(self.game_id, score))
         
         # Save score in global list
         save_score(self.game_id, score)
@@ -89,6 +81,15 @@ if __name__ == '__main__':
         tprint("Results from {0} games...\n".format(num_games))
         for i in range(num_games):
             tprint("{0}: {1}".format(i+1, res[i]))
+            
+        try:
+            import pylab
+            data = map(lambda x: 1 if x == None else x, res)
+            pylab.hist(data, range=(1, 11), histtype="barstacked")
+            pylab.show()
+        except ImportError:
+            tprint("Install numpy and matplotlib for sweet graphs!")
+            
             
     except:
         import pdb
