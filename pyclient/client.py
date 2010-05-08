@@ -180,6 +180,7 @@ class Client:
                     return -1
                     
                 elif "can't" in message.message:
+                    self.send_msg(messages.GameTextMsgMessage(gamename, message.message))
                     logging.critical(message.message)
                     logging.critical(a.resources)
                     self.client.close()

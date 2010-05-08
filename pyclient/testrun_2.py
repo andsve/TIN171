@@ -6,7 +6,7 @@ import socket
 import multiprocessing
 
 # Number of total threads at any time
-total_threads = 25
+total_threads = 10
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
