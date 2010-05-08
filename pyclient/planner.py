@@ -45,7 +45,7 @@ class Planner:
             ,"SHEEPH": 0
             ,"WHEATH": 0
             ,"OREH":   0
-            ,"3FOR1H": 1
+            ,"3FOR1H": 3
         }
         
         self.scores = {}
@@ -129,7 +129,7 @@ class Planner:
                 if 0 < tile.resource < 6:
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
-                    self.add_resource_score(tile.resource, -10 * score_mod)
+                    self.add_resource_score(tile.resource, -8 * score_mod)
                     self.add_harbour_score(tile.resource, 10*score_mod)
            
         possible_roads = []
@@ -157,7 +157,7 @@ class Planner:
             self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
-        if best_node and self.resources["SETTLEMENTS"] > 0 and best_score >= 3.5:
+        if best_node and self.resources["SETTLEMENTS"] > 0 and (best_score >= 3.5 or self.resources["SETTLEMENTS"] >= 4):
             self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
@@ -181,10 +181,10 @@ class Planner:
             else:
                 if self.resources["ROADS"] > 0 and self.canAffordRoad():
                     self.debug_print("Can build road, sending...")
-                    return self.findClosestBuildableRoad([road.id for road in roads if road.owner == None])
+                    return self.findClosestBuildableRoad([road.id for road in roads], 0)
                 elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
                     self.debug_print("Can afford road after trade...")
-                    return self.findClosestBuildableRoad([road.id for road in roads])
+                    return self.findClosestBuildableRoad([road.id for road in roads], 0)
                 else:
                     self.debug_print("Cannot afford road.")
                     self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
@@ -233,12 +233,13 @@ class Planner:
         # try and build to build the longest road
         tempLongestRoad = 0
         tempRoad = None
-        if self.canAffordRoad():
+        tempRoad2 = None
+        if self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.canAffordRoad():
             self.debug_print("Try to connect settlement hubs.")
             for road in self.game.buildableRoads.roads:
                 for road2 in self.game.buildableRoads.roads:
                     if self.game.buildableRoads.roads[road] and self.game.buildableRoads.roads[road2]:
-                        self.debug_print("Changing owner for: {0} and {1}".format(hex(road),hex(road2)))
+                        #self.debug_print("Changing owner for: {0} and {1}".format(hex(road),hex(road2)))
                         self.game.boardLayout.roads[road].owner = int(self.game.playernum)
                         self.game.boardLayout.roads[road2].owner = int(self.game.playernum)
 
@@ -250,10 +251,23 @@ class Planner:
                         if tempLength > self.longest_length and tempLength > tempLongestRoad:
                             tempLongestRoad = tempLength
                             tempRoad = road
+                            tempRoad2 = road2
                             self.debug_print("Found a connection by {0} and {1}.".format(hex(road),hex(road2)))
 
         if tempLongestRoad > self.longest_length:
-            return (tempRoad, 0)
+
+            self.game.boardLayout.roads[tempRoad].owner = int(self.game.playernum)
+            (tempStart, tempEnd, tempLength) = self.find_longest_road()
+            self.game.boardLayout.roads[tempRoad].owner = None
+            self.game.boardLayout.roads[tempRoad2].owner = int(self.game.playernum)
+            (tempStart, tempEnd, tempLength2) = self.find_longest_road()
+            self.game.boardLayout.roads[tempRoad2].owner = None
+
+            if tempLength >= tempLength2:
+                return (tempRoad, 0)
+
+            return(tempRoad2, 0)
+            
         
         return None
 
@@ -285,11 +299,11 @@ class Planner:
             increase_longest = 2
 
         #check if the road is actually unbuildable due to an enemy settlement
-        if road in self.game.buildableRoads.roads and ((self.game.boardLayout.nodes[n1].owner and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))):
-            return
-                    
+        notMine = (self.game.boardLayout.nodes[n1].owner != None and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner != None and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))
+        if road in self.game.buildableRoads.roads and notMine:
+            return None 
         
-        for n in [n1, n2]:
+        for n in [n1, n2]:            
             node = self.game.boardLayout.nodes[n]
             is_buildable = self.game.buildableNodes.nodes[n]
             if is_buildable:
@@ -324,81 +338,63 @@ class Planner:
                 
                 # Explore roads
                 for r in roads:
-                    if r.owner == None:
+                    if r.owner == None and not ((self.game.boardLayout.nodes[r.n1].owner != None and int(self.game.boardLayout.nodes[r.n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[r.n2].owner != None and int(self.game.boardLayout.nodes[r.n2].owner) != int(self.game.playernum))):
                         self.calcNeighbourScore(r.id, depth + d, increase_longest)
                 
-        return
+        return None
 
     #finds the closest buildable road to a node
-    def findClosestBuildableRoad(self, parents):
-        for r in parents:
+    def findClosestBuildableRoad(self, parents, depth):
+        self.debug_print("depth: {0}".format(depth))
+        self.debug_print("parents: {0}".format(parents))
+
+        import copy
+
+        tempParents = copy.deepcopy(parents)
+
+        if depth > 3:
+            return None
+                         
+        for r in tempParents:
 
             if self.game.buildableRoads.roads[r] and self.increases_longest(r):
                 return(r,0)
 
-        for r in parents:
+        for r in tempParents:
 
             if self.game.buildableRoads.roads[r]:
                 return(r,0)
             
-        for r in parents:
+        for r in tempParents:
 
-            n1 = self.game.boardLayout.roads[r].n1
-            n2 = self.game.boardLayout.roads[r].n2
+            if depth < 3 and self.game.boardLayout.roads[r].owner == None:
 
-            r1 = self.game.boardLayout.nodes[n1].n1
-            r2 = self.game.boardLayout.nodes[n1].n2
-            r3 = self.game.boardLayout.nodes[n1].n3
+                n1 = self.game.boardLayout.roads[r].n1
+                n2 = self.game.boardLayout.roads[r].n2
 
-            if r1 and self.game.buildableRoads.roads[r1] and self.increases_longest(r1):
-                return (r1, 0) 
+                r1 = self.game.boardLayout.nodes[n1].n1
+                r2 = self.game.boardLayout.nodes[n1].n2
+                r3 = self.game.boardLayout.nodes[n1].n3
 
-            if r2 and self.game.buildableRoads.roads[r2] and self.increases_longest(r2):
-                return (r2, 0)
+                if r1 and r1 not in parents:
+                    parents.append(r1)
+                if r2 and r2 not in parents:
+                    parents.append(r2)
+                if r3 and r3 not in parents:
+                    parents.append(r3)
 
-            if r3 and self.game.buildableRoads.roads[r3] and self.increases_longest(r3):
-                return (r3, 0)
+                r1 = self.game.boardLayout.nodes[n2].n1
+                r2 = self.game.boardLayout.nodes[n2].n2
+                r3 = self.game.boardLayout.nodes[n2].n3
 
-            r1 = self.game.boardLayout.nodes[n2].n1
-            r2 = self.game.boardLayout.nodes[n2].n2
-            r3 = self.game.boardLayout.nodes[n2].n3
+                if r1 and r1 not in parents:
+                    parents.append(r1)
+                if r2 and r2 not in parents:
+                    parents.append(r2)
+                if r3 and r3 not in parents:
+                    parents.append(r3)
 
-            if r1 and self.game.buildableRoads.roads[r1]:
-                return (r1, 0) 
-
-            if r2 and self.game.buildableRoads.roads[r2]:
-                return (r2, 0)
-
-            if r3 and self.game.buildableRoads.roads[r3]:
-                return (r3, 0)
-
-            r1 = self.game.boardLayout.nodes[n1].n1
-            r2 = self.game.boardLayout.nodes[n1].n2
-            r3 = self.game.boardLayout.nodes[n1].n3
-
-            if r1 and self.game.buildableRoads.roads[r1]:
-                return (r1, 0) 
-
-            if r2 and self.game.buildableRoads.roads[r2]:
-                return (r2, 0)
-
-            if r3 and self.game.buildableRoads.roads[r3]:
-                return (r3, 0)
-
-            r1 = self.game.boardLayout.nodes[n2].n1
-            r2 = self.game.boardLayout.nodes[n2].n2
-            r3 = self.game.boardLayout.nodes[n2].n3
-
-            if r1 and self.game.buildableRoads.roads[r1]:
-                return (r1, 0) 
-
-            if r2 and self.game.buildableRoads.roads[r2]:
-                return (r2, 0)
-
-            if r3 and self.game.buildableRoads.roads[r3]:
-                return (r3, 0)
-
-        return None
+        return self.findClosestBuildableRoad(parents, depth + 1)
 
     def canAffordWithTrade(self,_type):
 
