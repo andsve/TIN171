@@ -177,8 +177,8 @@ class Client:
                     logging.info("Server told me to quit!")
                     return -1
                     
-                elif "can't build" in message.message:
-                    logging.critical("BUG: Can not build, canceling all build requests!")
+                elif "can't" in message.message:
+                    logging.critical(message.message)
                     logging.critical(a.resources)
                     self.client.close()
                     return None
