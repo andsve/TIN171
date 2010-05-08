@@ -193,13 +193,15 @@ class Client:
                     logging.info("Victory points: {0}".format(self.game.vp))
                     logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
                     
+                    points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(seat_num)]
+                    logging.info("I got {0} points!".format(points))
+                    
                     # TODO: Count our longest road?
                     
                     # Return the number of points we know we got
                     self.client.close()
-                    return self.game.vp[int(self.game.playernum)] + self.agent.resources["VICTORY_CARDS"]
-                    points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(seat_num)]
-                    logging.info("I got {0} points!".format(points))
+                    return points
+                    
 
              
             elif msg == "RobotDismissMessage":
