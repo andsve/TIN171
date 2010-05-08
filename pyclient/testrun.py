@@ -4,7 +4,7 @@ from client import *
 import socket
 
 # Number of total threads at any time
-total_threads = 10
+total_threads = 20
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
@@ -31,21 +31,30 @@ def save_score(i, v):
 class ThreadClient(Thread):
     def __init__(self, game_id, nickname, host, port):
         Thread.__init__(self)
+        self.host = host
+        self.port = port
+        self.nick = nickname
         self.game_id = game_id
-        self.client = Client()
-        
-        if not self.client.connect((host, int(port))):
-            print("Could not connect to: {0}".format(options.addr))
-            exit(-1)
         
     def run(self):
         # Acquire a new thread semaphore
         num_simul.acquire()
         
-        tprint("Starting simulation client {0}...".format(self.game_id))
-        score = self.client.run(None, True, 1)
-        self.client = None
-        tprint("Simulation client {0} has finished. Reported score: {1}".format(self.game_id, score))
+        score = None
+        while (score == None):
+            self.client = Client()
+        
+            if not self.client.connect((self.host, int(self.port))):
+                print("Could not connect to: {0}".format(self.host))
+                exit(-1)
+            
+            tprint("Starting simulation client {0}...".format(self.game_id))
+            score = self.client.run(None, True, 1, self.nick)
+            self.client = None
+            if (score == None):
+                tprint("Simulation client {0} has failed! Reported score: {1}".format(self.game_id, score))
+            else:
+                tprint("Simulation client {0} has finished. Reported score: {1}".format(self.game_id, score))
         
         # Save score in global list
         save_score(self.game_id, score)
