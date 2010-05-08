@@ -10,7 +10,7 @@ total_threads = 8
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 100
+num_games = 20
 
 # Score results are saved in this list
 res = []
@@ -74,7 +74,8 @@ if __name__ == '__main__':
             except multiprocessing.TimeoutError:
                 tprint("Hmz, timeout error!")
                 res.append(None)
-
+            except StopIteration:
+                break
         
         # Display results
         tprint("------------------------------------")
