@@ -100,7 +100,7 @@ class Client:
         satdown = False
         gamestarted = False
         
-        nickname = "aiBot-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
+        nickname = "{0}-{2}{1}".format(socket.gethostname(), random.randint(0, 99), seat_num)
         #gamename = "sventest" #use static name for testing against others
         
         if gamename == None:
@@ -114,7 +114,7 @@ class Client:
             lowByte = ord(self.client.recv(1))
             transLength = highByte * 256 + lowByte
             msg = self.client.recv(transLength)
-            
+
             try:
                 parsed = self.game.parse_message(msg)
             except:
@@ -132,6 +132,9 @@ class Client:
 #            if msg in ["PutPieceMessage", "BoardLayoutMessage"]:
 #                if HAS_GRAPHWIZ:
 #                    graphdump.generate_graph(self.game)
+            
+            if msg == "LongestRoadMessage":
+                logging.info("LongestRoadMessage: {0}".format("LOL" if not message else message.values()))
             
             if msg == "GamesMessage" and not gamejoined:
                 # We receive a channel list and a game list
@@ -154,6 +157,10 @@ class Client:
                 if autostart:
                     m = game.StartGameMessage(gamename)
                     self.send_msg(m)
+            
+            elif msg == "StatusMessageMessage":
+                logging.info("(Status) {0}".format(message.status))
+            
             
             elif msg == "GameTextMsgMessage":
                 import pdb
