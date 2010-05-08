@@ -69,6 +69,8 @@ if __name__ == '__main__':
             try:
                 i = it.next(timeout = 60*3)
                 res.append(i)
+            except TypeError:
+                tprint("Well WUT, that is really annoying isn't it? Fix plx.")
             except multiprocessing.TimeoutError:
                 tprint("Hmz, timeout error!")
                 res.append(None)
