@@ -98,12 +98,13 @@ class Client:
     def __call__(self, gamename, autostart, seat_num):
         self.run(gamename, autostart, seat_num)
         
-    def run(self, gamename, autostart, seat_num):
+    def run(self, gamename, autostart, seat_num, nickname = None):
         gamejoined = False
         satdown = False
         gamestarted = False
         
-        nickname = "{0}-{2}{1}".format(socket.gethostname(), random.randint(0, 99), seat_num)
+        if not nickname:
+            nickname = "{0}-{2}{1}".format(socket.gethostname(), random.randint(0, 99), seat_num)
         #gamename = "sventest" #use static name for testing against others
         
         if gamename == None:
@@ -234,6 +235,7 @@ def main(args):
     parser.add_option("-a", "--addr", default = "home.md5.se:8880")
     parser.add_option("-s", "--seat", type="int", default = 1)
     parser.add_option("-g", "--game", default = None)
+    parser.add_option("-n", "--nick", default = None)
     parser.add_option("-w", "--wait", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
@@ -250,7 +252,7 @@ def main(args):
         print("Could not connect to: {0}".format(options.addr))
         exit(-1)
         
-    client.run(options.game, not options.wait, options.seat)
+    client.run(options.game, not options.wait, options.seat, options.nick)
 
 if __name__ == '__main__':
     import sys

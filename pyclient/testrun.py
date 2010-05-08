@@ -1,6 +1,7 @@
 import logging
 from threading import *
 from client import *
+import socket
 
 # Number of total threads at any time
 total_threads = 10
@@ -28,7 +29,7 @@ def save_score(i, v):
 
 # A threaded client starter
 class ThreadClient(Thread):
-    def __init__(self, game_id, host, port):
+    def __init__(self, game_id, nickname, host, port):
         Thread.__init__(self)
         self.game_id = game_id
         self.client = Client()
@@ -69,7 +70,8 @@ if __name__ == '__main__':
         for i in range(num_games):
             res.append(0)
             
-            t = ThreadClient(i, h, p)
+            n = "{0}-{1}".format(socket.gethostname(), i)
+            t = ThreadClient(i, n, h, p)
             t.start()
         
         # Make sure all threads are done
