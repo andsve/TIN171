@@ -180,6 +180,8 @@ class Client:
                 elif "can't build" in message.message:
                     logging.critical("BUG: Can not build, canceling all build requests!")
                     logging.critical(a.resources)
+                    self.client.close()
+                    return None
                     # Blah blah
                     #self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
                     #self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
