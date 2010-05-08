@@ -186,9 +186,11 @@ class Client:
                 logging.info("Switching gamestate to: {0}".format(message.state_name))
                 
                 if message.state_name == "OVER":
-                    logging.info("The game is over.")
+                    logging.info("The game is over. And I am {0}".format(nickname))
                     logging.info("Victory points: {0}".format(self.game.vp))
                     logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
+                    points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(seat_num)]
+                    logging.info("I got {0} points!".format(points))
 
              
             elif msg == "RobotDismissMessage":
