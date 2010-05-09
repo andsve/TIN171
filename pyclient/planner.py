@@ -495,6 +495,7 @@ class Planner:
                             needed[r] -= 1
                 logging.critical("Picking some resources.")
                 self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
+                self.resources["MAY_PLAY_DEVCARD"] = False
                 self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
                     
             
