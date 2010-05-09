@@ -459,6 +459,14 @@ class Agent:
                 self.roll_dices()
 
                 self.gamestate = 8
+
+        elif self.gamestate == 7 and self.played_knight and name == "GameStateMessage" and int(message.state) == 15:
+
+            # Roll Dices
+            self.roll_dices()
+
+            self.played_knight = False
+            self.gamestate = 8
             
         elif self.gamestate == 7 and name == "DiscardRequestMessage":
 
@@ -483,13 +491,13 @@ class Agent:
 
             self.play_robber()
 
-            if not self.rob_several and self.played_knight:
+            """if not self.rob_several and self.played_knight:
                 self.roll_dices()
                 self.played_knight = False
                 self.debug_print("self.played_knight = False (3)")
-                self.gamestate = 8
+                self.gamestate = 8"""
            
-        elif (self.rob_several or self.gamestate == 8) and name == "ChoosePlayerRequestMessage":
+        elif (self.played_knight or self.gamestate == 8) and name == "ChoosePlayerRequestMessage":
 
             # Choose a player to steal from
             
@@ -513,13 +521,13 @@ class Agent:
             response = ChoosePlayerMessage(self.gamename, best_id)
             self.client.send_msg(response)
             
-            if self.played_knight:
+            """if self.played_knight:
                 self.roll_dices()
                 self.rob_several = False
                 self.debug_print("self.rob_several = False (2)")
                 self.played_knight = False
                 self.debug_print("self.played_knight = False (4)")
-                self.gamestate = 8
+                self.gamestate = 8"""
 
         elif self.gamestate == 8 and name == "GameStateMessage" and int(message.state) == 20:
 
@@ -680,9 +688,9 @@ class Agent:
         response = MoveRobberMessage(self.gamename, self.playernum, best_tile_id)
         self.client.send_msg(response)
 
-        if self.played_knight and best_choice['num_players'] > 1.0:
+        """if self.played_knight and best_choice['num_players'] > 1.0:
             self.rob_several = True
-            self.debug_print("self.rob_several = True (3)")
+            self.debug_print("self.rob_several = True (3)")"""
 
     def roll_dices(self):
         response = RollDiceMessage(self.gamename)
