@@ -177,7 +177,7 @@ class Client:
                 elif message.message.upper().startswith("QUIT"):
                     logging.info("Server told me to quit!")
                     return -1
-                    
+                
                 elif "can't" in message.message:
                     self.send_msg(messages.GameTextMsgMessage(gamename, nickname, message.message))
                     logging.critical(message.message)
