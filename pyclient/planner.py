@@ -160,7 +160,7 @@ class Planner:
             self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
-        if best_node and (road_card or self.resources["SETTLEMENTS"] > 0 and (best_score >= 3.5 or self.resources["SETTLEMENTS"] >= 4)):
+        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 3.5 or self.resources["SETTLEMENTS"] >= 4)):
             self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
@@ -474,6 +474,7 @@ class Planner:
 
         resource_card = 0
         if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2:
+            self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             logging.info("Got Resource Card")
             resource_card = 2 # change to 2 when message is implemented
 
@@ -494,6 +495,7 @@ class Planner:
                             resources[ri] += 1
                             needed[r] -= 1
                 logging.critical("Picking some resources.")
+                self.debug_print("May play devcard: {0} (2)".format(self.resources["MAY_PLAY_DEVCARD"]))
                 self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
                 self.resources["MAY_PLAY_DEVCARD"] = False
                 self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))

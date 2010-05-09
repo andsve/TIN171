@@ -449,6 +449,7 @@ class Agent:
             owners = [self.game.boardLayout.nodes[n1].owner,self.game.boardLayout.nodes[n2].owner,self.game.boardLayout.nodes[n3].owner,self.game.boardLayout.nodes[n4].owner,self.game.boardLayout.nodes[n5].owner,self.game.boardLayout.nodes[n6].owner]
 
             if self.resources["MAY_PLAY_DEVCARD"] and ((self.resources["KNIGHT_CARDS"] > 0 and int(self.playernum) in owners) or self.resources["KNIGHT_CARDS"] > 1):
+                self.debug_print("May play devcard: {0} (3)".format(self.resources["MAY_PLAY_DEVCARD"]))
                 response = PlayDevCardRequestMessage(self.gamename, 0)
                 self.client.send_msg(response)
                 self.resources["MAY_PLAY_DEVCARD"] = False
@@ -543,8 +544,9 @@ class Agent:
         planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
 
         # Build with road building
-        if self.resources["ROAD_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"]:
+        if self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"]:
 
+            self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             response = PlayDevCardRequestMessage(self.gamename, 1)
             self.client.send_msg(response)
 
@@ -552,23 +554,21 @@ class Agent:
             
             plan = planner.make_plan(True)
 
-            (build_spot, build_type) = plan
+            if plan:
 
-            response = BuildRequestMessage(self.gamename,build_type)
-            self.client.send_msg(response)
+                (build_spot, build_type) = plan
+    
+                response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
+                self.client.send_msg(response)
 
-            response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
-            self.client.send_msg(response)
+                plan = planner.make_plan(True)
 
-            plan = planner.make_plan(True)
+                if plan:
 
-            (build_spot, build_type) = plan
+                    (build_spot, build_type) = plan
 
-            response = BuildRequestMessage(self.gamename,build_type)
-            self.client.send_msg(response)
-
-            response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
-            self.client.send_msg(response)
+                    response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
+                    self.client.send_msg(response)
         
         plan = planner.make_plan(False)
 
