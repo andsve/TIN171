@@ -789,25 +789,36 @@ class PlayDevCardRequestMessage(Message):
         g, c = text.split(",")
         return PlayDevCardRequestMessage(g, c)
    
-# TODO: Not needed yet.
 class DiscoveryPickMessage(Message):
     id = 1052
-    def __init__(self):
-        pass
+    def __init__(self, game, resources):
+        self.game = game
+        self.resources = resources
+        
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, ",".join(map(str, self.resources)))
         
     @staticmethod
     def parse(text):
-        pass
+        data = text.split(",")
+        game = data[0]
+        resources = map(int, data[1:])
+        return DiscoveryPickMessage(game, resources)
 
 # TODO: Not needed yet.
 class MonopolyPickMessage(Message):
     id = 1053
-    def __init__(self):
-        pass
+    def __init__(self, game, resource):
+        self.game = game
+        self.resource = resource
         
+    def to_cmd(self):
+        return "{0}|{1},{2}".format(self.id, self.game, self.resource)
+       
     @staticmethod
     def parse(text):
-        pass
+        game, res = text.split(",")
+        return MonopolyPickMessage(game, int(res))
 
 class FirstPlayerMessage(Message):
     id = 1054
