@@ -8,7 +8,7 @@ total_threads = 20
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 100
+num_games = 10
 
 # Score results are saved in this list
 res = []

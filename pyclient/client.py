@@ -108,12 +108,22 @@ class Client:
         self.game = game.Game(nickname,self.resources,self.builtnodes,self.builtroads)
         self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
         
+        # hack to make a "wait" recv method
+        def recvwait(size):
+            sofar = 0
+            r = ""
+            while True:
+                r += self.client.recv(size - len(r))
+                if len(r) >= size:
+                    break
+            return r
+        
         while True:
             try:
-                highByte = ord(self.client.recv(1))
-                lowByte = ord(self.client.recv(1))
+                highByte = ord(recvwait(1))
+                lowByte = ord(recvwait(1))
                 transLength = highByte * 256 + lowByte
-                msg = self.client.recv(transLength)
+                msg = recvwait(transLength)
             except socket.timeout:
                 logger.critical("recv operation timed out.")
                 return None
