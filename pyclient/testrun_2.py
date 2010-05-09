@@ -13,7 +13,7 @@ total_threads = 7
 num_simul = threading.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 100
+num_games = 10
 
 # Score results are saved in this list
 res = []
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         try:
             import pylab
             data = map(lambda x: 1 if x == None else x, res)
-            pylab.hist(data, range=(1, 11), histtype="barstacked")
+            pylab.hist(data, bins=10, range=(1, 11), histtype="bar", align="left")
             pylab.show()
         except ImportError:
             tprint("Install numpy and matplotlib for sweet graphs!")

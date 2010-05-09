@@ -683,7 +683,6 @@ class Agent:
         if self.played_knight and best_choice['num_players'] > 1.0:
             self.rob_several = True
             self.debug_print("self.rob_several = True (3)")
-            self.roll_dices()
 
     def roll_dices(self):
         response = RollDiceMessage(self.gamename)
