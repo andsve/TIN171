@@ -448,7 +448,7 @@ class Agent:
             n6 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n6
             owners = [self.game.boardLayout.nodes[n1].owner,self.game.boardLayout.nodes[n2].owner,self.game.boardLayout.nodes[n3].owner,self.game.boardLayout.nodes[n4].owner,self.game.boardLayout.nodes[n5].owner,self.game.boardLayout.nodes[n6].owner]
 
-            if self.resources["KNIGHT_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and int(self.playernum) in owners:
+            if self.resources["MAY_PLAY_DEVCARD"] and ((self.resources["KNIGHT_CARDS"] > 0 and int(self.playernum) in owners) or self.resources["KNIGHT_CARDS"] > 1):
                 response = PlayDevCardRequestMessage(self.gamename, 0)
                 self.client.send_msg(response)
                 self.played_knight = True
@@ -540,15 +540,40 @@ class Agent:
     def make_play(self):
 
         planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
+
+        # Build with road building
+        if self.resources["ROAD_CARDS"] > 0:
+
+            response = PlayDevCardRequestMessage(self.gamename, 1)
+            self.client.send_msg(response)
+            
+            plan = planner.make_plan(True)
+
+            (build_spot, build_type) = plan
+
+            response = BuildRequestMessage(self.gamename,build_type)
+            self.client.send_msg(response)
+
+            response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
+            self.client.send_msg(response)
+
+            plan = planner.make_plan(True)
+
+            (build_spot, build_type) = plan
+
+            response = BuildRequestMessage(self.gamename,build_type)
+            self.client.send_msg(response)
+
+            response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
+            self.client.send_msg(response)
         
-        plan = planner.make_plan()
+        plan = planner.make_plan(False)
 
         self.debug_print(plan)
 
         if plan:
             (build_spot, build_type) = plan
 
-            #DEBUGGING                
             response = BuildRequestMessage(self.gamename,build_type)
             self.client.send_msg(response)
 
@@ -556,8 +581,7 @@ class Agent:
             self.client.send_msg(response)
 
         #cannot afford city. buy developement card.
-        # if we have more than 7 resources and has built on 4 or more spots
-        elif self.resources["DEV_CARDS"] > 0 and self.resources["SETTLEMENTS"] > 0 and self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"] > 6 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 6 and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
+        elif self.resources["DEV_CARDS"] > 0 and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
