@@ -9,7 +9,7 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 7
+total_threads = 3
 num_simul = threading.Semaphore(total_threads)
 
 # Total number of games to run
@@ -88,6 +88,7 @@ if __name__ == '__main__':
             
         try:
             import pylab
+            tprint("{0}/{1} tests failed.".format(res.count(None), len(res)))
             data = map(lambda x: 1 if x == None else x, res)
             pylab.hist(data, bins=10, range=(1, 11), histtype="bar", align="left")
             pylab.show()
