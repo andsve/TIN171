@@ -9,7 +9,7 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 10
+total_threads = 7
 num_simul = threading.Semaphore(total_threads)
 
 # Total number of games to run
@@ -78,7 +78,6 @@ if __name__ == '__main__':
                 tprint("Well WUT, that is really annoying isn't it? Fix plx.")
             except multiprocessing.TimeoutError:
                 tprint("Hmz, timeout error!")
-                res.append(None)
             except StopIteration:
                 break
         
