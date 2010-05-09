@@ -473,7 +473,7 @@ class Planner:
         logging.info("Gives...: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in gives.items())))
 
         resource_card = 0
-        if self.resources["RESOURCE_CARDS"] > 0 and sum(needed.values()) >= 2:
+        if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2:
             logging.info("Got Resource Card")
             resource_card = 0 # change to 2 when message is implemented
 

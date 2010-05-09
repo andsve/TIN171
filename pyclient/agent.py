@@ -451,6 +451,7 @@ class Agent:
             if self.resources["MAY_PLAY_DEVCARD"] and ((self.resources["KNIGHT_CARDS"] > 0 and int(self.playernum) in owners) or self.resources["KNIGHT_CARDS"] > 1):
                 response = PlayDevCardRequestMessage(self.gamename, 0)
                 self.client.send_msg(response)
+                self.resources["MAY_PLAY_DEVCARD"] = False
                 self.played_knight = True
                 self.debug_print("self.played_knight = True (2)")
 
@@ -542,10 +543,12 @@ class Agent:
         planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
 
         # Build with road building
-        if self.resources["ROAD_CARDS"] > 0:
+        if self.resources["ROAD_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"]:
 
             response = PlayDevCardRequestMessage(self.gamename, 1)
             self.client.send_msg(response)
+
+            self.resources["MAY_PLAY_DEVCARD"] = False
             
             plan = planner.make_plan(True)
 
