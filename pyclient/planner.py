@@ -475,11 +475,28 @@ class Planner:
         resource_card = 0
         if self.resources["RESOURCE_CARDS"] > 0 and sum(needed.values()) >= 2:
             logging.info("Got Resource Card")
-            resource_card = 0 # change to 2 when message is implemented
+            resource_card = 2 # change to 2 when message is implemented
 
-        if sum(gives.values()) >= sum(needed.values()) + resource_card:
-
+        if sum(gives.values()) >= sum(needed.values()) - resource_card:
+            def get_resource_index(name):
+                rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
+                for i, n in enumerate(rlist):
+                    if n == name:
+                        return i
+                                            
             # use resource card here to get two needed resources
+            if resource_card == 2:
+                resources = [0, 0, 0, 0, 0]
+                while sum(resources) < 2:
+                    for r,v in needed.items():
+                        ri = get_resource_index(r)
+                        if v > 0:
+                            resources[ri] += 1
+                            needed[r] -= 1
+                logging.critical("Picking some resources.")
+                self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
+                self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
+                    
             
             left_to_trade = sum(needed.values())
 
@@ -498,12 +515,6 @@ class Planner:
                     if gives[gres] > 0 and left_to_trade > 0:
                         for nres in needed_resources:
                             if needed[nres] > 0 and left_to_trade > 0:
-                                def get_resource_index(name):
-                                    rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
-                                    for i, n in enumerate(rlist):
-                                        if n == name:
-                                            return i
-                                        
                                 give = [0, 0, 0, 0, 0]
                                 get  = [0, 0, 0, 0, 0]
                                 give[get_resource_index(gres)] = trade_cost[gres]
