@@ -4,7 +4,7 @@ import copy
 import logging
 
 class Planner:
-    def __init__(self, game, gamename, resources, nodes, roads, client):
+    def __init__(self, game, gamename, resources, nodes, roads, client, bought):
 
         self.game = game
         self.gamename = gamename
@@ -12,6 +12,7 @@ class Planner:
         self.roads = roads
         self.resources = resources
         self.client = client
+        self.bought = bought
 
         self.probabilities = {
             0: 0,
@@ -473,7 +474,7 @@ class Planner:
         logging.info("Gives...: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in gives.items())))
 
         resource_card = 0
-        if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2:
+        if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2 and not self.bought["resourcecard"]:
             self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             logging.info("Got Resource Card")
             resource_card = 2 # change to 2 when message is implemented

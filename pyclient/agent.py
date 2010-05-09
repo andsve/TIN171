@@ -49,6 +49,11 @@ class Agent:
         self.resources["RESOURCE_CARDS"] = 0
         self.resources["MAY_PLAY_DEVCARD"] = False
 
+        self.bought = {}
+        self.bought["roadcard"] = False
+        self.bought["resourcecard"] = False
+        self.bought["monopolycard"] = False
+
         self.played_knight = False
         self.debug_print("self.played_knight = True (1)")
         self.rob_several = False
@@ -316,12 +321,15 @@ class Agent:
 
                 elif int(message.cardtype) == 1:
                     self.resources["ROAD_CARDS"] += 1
+                    self.bought["roadcard"] = True
 
                 elif int(message.cardtype) == 2:
                     self.resources["RESOURCE_CARDS"] += 1
+                    self.bought["resourcecard"] = True
 
                 elif int(message.cardtype) == 3:
                     self.resources["MONOPOLY_CARDS"] += 1
+                    self.bought["monopolycard"] = True
 
                 elif int(message.cardtype) >= 4 and int(message.cardtype) <= 8:
                     self.resources["VICTORY_CARDS"] += 1
@@ -541,10 +549,10 @@ class Agent:
     # TODO: Intelligent stuff
     def make_play(self):
 
-        planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client)
+        planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
 
         # Build with road building
-        if self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"]:
+        if self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:
 
             self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             response = PlayDevCardRequestMessage(self.gamename, 1)
@@ -722,6 +730,10 @@ class Agent:
     def roll_dices(self):
         response = RollDiceMessage(self.gamename)
         self.client.send_msg(response)
+
+        self.bought["roadcard"] = False
+        self.bought["resourcecard"] = False
+        self.bought["monopolycard"] = False
 
     def discard_cards(self, numcards):
 
