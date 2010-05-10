@@ -204,6 +204,7 @@ class Client:
                 self.send_msg(messages.GameTextMsgMessage(self.gamename, self.nickname, message.message))
                 logging.critical(message.message)
                 logging.critical(a.resources)
+                pdb.set_trace()
                 self.client.close()
                 return -1
                 # Blah blah

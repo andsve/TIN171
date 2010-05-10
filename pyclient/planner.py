@@ -290,6 +290,14 @@ class Planner:
     def canAffordCard(self):
         return self.resources["WHEAT"] >= 1 and self.resources["ORE"] >= 1 and self.resources["SHEEP"] >= 1
     
+    def is_road_buildable(self, road):
+        n1 = self.game.boardLayout.roads[road].n1
+        n2 = self.game.boardLayout.roads[road].n2
+        #check if the road is actually unbuildable due to an enemy settlement
+        notMine =  (self.game.boardLayout.nodes[n1].owner != None and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) \
+                or (self.game.boardLayout.nodes[n2].owner != None and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))
+        if road in self.game.buildableRoads.roads and notMine:
+            return None 
 
     def calcNeighbourScore(self, road, depth, i_l):
         
@@ -302,10 +310,8 @@ class Planner:
         if increase_longest == 0 and (self.longest_length == 1 or self.increases_longest(road)):
             increase_longest = 2
 
-        #check if the road is actually unbuildable due to an enemy settlement
-        notMine = (self.game.boardLayout.nodes[n1].owner != None and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner != None and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))
-        if road in self.game.buildableRoads.roads and notMine:
-            return None 
+        if not self.is_road_buildable(road):
+            return None
         
         for n in [n1, n2]:            
             node = self.game.boardLayout.nodes[n]
@@ -356,7 +362,7 @@ class Planner:
 
         import copy
 
-        tempParents = copy.deepcopy(parents)
+        tempParents = [r for r in copy.deepcopy(parents) if self.is_road_buildable(r)]
 
         if depth > 3:
             return None
@@ -478,7 +484,7 @@ class Planner:
         if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2 and not self.bought["resourcecard"]:
             self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             logging.info("Got Resource Card")
-            resource_card = 2 # change to 2 when message is implemented
+            resource_card = 0 # change to 2 when message is implemented
 
         if sum(gives.values()) >= sum(needed.values()) - resource_card:
             def get_resource_index(name):

@@ -2,6 +2,7 @@ import logging
 from messages import *
 from utils import cprint
 from planner import *
+from jsettlers_utils import pieceToType
 
 dice_props = {}
 dice_props[0]  = 0.0
@@ -573,13 +574,21 @@ class Agent:
             if plan:
 
                 (build_spot, build_type) = plan
-    
+                logging.info("Building a {0} at {1}.".format(pieceToType[int(build_type)], hex(build_spot)))
                 response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
                 self.client.send_msg(response)
+                
+                # Temporarily disable building at this node
+                if build_type == 0:
+                    self.game.buildableRoads.roads[build_spot] = False
 
                 plan = planner.make_plan(True)
+                
+                # Restore
+                if build_type == 0:
+                    self.game.buildableRoads.roads[build_spot] = True
 
-                if plan:
+                if plan and build_spot != plan[0]:
 
                     (build_spot, build_type) = plan
 
@@ -592,6 +601,7 @@ class Agent:
 
         if plan:
             (build_spot, build_type) = plan
+            logging.info("Building a {0} at {1}.".format(pieceToType[int(build_type)], hex(build_spot)))
 
             response = BuildRequestMessage(self.gamename,build_type)
             self.client.send_msg(response)
