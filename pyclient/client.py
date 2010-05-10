@@ -77,6 +77,7 @@ class Client:
         self.stats = { "ACTIVE_PLAYER": -1
                      , "TURN_COUNT": 0
                      , "TURN_ACTIVE": 0
+                     , "LATEST_DICE_RESULT": -1
                      }
 
     def connect(self, server):
@@ -156,6 +157,7 @@ class Client:
 #                if HAS_GRAPHWIZ:
 #                    graphdump.generate_graph(self.game)
 
+        # Update self.stats
         if msg == "TurnMessage":
             if int(message.playernum) == self.seat_num:
                 # Update turn info
@@ -166,6 +168,10 @@ class Client:
                 
             self.stats["ACTIVE_PLAYER"] = int(message.playernum)
             
+        elif msg == "DiceResultMessage":
+            self.stats["LATEST_DICE_RESULT"] = message.result
+            
+        # States
         if msg == "GamesMessage" and not self.gamejoined:
             # We receive a channel list and a game list
             self.gamejoined = True
