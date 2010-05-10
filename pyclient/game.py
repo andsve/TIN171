@@ -9,8 +9,6 @@ class Game:
         self.nickname = nickname
         self.stats = stats
         self.playernum = -1
-        self.longest_road = -1
-        self.largest_army = -1
 
         self.output_prefix = "[DEBUG] game.py ->"
 
@@ -20,8 +18,8 @@ class Game:
         
         # keep track of victory points for all players
         self.vp = {0: 0, 1: 0, 2: 0, 3: 0}
-        self.longest_road = None
-        self.largest_army = None
+        self.longest_road = -1
+        self.largest_army = -1
         
         self.boardLayout = None
         
