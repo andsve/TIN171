@@ -4,7 +4,7 @@ import copy
 import logging
 
 class Planner:
-    def __init__(self, game, gamename, resources, nodes, roads, client):
+    def __init__(self, game, gamename, resources, nodes, roads, client, bought):
 
         self.game = game
         self.gamename = gamename
@@ -12,6 +12,7 @@ class Planner:
         self.roads = roads
         self.resources = resources
         self.client = client
+        self.bought = bought
 
         self.probabilities = {
             0: 0,
@@ -45,8 +46,10 @@ class Planner:
             ,"SHEEPH": 0
             ,"WHEATH": 0
             ,"OREH":   0
-            ,"3FOR1H": 3
+            ,"3FOR1H": 2
         }
+
+        self.resource_list = [0,0,0,0,0,0]
         
         self.scores = {}
 
@@ -99,7 +102,7 @@ class Planner:
         name = self.get_resource_name(harbour, True)
         return self.scores[name]
     
-    def make_plan(self):
+    def make_plan(self, road_card):
         from jsettlers_utils import  elementIdToType, pieceToType
         self.scores = copy.deepcopy(self.default_scores)
 
@@ -127,6 +130,7 @@ class Planner:
             #if we have a settlement where we get a resource, raise the score for that harbor.
             for tile in tiles:
                 if 0 < tile.resource < 6:
+                    self.resource_list[tile.resource] = 1
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
                     self.add_resource_score(tile.resource, -8 * score_mod)
@@ -157,14 +161,14 @@ class Planner:
             self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
-        if best_node and self.resources["SETTLEMENTS"] > 0 and (best_score >= 3.5 or self.resources["SETTLEMENTS"] >= 4):
+        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 3.5 or self.resources["SETTLEMENTS"] >= 4)):
             self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
             for road in roads:
                 self.debug_print("Road {0} belongs to: {1}".format(road.id, road.owner))
 
-            if any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
+            if not road_card and any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
                 if self.resources["SETTLEMENTS"] > 0 and self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
                     return (best_node.id, 1)
@@ -178,8 +182,8 @@ class Planner:
                     self.debug_print("Sheep: {0}".format(self.resources["SHEEP"]))
                     self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
 
-            else:
-                if self.resources["ROADS"] > 0 and self.canAffordRoad():
+            elif not any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
+                if road_card or (self.resources["ROADS"] > 0 and self.canAffordRoad()):
                     self.debug_print("Can build road, sending...")
                     return self.findClosestBuildableRoad([road.id for road in roads], 0)
                 elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
@@ -192,7 +196,7 @@ class Planner:
 
         # Cannot afford settlement and shouldn't/cannot build road. Try upgrading to city.
 
-        if self.resources["CITIES"] > 0:
+        if not road_card and self.resources["CITIES"] > 0:
             self.cityScore = {}
 
             for n in self.nodes:
@@ -234,7 +238,7 @@ class Planner:
         tempLongestRoad = 0
         tempRoad = None
         tempRoad2 = None
-        if self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.canAffordRoad():
+        if road_card or (self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.canAffordRoad()):
             self.debug_print("Try to connect settlement hubs.")
             for road in self.game.buildableRoads.roads:
                 for road2 in self.game.buildableRoads.roads:
@@ -268,7 +272,6 @@ class Planner:
 
             return(tempRoad2, 0)
             
-        
         return None
 
     def debug_print(self, msg):
@@ -319,6 +322,8 @@ class Planner:
                     if 0 < tile.resource < 6:
                         # Add resource score for all resource types
                         temp_score += self.get_resource_score(tile.resource)
+                        # Add bonus if we are not getting that resource
+                        temp_score += (1 - self.resource_list[tile.resource]) * 5
 
                 temp_score += (3 - depth)
                 if depth == 0 and road_node.owner == None:
@@ -468,7 +473,35 @@ class Planner:
         logging.info("Can give: {0}".format(", ".join(given_resources)))
         logging.info("Gives...: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in gives.items())))
 
-        if sum(gives.values()) >= sum(needed.values()):
+        resource_card = 0
+        if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2 and not self.bought["resourcecard"]:
+            self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
+            logging.info("Got Resource Card")
+            resource_card = 2 # change to 2 when message is implemented
+
+        if sum(gives.values()) >= sum(needed.values()) - resource_card:
+            def get_resource_index(name):
+                rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
+                for i, n in enumerate(rlist):
+                    if n == name:
+                        return i
+                                            
+            # use resource card here to get two needed resources
+            if resource_card == 2:
+                resources = [0, 0, 0, 0, 0]
+                while sum(resources) < 2:
+                    for r,v in needed.items():
+                        ri = get_resource_index(r)
+                        if v > 0:
+                            resources[ri] += 1
+                            needed[r] -= 1
+                logging.critical("Picking some resources.")
+                self.debug_print("May play devcard: {0} (2)".format(self.resources["MAY_PLAY_DEVCARD"]))
+                self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
+                self.resources["MAY_PLAY_DEVCARD"] = False
+                self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
+                    
+            
             left_to_trade = sum(needed.values())
 
             max_iterations = 10
@@ -486,12 +519,6 @@ class Planner:
                     if gives[gres] > 0 and left_to_trade > 0:
                         for nres in needed_resources:
                             if needed[nres] > 0 and left_to_trade > 0:
-                                def get_resource_index(name):
-                                    rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
-                                    for i, n in enumerate(rlist):
-                                        if n == name:
-                                            return i
-                                        
                                 give = [0, 0, 0, 0, 0]
                                 get  = [0, 0, 0, 0, 0]
                                 give[get_resource_index(gres)] = trade_cost[gres]

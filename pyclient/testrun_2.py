@@ -9,7 +9,7 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 7
+total_threads = 3
 num_simul = threading.Semaphore(total_threads)
 
 # Total number of games to run
@@ -51,7 +51,7 @@ def run_client(i):
         
         if not score:
             tprint("Failed game {0}".format(i))
-            
+            return 0
         
         try_num += 1
     tprint("Finished game {0}: {1}, {2} seconds".format(i, score, time.time() - start_time))
@@ -93,8 +93,8 @@ if __name__ == '__main__':
             
         try:
             import pylab
-            data = map(lambda x: 1 if x == None else x, res)
-            pylab.hist(data, bins=10, range=(1, 11), histtype="bar", align="left")
+            tprint("{0}/{1} tests failed.".format(res.count(0), len(res)))
+            pylab.hist(res, bins=10, range=(0, 11), histtype="bar", align="left")
             pylab.show()
         except ImportError:
             tprint("Install numpy and matplotlib for sweet graphs!")
