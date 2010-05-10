@@ -160,6 +160,8 @@ class Client:
             else:
                 self.stats["TURN_COUNT"] += 1
             self.stats["TURN_ACTIVE"] = self.stats["TURN_COUNT"]
+            logging.info("----------")
+            logging.info("Our turn (#{0})".format(self.stats["TURN_ACTIVE"]))
             
         if msg == "GamesMessage" and not self.gamejoined:
             # We receive a channel list and a game list
@@ -203,6 +205,7 @@ class Client:
                 self.send_msg(messages.GameTextMsgMessage(self.gamename, self.nickname, message.message))
                 logging.critical(message.message)
                 logging.critical(a.resources)
+                pdb.set_trace()
                 self.client.close()
                 return -1
                 # Blah blah
