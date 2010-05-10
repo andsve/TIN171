@@ -45,13 +45,18 @@ def run_client(i):
         n = "{0}-{1}".format(socket.gethostname(), i, try_num)
         client = Client()
         client.connect((h, p)) 
-        score = client.run(n, True, 1, n)
+        client.setup(n, True, 1, n)
+        score = client.run()
+        
         
         if not score:
             tprint("Failed game {0}".format(i))
+            
         
         try_num += 1
     tprint("Finished game {0}: {1}, {2} seconds".format(i, score, time.time() - start_time))
+    if (score == -1):
+        score == 0
     return score
     
 if __name__ == '__main__':

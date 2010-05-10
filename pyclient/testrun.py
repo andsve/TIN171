@@ -8,7 +8,7 @@ total_threads = 20
 num_simul = Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 10
+num_games = 1000
 
 # Score results are saved in this list
 res = []
@@ -49,7 +49,8 @@ class ThreadClient(Thread):
                 exit(-1)
             
             tprint("Starting simulation client {0}...".format(self.game_id))
-            score = self.client.run(None, True, 1, self.nick)
+            self.client.setup(None, True, 1, self.nick)
+            score = self.client.run()
             self.client = None
             if (score == None):
                 tprint("Simulation client {0} has failed! Reported score: {1}".format(self.game_id, score))

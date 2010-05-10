@@ -16,6 +16,7 @@ import time
 import logging
 import logging.handlers
 
+
 class ConsolePrettyPrinter(logging.Handler):
     def __init__(self):
         logging.Handler.__init__(self)
@@ -48,10 +49,11 @@ logconsole = ConsolePrettyPrinter()
 logconsole.setLevel(logging.INFO)
 
 class Client:
-    def __init__(self):
+    def __init__(self, updateFnc = None):
         self.socket = None
         self.agent = None #= agent.Agent(self.game)
         self.game = None
+        self.updateFnc = updateFnc
 
         self.resources = {"SHEEP": 0
                         ,"VICTORY_CARDS": 0
@@ -92,21 +94,27 @@ class Client:
             
     def __call__(self, gamename, autostart, seat_num):
         self.run(gamename, autostart, seat_num)
+    
+    def setup(self, gamename, autostart, seat_num, nickname = None):
+        self.gamejoined = False
+        self.satdown = False
+        self.gamestarted = False
         
-    def run(self, gamename, autostart, seat_num, nickname = None):
-        gamejoined = False
-        satdown = False
-        gamestarted = False
+        self.gamename = gamename
+        self.autostart = autostart
+        self.nickname = nickname
+        self.seat_num = seat_num
         
-        if not nickname:
-            nickname = "{0}-{2}{1}".format(socket.gethostname(), random.randint(0, 99), seat_num)
-        #gamename = "sventest" #use static name for testing against others
+        if not self.nickname:
+            self.nickname = "{0}-{2}{1}".format(socket.gethostname(), random.randint(0, 99), self.seat_num)
         
-        if gamename == None:
-            gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
+        if self.gamename == None:
+            self.gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         
-        self.game = game.Game(nickname,self.resources,self.builtnodes,self.builtroads)
-        self.agent = agent.Agent(nickname, gamename, self.game, self, self.resources,self.builtnodes,self.builtroads)
+        self.game = game.Game(self.nickname, self.resources, self.builtnodes, self.builtroads)
+        self.agent = agent.Agent(self.nickname, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
+    
+    def run_update(self):
         
         # hack to make a "wait" recv method
         def recvwait(size):
@@ -116,126 +124,138 @@ class Client:
                 r += self.client.recv(size - len(r))
                 if len(r) >= size:
                     break
-            return r
+            return r    
         
-        while True:
-            try:
-                highByte = ord(recvwait(1))
-                lowByte = ord(recvwait(1))
-                transLength = highByte * 256 + lowByte
-                msg = recvwait(transLength)
-            except socket.timeout:
-                logger.critical("recv operation timed out.")
-                return None
-
-            try:
-                parsed = self.game.parse_message(msg)
-            except:
-                logging.critical("Failed to parse this message: {0}".format(msg))
-                # TODO: Attempt to skip message
-                self.client.close()
-                return None
+        try:
+            highByte = ord(recvwait(1))
+            lowByte = ord(recvwait(1))
+            transLength = highByte * 256 + lowByte
+            msg = recvwait(transLength)
+        except socket.timeout:
+            logger.critical("recv operation timed out.")
+            return -1
+        
+        try:
+            parsed = self.game.parse_message(msg)
+        except:
+            logging.critical("Failed to parse this message: {0}".format(msg))
+            self.client.close()
+            return -1
+        
+        if parsed == None:
+            logging.debug("Message not supported -- {0}".format(msg))
+            return None
+        else:
+            (msg, message) = parsed
                 
-            if parsed == None:
-                logging.debug("Message not supported -- {0}".format(msg))
-                continue
-            else:
-                (msg, message) = parsed
-            
-            # Graph dump on these messages
+        # Graph dump on these messages
 #            if msg in ["PutPieceMessage", "BoardLayoutMessage"]:
 #                if HAS_GRAPHWIZ:
 #                    graphdump.generate_graph(self.game)
+
+        if msg == "LongestRoadMessage":
+            logging.info("LongestRoadMessage: {0}".format("LOL" if not message else message.values()))
             
-            if msg == "LongestRoadMessage":
-                logging.info("LongestRoadMessage: {0}".format("LOL" if not message else message.values()))
+        if msg == "GamesMessage" and not self.gamejoined:
+            # We receive a channel list and a game list
+            self.gamejoined = True
+            logging.info("Starting a new game...")
+            m = game.JoinGameMessage(self.nickname, "", socket.gethostname(), self.gamename)
+            self.send_msg(m)
+
+        elif msg == "JoinGameMessage" and not self.satdown:
+            # We receive confirmation of a game created, available seats, etc
+            self.satdown = True
+            logging.info("Sitting down...")
+            m = game.SitDownMessage(self.gamename, self.nickname, self.seat_num, False)
+            self.send_msg(m)
             
-            if msg == "GamesMessage" and not gamejoined:
-                # We receive a channel list and a game list
-                gamejoined = True
-                logging.info("Starting a new game...")
-                m = game.JoinGameMessage(nickname, "", socket.gethostname(), gamename)
+        elif msg == "ChangeFaceMessage" and not self.gamestarted:
+            # We receive starting values, 0 of each resource, game state and game face
+            self.gamestarted = True
+            logging.info("Starting game...")
+            if self.autostart:
+                m = game.StartGameMessage(self.gamename)
                 self.send_msg(m)
+        
+        elif msg == "StatusMessageMessage":
+            logging.info("(Status) {0}".format(message.status))
+        
+        
+        elif msg == "GameTextMsgMessage":
+            import pdb
+            import messages
+            logging.info("(Chat) {0}".format(message.message))
+            g = self.game
+            a = self.agent
+            if message.message.upper().startswith("PDB"):
+                pdb.set_trace()
+            elif message.message.upper().startswith("QUIT"):
+                logging.info("Server told me to quit!")
+                return -1
+            
+            elif "can't" in message.message:
+                self.send_msg(messages.GameTextMsgMessage(self.gamename, self.nickname, message.message))
+                logging.critical(message.message)
+                logging.critical(a.resources)
+                self.client.close()
+                return -1
+                # Blah blah
+                #self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
+                #self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
+                #self.send_msg(messages.EndTurnMessage(gamename))
+         
+        elif msg == "GameStateMessage":
+            logging.info("Switching gamestate to: {0}".format(message.state_name))
+            
+            if message.state_name == "OVER":
+                logging.info("The game is over. And I am {0}".format(self.nickname))
+                logging.info("Victory points: {0}".format(self.game.vp))
+                logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
+                
+                points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(self.seat_num)]
+                logging.info("I got {0} points!".format(points))
+                
+                # TODO: Count our longest road?
+                
+                # Return the number of points we know we got
+                self.client.close()
+                return points
+                
 
-            elif msg == "JoinGameMessage" and not satdown:
-                # We receive confirmation of a game created, available seats, etc
-                satdown = True
-                logging.info("Sitting down...")
-                m = game.SitDownMessage(gamename, nickname, seat_num, False)
-                self.send_msg(m)
-                
-            elif msg == "ChangeFaceMessage" and not gamestarted:
-                # We receive starting values, 0 of each resource, game state and game face
-                gamestarted = True
-                logging.info("Starting game...")
-                if autostart:
-                    m = game.StartGameMessage(gamename)
-                    self.send_msg(m)
+         
+        elif msg == "RobotDismissMessage":
+            import messages
+            logging.info("I AM OUT OF HERE, NO ROBOTS ALLOWED")
+            self.send_msg(messages.LeaveGameMessage(self.nickname, socket.gethostname(), self.gamename))
+           
+        else:
+            if message == None:
+                logging.debug("{0} - NOT SUPPORTED".format(msg))
+                return None
             
-            elif msg == "StatusMessageMessage":
-                logging.info("(Status) {0}".format(message.status))
-            
-            
-            elif msg == "GameTextMsgMessage":
-                import pdb
-                import messages
-                logging.info("(Chat) {0}".format(message.message))
-                g = self.game
-                a = self.agent
-                if message.message.upper().startswith("PDB"):
-                    pdb.set_trace()
-                elif message.message.upper().startswith("QUIT"):
-                    logging.info("Server told me to quit!")
-                    return -1
-                
-                elif "can't" in message.message:
-                    self.send_msg(messages.GameTextMsgMessage(gamename, nickname, message.message))
-                    logging.critical(message.message)
-                    logging.critical(a.resources)
-                    self.client.close()
-                    return None
-                    # Blah blah
-                    #self.send_msg(messages.CancelBuildRequestMessage(gamename, 0))
-                    #self.send_msg(messages.CancelBuildRequestMessage(gamename, 1))
-                    #self.send_msg(messages.EndTurnMessage(gamename))
-             
-            elif msg == "GameStateMessage":
-                logging.info("Switching gamestate to: {0}".format(message.state_name))
-                
-                if message.state_name == "OVER":
-                    logging.info("The game is over. And I am {0}".format(nickname))
-                    logging.info("Victory points: {0}".format(self.game.vp))
-                    logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
-                    
-                    points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(seat_num)]
-                    logging.info("I got {0} points!".format(points))
-                    
-                    # TODO: Count our longest road?
-                    
-                    # Return the number of points we know we got
-                    self.client.close()
-                    return points
-                    
+            r = message.to_cmd()
+            logging.debug("[{0}] {1}".format(msg, "to_cmd() NOT IMPLEMENTED"if r == None else r))
 
-             
-            elif msg == "RobotDismissMessage":
-                import messages
-                logging.info("I AM OUT OF HERE, NO ROBOTS ALLOWED")
-                self.send_msg(messages.LeaveGameMessage(nickname, socket.gethostname(), gamename))
-               
-            else:
-                if message == None:
-                    logging.debug("{0} - NOT SUPPORTED".format(msg))
-                    continue
-                
-                r = message.to_cmd()
-                logging.debug("[{0}] {1}".format(msg, "to_cmd() NOT IMPLEMENTED"if r == None else r))
-
-            # Dispatch message to agent
-            self.agent.handle_message(msg, message)
+        # Dispatch message to agent
+        self.agent.handle_message(msg, message)
+        
+        """Game has STARTED! We get information about board layout, resources, starting player, etc"""
+        
+        # If a update function was supplied, call it!
+        if (self.updateFnc):
+            self.updateFnc()
+        
+        return None
+        
+    def run(self):
+        
+        ret = None
+        while True:
+            ret = self.run_update()
+            if ret != None:
+                return ret
             
-            """Game has STARTED! We get information about board layout, resources, starting player, etc"""
-                        
 
 def main(args):
     from sys import exit
@@ -267,8 +287,9 @@ def main(args):
     if not client.connect((host, int(port))):
         print("Could not connect to: {0}".format(options.addr))
         exit(-1)
-        
-    client.run(options.game, not options.wait, options.seat, options.nick)
+    
+    client.setup(options.game, not options.wait, options.seat, options.nick)
+    client.run()
 
 if __name__ == '__main__':
     import sys
