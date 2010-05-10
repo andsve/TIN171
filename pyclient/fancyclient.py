@@ -375,12 +375,16 @@ player_colors = [(0.0, 0.0, 1.0),
 if __name__ == '__main__':
     import sys
     import os
+    import time
 
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
     
     #logging.disable(logging.INFO)
+    js_logger = logging.getLogger("")
+    logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     try:
         app = wx.PySimpleApp(redirect=False)
