@@ -223,7 +223,7 @@ class Client:
                 logging.info("I got {0} points!".format(points))
                 
                 for k,v in self.stats.items():
-                    print "[{0}] {1}".format(k, v)
+                    logging.info("[{0}] {1}".format(k, v))
                 
                 # TODO: Count our longest road?
                 # ?

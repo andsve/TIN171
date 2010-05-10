@@ -47,16 +47,13 @@ def run_client(i):
         client.connect((h, p)) 
         client.setup(n, True, 1, n)
         score = client.run()
-        
-        
-        if not score:
+
+        if score in (None, -1, 0):
             tprint("Failed game {0}".format(i))
             return 0
-        
+            
         try_num += 1
     tprint("Finished game {0}: {1}, {2} seconds".format(i, score, time.time() - start_time))
-    if (score == -1):
-        score == 0
     return score
     
 if __name__ == '__main__':
