@@ -561,7 +561,8 @@ class Agent:
         planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
 
         # Build with road building
-        if self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:
+        ENABLE_ROAD_CARD = False
+        if ENABLE_ROAD_CARD and self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:
 
             self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             response = PlayDevCardRequestMessage(self.gamename, 1)
