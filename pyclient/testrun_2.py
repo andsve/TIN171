@@ -13,7 +13,7 @@ total_threads = 7
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 20
+num_games = 200
 
 # Score results are saved in this list
 res = []

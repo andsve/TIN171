@@ -578,15 +578,11 @@ class Agent:
                 response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
                 self.client.send_msg(response)
                 
-                # Temporarily disable building at this node
+                # Disable building at this node
                 if build_type == 0:
                     self.game.buildableRoads.roads[build_spot] = False
 
                 plan = planner.make_plan(True)
-                
-                # Restore
-                if build_type == 0:
-                    self.game.buildableRoads.roads[build_spot] = True
 
                 if plan and build_spot != plan[0]:
 
@@ -594,6 +590,9 @@ class Agent:
 
                     response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
                     self.client.send_msg(response)
+                    
+                    if build_type == 0:
+                        self.game.buildableRoads.roads[build_spot] = False
         
         plan = planner.make_plan(False)
 
