@@ -9,8 +9,8 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 3
-num_simul = threading.Semaphore(total_threads)
+total_threads = 7
+num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
 num_games = 20
@@ -19,14 +19,14 @@ num_games = 20
 res = []
 
 # somewhat of a threadsafe print function
-print_sem = threading.Semaphore()
+print_sem = multiprocessing.Semaphore()
 def tprint(txt):
     print_sem.acquire()
     print(txt)
     print_sem.release()
 
 # Save score (threadsafe lols)
-save_sem = threading.Semaphore()
+save_sem = multiprocessing.Semaphore()
 def save_score(i, v):
     save_sem.acquire()
     res[i] = v
