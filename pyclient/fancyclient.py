@@ -185,9 +185,10 @@ class GLFrame(wx.Frame):
         # Calculate bonus
         bonus_lst = [0, 0, 0, 0]
         for i in range(4):
-            bonus = 2 if i == self.client.game.longest_road else 0
-            bonus += 2 if i == self.client.game.largest_army else 0
-            bonus_lst[i] += bonus
+            if self.client.game:
+                bonus = 2 if i == self.client.game.longest_road else 0
+                bonus += 2 if i == self.client.game.largest_army else 0
+                bonus_lst[i] += bonus
             
         
         # Display player info
