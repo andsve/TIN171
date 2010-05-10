@@ -198,7 +198,7 @@ class GLFrame(wx.Frame):
             self.DrawText(1.2, 0.3, "'Public' scores:")
             for i in range(4):
                 prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
-                self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i] + bonus_lst[self.client.seat_num]))
+                self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i] + bonus_lst[i]))
         
         # Resources
         res_lut = ["Clay", "Ore", "Sheep", "Wheat", "Wood"]
