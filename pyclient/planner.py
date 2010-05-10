@@ -4,10 +4,11 @@ import copy
 import logging
 
 class Planner:
-    def __init__(self, game, gamename, resources, nodes, roads, client, bought):
+    def __init__(self, game, stats, gamename, resources, nodes, roads, client, bought):
 
         self.game = game
         self.gamename = gamename
+        self.stats = stats
         self.nodes = nodes
         self.roads = roads
         self.resources = resources

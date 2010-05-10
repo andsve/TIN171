@@ -22,9 +22,10 @@ resource_list = [0,0,0,0,0,0]#make a list of exist resource
 resource_weight = [0,35,15,25,25,35]
 
 class Agent:
-    def __init__(self, nickname, gamename, game, client, resources,nodes,roads):
+    def __init__(self, nickname, stats, gamename, game, client, resources,nodes,roads):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
+        self.stats = stats
         self.gamename = gamename
         self.client = client
         self.nickname = nickname
@@ -549,7 +550,7 @@ class Agent:
     # TODO: Intelligent stuff
     def make_play(self):
 
-        planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
+        planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
 
         # Build with road building
         if self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:

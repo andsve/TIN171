@@ -74,6 +74,7 @@ class Client:
                         
         self.builtnodes = []
         self.builtroads = []
+        self.stats = {}
 
     def connect(self, server):
         try:
@@ -111,8 +112,8 @@ class Client:
         if self.gamename == None:
             self.gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         
-        self.game = game.Game(self.nickname, self.resources, self.builtnodes, self.builtroads)
-        self.agent = agent.Agent(self.nickname, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
+        self.game = game.Game(self.nickname, self.stats, self.resources, self.builtnodes, self.builtroads)
+        self.agent = agent.Agent(self.nickname, self.stats, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
     
     def run_update(self):
         
