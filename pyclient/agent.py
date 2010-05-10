@@ -291,7 +291,6 @@ class Agent:
 
         # add / remove to resource list
         elif name == "PlayerElementMessage" and int(message.playernum) == int(self.playernum):
-            
             if message.action == "SET":
                 self.resources[message.element] = int(message.value)
 
@@ -301,7 +300,15 @@ class Agent:
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
         
-        
+                    
+            # Update resource information
+            if message.action in ("GAIN", "LOSE"):
+                key = "TOTAL_" + message.element
+                if not key in self.stats:
+                    self.stats[key] = int(message.value)
+                else:
+                    self.stats[key] += int(message.value)
+                
         if name == "ResourceCountMessage":
             items = self.resources.items()
             self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
