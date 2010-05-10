@@ -38,6 +38,11 @@ class GLFrame(wx.Frame):
         
         self.client.setup(None, True, 1, None)
         self.render = True
+        
+        # Resource history
+        self.res_history = []
+        self.last_r = [0, 0, 0, 0, 0]
+        
         #
         # Forcing a specific style on the window.
         #   Should this include styles passed?
@@ -129,7 +134,7 @@ class GLFrame(wx.Frame):
 
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(-0.1, 1.1, 1.2, -0.1, 1.0, -1.0)
+        glOrtho(-0.1, 1.6, 1.2, -0.1, 1.0, -1.0)
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
@@ -178,15 +183,20 @@ class GLFrame(wx.Frame):
                 i += 1
         
         # Display player info
-        self.DrawText(0.01, 0.9, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
-        if (self.score != None):
-            self.DrawText(0.2, 0.93, "Final score: {0}".format(self.score))
+        self.DrawText(0.01, -0.05, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
+        if self.client.agent:
+            self.DrawText(1.2, -0.05, "Agent score: {0}".format(self.client.agent.resources["VICTORY_CARDS"] + self.client.game.vp[int(self.client.seat_num)]))
+            
+            self.DrawText(1.2, 0.3, "'Public' scores:")
+            for i in range(4):
+                self.DrawText(1.25, 0.35+i*0.04, "Player {0}: {1}".format(i, self.client.game.vp[i]))
         
         # Resources
         res_lut = ["Clay", "Ore", "Sheep", "Wheat", "Wood"]
-        rposx = 0.01
-        rposy = 0.92
+        rposx = 1.2
+        rposy = 0.0
         rsize = 0.04
+        round_res = [0, 0, 0, 0, 0]
         for i in range(5):
             glColor(self.TileToColor(i+1))
             glBegin(GL_QUADS)
@@ -197,9 +207,44 @@ class GLFrame(wx.Frame):
             glEnd()
             
             if self.client.game and self.client.game.resources:
-                self.DrawText(rposx + rsize * 1.1, rposy + rsize / 1.5, "{0}: {1}".format(res_lut[i], self.client.game.resources[res_lut[i].upper()]))
+                round_res[i] = (self.client.game.resources[res_lut[i].upper()])
+                self.DrawText(rposx + rsize * 1.2, rposy + rsize / 1.5, "{0}: {1}".format(res_lut[i], self.client.game.resources[res_lut[i].upper()]))
             
             rposy += rsize * 1.1
+        
+        if len(self.res_history) > 0:
+            self.last_r = self.res_history[-1]
+            
+        if self.last_r != round_res:
+            self.res_history.append(round_res)
+        
+        # Resource histogram
+        num_history = 50
+        rposx = 0.0
+        rposy = 1.1
+        rh = 0.2
+        rsize = 1.5
+        rstep = rsize / num_history
+        
+        glColor((0, 0, 0))
+        glBegin(GL_LINES)
+        glVertex(rposx, rposy, 1.0)
+        glVertex(rposx+rsize, rposy, 1.0)
+        glEnd()
+        
+        if len(self.res_history) > 0:
+            last_r = self.res_history[-num_history:][0]
+            for r in self.res_history[-num_history:]:
+                for i in range(5):
+                    glColor(self.TileToColor(i+1))
+                    glBegin(GL_LINES)
+                    glVertex(rposx, rposy-last_r[i]/20.0, 1.0)
+                    glVertex(rposx+rstep, rposy-r[i]/20.0, 1.0)
+                    glEnd()
+                last_r = r
+                rposx += rstep
+                
+        
         
         self.SwapBuffers()
     
@@ -217,7 +262,7 @@ class GLFrame(wx.Frame):
         elif id == 5:
             return (153.0/256.0, 110.0/256.0, 55.0/256.0) # Lumber
         elif id == 6:
-            return (2.0/256.0, 79.0/256.0, 206.0/256.0) # Sea
+            return (2.0/256.0, 20.0/256.0, 110.0/256.0) # Sea
         
         return (1.0, 1.0, 0.0)
     
@@ -326,16 +371,27 @@ player_colors = [(0.0, 0.0, 1.0),
                  (1.0, 1.0, 1.0),
                  (1.0, 1.0, 0.0)]
 
-import sys
-import os
+if __name__ == '__main__':
+    import sys
+    import os
 
-if os.name == 'nt':
-    os.system("mode 80,60")
-    os.system("mode con: cols=80 lines=900")
+    if os.name == 'nt':
+        os.system("mode 80,60")
+        os.system("mode con: cols=80 lines=900")
+    
+    #logging.disable(logging.INFO)
+    
+    try:
+        app = wx.PySimpleApp(redirect=False)
+        frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700))
+        frame.Show()
 
-app = wx.PySimpleApp(redirect=False)
-frame = GLFrame(None, -1, 'GL Window', size = (550,700))
-frame.Show()
-
-app.MainLoop()
-app.Destroy()
+        app.MainLoop()
+        app.Destroy()
+            
+            
+    except:
+        import pdb
+        import traceback
+        traceback.print_exc(file=sys.stdout)
+        pdb.set_trace()
