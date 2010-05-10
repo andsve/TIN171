@@ -20,6 +20,8 @@ class Game:
         self.longest_road = None
         self.largest_army = None
         
+        self.boardLayout = None
+        
 
     def debug_print(self, msg):
         logging.info(msg)

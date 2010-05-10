@@ -113,6 +113,18 @@ def roads_around_hex(n):
             , n + 0x11 - 0x01
             ]
 
+def roads_around_hex2(n):
+    # / \   n1 n2
+    # | |  n0   n3
+    # \ /   n5 n4
+    return [  n - 0x11
+            , n - 0x11 + 1
+            , n + 0x01
+            , n + 0x11
+            , n + 0x11 - 0x01
+            , n - 0x01
+            ]
+
 def adjacent_tiles(n):
     if n % 2 == 0:
         t1 = n - 0x21

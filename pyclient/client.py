@@ -115,7 +115,6 @@ class Client:
         self.agent = agent.Agent(self.nickname, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
     
     def run_update(self):
-        
         # hack to make a "wait" recv method
         def recvwait(size):
             sofar = 0
@@ -132,7 +131,7 @@ class Client:
             transLength = highByte * 256 + lowByte
             msg = recvwait(transLength)
         except socket.timeout:
-            logger.critical("recv operation timed out.")
+            logging.critical("recv operation timed out.")
             return -1
         
         try:
