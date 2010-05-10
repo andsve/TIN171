@@ -485,7 +485,7 @@ class Planner:
         if self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2 and not self.bought["resourcecard"]:
             self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
             logging.info("Got Resource Card")
-            resource_card = 2 # change to 2 when message is implemented
+            resource_card = 0 # change to 2 when message is implemented
 
         if sum(gives.values()) >= sum(needed.values()) - resource_card:
             def get_resource_index(name):
