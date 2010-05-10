@@ -74,7 +74,10 @@ class Client:
                         
         self.builtnodes = []
         self.builtroads = []
-        self.stats = {}
+        self.stats = { "ACTIVE_PLAYER": -1
+                     , "TURN_COUNT": 0
+                     , "TURN_ACTIVE": 0
+                     }
 
     def connect(self, server):
         try:
@@ -153,15 +156,15 @@ class Client:
 #                if HAS_GRAPHWIZ:
 #                    graphdump.generate_graph(self.game)
 
-        if msg == "TurnMessage" and int(message.playernum) == self.seat_num:
-            # Update turn info
-            if not "TURN_COUNT" in self.stats:
-                self.stats["TURN_COUNT"] = 1
-            else:
+        if msg == "TurnMessage":
+            if int(message.playernum) == self.seat_num:
+                # Update turn info
                 self.stats["TURN_COUNT"] += 1
-            self.stats["TURN_ACTIVE"] = self.stats["TURN_COUNT"]
-            logging.info("----------")
-            logging.info("Our turn (#{0})".format(self.stats["TURN_ACTIVE"]))
+                self.stats["TURN_ACTIVE"] = self.stats["TURN_COUNT"]
+                logging.info("----------")
+                logging.info("Our turn (#{0})".format(self.stats["TURN_ACTIVE"]))
+                
+            self.stats["ACTIVE_PLAYER"] = int(message.playernum)
             
         if msg == "GamesMessage" and not self.gamejoined:
             # We receive a channel list and a game list
