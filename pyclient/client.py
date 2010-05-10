@@ -74,6 +74,7 @@ class Client:
                         
         self.builtnodes = []
         self.builtroads = []
+        self.stats = {}
 
     def connect(self, server):
         try:
@@ -111,8 +112,8 @@ class Client:
         if self.gamename == None:
             self.gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         
-        self.game = game.Game(self.nickname, self.resources, self.builtnodes, self.builtroads)
-        self.agent = agent.Agent(self.nickname, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
+        self.game = game.Game(self.nickname, self.stats, self.resources, self.builtnodes, self.builtroads)
+        self.agent = agent.Agent(self.nickname, self.stats, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
     
     def run_update(self):
         # hack to make a "wait" recv method
@@ -152,8 +153,13 @@ class Client:
 #                if HAS_GRAPHWIZ:
 #                    graphdump.generate_graph(self.game)
 
-        if msg == "LongestRoadMessage":
-            logging.info("LongestRoadMessage: {0}".format("LOL" if not message else message.values()))
+        if msg == "TurnMessage" and int(message.playernum) == self.seat_num:
+            # Update turn info
+            if not "TURN_COUNT" in self.stats:
+                self.stats["TURN_COUNT"] = 1
+            else:
+                self.stats["TURN_COUNT"] += 1
+            self.stats["TURN_ACTIVE"] = self.stats["TURN_COUNT"]
             
         if msg == "GamesMessage" and not self.gamejoined:
             # We receive a channel list and a game list
@@ -215,14 +221,16 @@ class Client:
                 points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(self.seat_num)]
                 logging.info("I got {0} points!".format(points))
                 
+                for k,v in self.stats.items():
+                    logging.info("[{0}] {1}".format(k, v))
+                
                 # TODO: Count our longest road?
+                # ?
                 
                 # Return the number of points we know we got
                 self.client.close()
                 return points
                 
-
-         
         elif msg == "RobotDismissMessage":
             import messages
             logging.info("I AM OUT OF HERE, NO ROBOTS ALLOWED")

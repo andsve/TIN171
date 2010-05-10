@@ -2,6 +2,7 @@ import logging
 from messages import *
 from utils import cprint
 from planner import *
+from jsettlers_utils import pieceToType
 
 dice_props = {}
 dice_props[0]  = 0.0
@@ -22,9 +23,10 @@ resource_list = [0,0,0,0,0,0]#make a list of exist resource
 resource_weight = [0,35,15,25,25,35]
 
 class Agent:
-    def __init__(self, nickname, gamename, game, client, resources,nodes,roads):
+    def __init__(self, nickname, stats, gamename, game, client, resources,nodes,roads):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
+        self.stats = stats
         self.gamename = gamename
         self.client = client
         self.nickname = nickname
@@ -290,7 +292,6 @@ class Agent:
 
         # add / remove to resource list
         elif name == "PlayerElementMessage" and int(message.playernum) == int(self.playernum):
-            
             if message.action == "SET":
                 self.resources[message.element] = int(message.value)
 
@@ -300,7 +301,15 @@ class Agent:
             elif message.action == "LOSE":
                 self.resources[message.element] -= int(message.value)
         
-        
+                    
+            # Update resource information
+            if message.action in ("GAIN", "LOSE"):
+                key = "TOTAL_" + message.element
+                if not key in self.stats:
+                    self.stats[key] = int(message.value)
+                else:
+                    self.stats[key] += int(message.value)
+                
         if name == "ResourceCountMessage":
             items = self.resources.items()
             self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
@@ -549,7 +558,7 @@ class Agent:
     # TODO: Intelligent stuff
     def make_play(self):
 
-        planner = Planner(self.game,self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
+        planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
 
         # Build with road building
         if self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:
@@ -565,18 +574,25 @@ class Agent:
             if plan:
 
                 (build_spot, build_type) = plan
-    
+                logging.info("Building a {0} at {1}.".format(pieceToType[int(build_type)], hex(build_spot)))
                 response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
                 self.client.send_msg(response)
+                
+                # Disable building at this node
+                if build_type == 0:
+                    self.game.buildableRoads.roads[build_spot] = False
 
                 plan = planner.make_plan(True)
 
-                if plan:
+                if plan and build_spot != plan[0]:
 
                     (build_spot, build_type) = plan
 
                     response = PutPieceMessage(self.gamename,self.playernum,build_type,build_spot)
                     self.client.send_msg(response)
+                    
+                    if build_type == 0:
+                        self.game.buildableRoads.roads[build_spot] = False
         
         plan = planner.make_plan(False)
 
@@ -584,6 +600,7 @@ class Agent:
 
         if plan:
             (build_spot, build_type) = plan
+            logging.info("Building a {0} at {1}.".format(pieceToType[int(build_type)], hex(build_spot)))
 
             response = BuildRequestMessage(self.gamename,build_type)
             self.client.send_msg(response)

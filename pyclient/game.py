@@ -3,10 +3,11 @@ from messages import *
 from utils import cprint
 
 class Game:
-    def __init__(self, nickname,resources,nodes,roads):
+    def __init__(self, nickname, stats, resources,nodes,roads):
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
+        self.stats = stats
         self.playernum = -1
 
         self.output_prefix = "[DEBUG] game.py ->"

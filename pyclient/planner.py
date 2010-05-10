@@ -4,10 +4,11 @@ import copy
 import logging
 
 class Planner:
-    def __init__(self, game, gamename, resources, nodes, roads, client, bought):
+    def __init__(self, game, stats, gamename, resources, nodes, roads, client, bought):
 
         self.game = game
         self.gamename = gamename
+        self.stats = stats
         self.nodes = nodes
         self.roads = roads
         self.resources = resources
@@ -289,6 +290,15 @@ class Planner:
     def canAffordCard(self):
         return self.resources["WHEAT"] >= 1 and self.resources["ORE"] >= 1 and self.resources["SHEEP"] >= 1
     
+    def is_road_buildable(self, road):
+        n1 = self.game.boardLayout.roads[road].n1
+        n2 = self.game.boardLayout.roads[road].n2
+        #check if the road is actually unbuildable due to an enemy settlement
+        notMine =  (self.game.boardLayout.nodes[n1].owner != None and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) \
+                or (self.game.boardLayout.nodes[n2].owner != None and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))
+        if road in self.game.buildableRoads.roads and notMine:
+            return False
+        return True
 
     def calcNeighbourScore(self, road, depth, i_l):
         
@@ -301,10 +311,8 @@ class Planner:
         if increase_longest == 0 and (self.longest_length == 1 or self.increases_longest(road)):
             increase_longest = 2
 
-        #check if the road is actually unbuildable due to an enemy settlement
-        notMine = (self.game.boardLayout.nodes[n1].owner != None and int(self.game.boardLayout.nodes[n1].owner) != int(self.game.playernum)) or (self.game.boardLayout.nodes[n2].owner != None and int(self.game.boardLayout.nodes[n2].owner) != int(self.game.playernum))
-        if road in self.game.buildableRoads.roads and notMine:
-            return None 
+        if not self.is_road_buildable(road):
+            return None
         
         for n in [n1, n2]:            
             node = self.game.boardLayout.nodes[n]
@@ -355,7 +363,7 @@ class Planner:
 
         import copy
 
-        tempParents = copy.deepcopy(parents)
+        tempParents = [r for r in copy.deepcopy(parents) if self.is_road_buildable(r)]
 
         if depth > 3:
             return None

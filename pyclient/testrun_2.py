@@ -9,24 +9,24 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 3
-num_simul = threading.Semaphore(total_threads)
+total_threads = 7
+num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 20
+num_games = 200
 
 # Score results are saved in this list
 res = []
 
 # somewhat of a threadsafe print function
-print_sem = threading.Semaphore()
+print_sem = multiprocessing.Semaphore()
 def tprint(txt):
     print_sem.acquire()
     print(txt)
     print_sem.release()
 
 # Save score (threadsafe lols)
-save_sem = threading.Semaphore()
+save_sem = multiprocessing.Semaphore()
 def save_score(i, v):
     save_sem.acquire()
     res[i] = v
@@ -47,16 +47,13 @@ def run_client(i):
         client.connect((h, p)) 
         client.setup(n, True, 1, n)
         score = client.run()
-        
-        
-        if not score:
+
+        if score in (None, -1, 0):
             tprint("Failed game {0}".format(i))
             return 0
-        
+            
         try_num += 1
     tprint("Finished game {0}: {1}, {2} seconds".format(i, score, time.time() - start_time))
-    if (score == -1):
-        score == 0
     return score
     
 if __name__ == '__main__':
