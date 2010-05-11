@@ -47,7 +47,7 @@ class Planner:
             ,"SHEEPH": 0
             ,"WHEATH": 0
             ,"OREH":   0
-            ,"3FOR1H": 2
+            ,"3FOR1H": 5
         }
 
         self.resource_list = [0,0,0,0,0,0]
@@ -134,8 +134,8 @@ class Planner:
                     self.resource_list[tile.resource] = 1
                     res_name  = elementIdToType[str(tile.resource)]
                     score_mod = self.probabilities.setdefault(tile.number, 0) * city_bonus
-                    self.add_resource_score(tile.resource, -8 * score_mod)
-                    self.add_harbour_score(tile.resource, 10*score_mod)
+                    self.add_resource_score(tile.resource, -5 * score_mod)
+                    self.add_harbour_score(tile.resource, 7*score_mod)
            
         possible_roads = []
         possible_roads += self.roads

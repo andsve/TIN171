@@ -1,6 +1,6 @@
 import logging
 import threading
-from client import *
+from VCRclient import *
 import socket
 
 import multiprocessing
@@ -9,7 +9,7 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 5
+total_threads = 10
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
@@ -32,19 +32,6 @@ def save_score(i, v):
     res[i] = v
     save_sem.release()
 
-def print_stats(res):
-    tprint("--- Statistics ---")
-    for x in range(2, 11):
-        tprint("{0}p - {1}".format(x, res.count(x)))
-        
-    # Change all 11:s to 10:s
-    res = [10 if r == 11 else r for r in res]
-        
-    winratio = res.count(10) / float(len(res))
-    average = float(sum(res))/len(res)
-    median = sorted(res)[len(res)/2]
-    tprint("Win ratio: {0}, Average: {1}, Median: {2}".format(winratio, average, median))
-
 def run_client(i):
     import time
     start_time = time.time()
@@ -56,7 +43,7 @@ def run_client(i):
     score = None
     while not score:
         n = "{0}-{1}".format(socket.gethostname(), i, try_num)
-        client = Client()
+        client = VCRClient("recs/" + n + ".rec", True)
         client.connect((h, p)) 
         client.setup(n, True, 1, n)
         score = client.run()
@@ -99,14 +86,19 @@ if __name__ == '__main__':
         # Display results
         tprint("------------------------------------")
         tprint("Results from {0} games...\n".format(len(res)))
-
-        print_stats(res)
+        for x in range(0, 12):
+            tprint("{0}p - {1}".format(x, res.count(x)))
+            
+        winratio = (res.count(10) + res.count(11)) / float(len(res))
+        average = float(sum(res))/len(res)
+        median = sorted(res)[len(res)/2]
+        tprint("Win ratio: {0}, Average: {1}, Median: {2}".format(winratio, average, median))
 
             
         try:
             import pylab
             tprint("{0}/{1} tests failed.".format(res.count(0), len(res)))
-            pylab.hist(res, bins=8, range=(2, 11), histtype="bar", align="mid")
+            pylab.hist(res, bins=12, range=(0, 11), histtype="bar", align="mid")
 
             xmin, xmax, ymin, ymax = pylab.axis()
             pylab.axis([2, 12, ymin, ymax])

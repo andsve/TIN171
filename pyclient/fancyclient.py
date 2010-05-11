@@ -1,3 +1,6 @@
+import sys
+sys.path += ['.']
+
 try:
     import wx
     from wx import glcanvas
@@ -11,9 +14,9 @@ except ImportError:
     raise ImportError, "Required dependency OpenGL not present"
 
 import client
+import VCRclient
 import logging
 from jsettlers_utils import hex_grid, roads_around_hex2
-
 
 #class PApp(wx.PySimpleApp):
 #    def OnIdle(self, evt):
@@ -24,24 +27,27 @@ class GLFrame(wx.Frame):
 
     def __init__(self, parent, id, title, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE,
-                 name='frame'):
+                 name='frame', client = None, vcr = False):
         
         self.w = size[0]
         self.h = size[1]
         self.score = None
         
-        # Setup bot client
-        self.client = client.Client()
-        if not self.client.connect(("doff.csbnet.se", int(8880))):
-            print("Could not connect to: {0}".format("doff.csbnet.se"))
-            exit(-1)
+        self.vcr = vcr
+        self.running = True
         
-        self.client.setup(None, True, 1, None)
+        # Setup bot client
+        #self.client = client.Client()
+        #self.client = VCRclient.VCRClient()
+        self.client = client
         self.render = True
         
         # Resource history
         self.res_history = []
         self.last_r = [0, 0, 0, 0, 0]
+        
+        # Playback
+        self.playback_frame = 0
         
         #
         # Forcing a specific style on the window.
@@ -64,14 +70,36 @@ class GLFrame(wx.Frame):
         self.canvas.Bind(wx.EVT_ERASE_BACKGROUND, self.processEraseBackgroundEvent)
         self.canvas.Bind(wx.EVT_SIZE, self.processSizeEvent)
         self.canvas.Bind(wx.EVT_PAINT, self.processPaintEvent)
+        
         self.Bind(wx.EVT_IDLE, self.OnIdle)
-        #app.Bind(wx.EVT_INTERNAL_IDLE, self.processPaintEvent)
+        self.canvas.Bind(wx.EVT_KEY_DOWN, self.EventKeyDown)
+        
         
         # Start client thread
         #t = ThreadClient("testnick", "doff.csbnet.se", 8880, self.OnDraw)
         #t.start()
         wx.CallAfter(self.OnDraw, None, None)
+     
+
+    def EventKeyDown(self, evt):
+        keycode = evt.GetKeyCode()
         
+        if (self.playback_frame == -1):
+            self.playback_frame = 0
+          
+        if keycode == wx.WXK_ESCAPE:
+            wx.Window.Destroy(self)
+            
+        elif keycode == wx.WXK_LEFT:
+            self.playback_frame -= 1
+        elif keycode == wx.WXK_RIGHT:
+            self.playback_frame += 1
+        elif keycode == wx.WXK_UP:
+            if self.vcr:
+                self.playback_frame = 0
+                self.client.reset_playback()
+        elif keycode == ord('P'):
+            self.running = not self.running
 
     #
     # Canvas Proxy Methods
@@ -141,8 +169,12 @@ class GLFrame(wx.Frame):
         
     def OnIdle(self, evt):
         # Update client, and draw if needed
-        if self.render:
-            self.score = self.client.run_update()
+        if self.render and self.running:
+            if self.vcr:
+                self.score = self.client.run_update(self.playback_frame)
+            else:
+                self.score = self.client.run_update()
+                
             if self.score != None:
                 self.render = False
         self.OnDraw()
@@ -184,22 +216,50 @@ class GLFrame(wx.Frame):
         
         # Calculate bonus
         bonus_lst = [0, 0, 0, 0]
+        bonus_str = ["", "", "", "", ""]
         for i in range(4):
             if self.client.game:
-                bonus = 2 if i == self.client.game.longest_road else 0
-                bonus += 2 if i == self.client.game.largest_army else 0
-                bonus_lst[i] += bonus
-            
+                s = []
+                if i == self.client.game.longest_road:
+                    bonus_lst[i] += 2
+                    s.append("LR")
+                
+                if i == self.client.game.largest_army:
+                    bonus_lst[i] += 2
+                    s.append("LA")
+                
+                if len(s) > 0:
+                    bonus_str[i] = "(" + ",".join(s) + ")"
+        
+        # Paused?
+        if not self.running:
+            self.DrawText(0.65, 0.9, "GAME PAUSED", (1.0, 0.0, 0.0))
         
         # Display player info
         self.DrawText(0.01, -0.05, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
         if self.client.agent:
             self.DrawText(1.2, -0.05, "Agent score: {0}".format(bonus_lst[self.client.seat_num] + self.client.agent.resources["VICTORY_CARDS"] + self.client.game.vp[int(self.client.seat_num)]))
+            if self.vcr:
+                self.DrawText(1.20, -0.01, "Showing turn: {0}".format(self.playback_frame))
             
-            self.DrawText(1.2, 0.3, "'Public' scores:")
+            self.DrawText(1.2, 0.5, "'Public' scores:")
+            rposx = 1.2
+            rposy = 0.53
+            rsize = 0.035
+            rsizew = 0.045
             for i in range(4):
-                prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
-                self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i] + bonus_lst[i]))
+                glColor(player_colors[i])
+                glBegin(GL_QUADS)
+                glVertex(rposx, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy+rsize, 1.0)
+                glVertex(rposx, rposy+rsize, 1.0)
+                glEnd()
+                rposy += rsize * 1.1
+                prefix = " > " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                if self.client.stats["ACTIVE_PLAYER"] == i:
+                    self.DrawText(1.201, 0.552+i*0.04, " >", (1.0, 1.0, 1.0))
+                self.DrawText(1.20, 0.55+i*0.04, prefix + "Player {0}: {1} {2}".format(i, self.client.game.vp[i] + bonus_lst[i], bonus_str[i]))
         
         # Resources
         res_lut = ["Clay", "Ore", "Sheep", "Wheat", "Wood"]
@@ -221,6 +281,19 @@ class GLFrame(wx.Frame):
                 self.DrawText(rposx + rsize * 1.2, rposy + rsize / 1.5, "{0}: {1}".format(res_lut[i], self.client.game.resources[res_lut[i].upper()]))
             
             rposy += rsize * 1.1
+            
+        # Development cards
+        dev_lut = [("Monopoly", "MONOPOLY_CARDS")
+                  ,("Discovery", "RESOURCE_CARDS")
+                  ,("Road", "ROAD_CARDS")
+                  ,("VP", "VICTORY_CARDS")
+                  ,("Knight", "KNIGHT_CARDS")
+                  ,("Army", "NUMKNIGHTS")]
+                  
+        for i, card in enumerate(dev_lut):
+            if self.client.game and self.client.game.resources:
+                self.DrawText(rposx + rsize * 1.2, rposy + rsize / 1.5, "{0}: {1}".format(card[0], self.client.game.resources[card[1]]))
+                rposy += rsize * 1.1
         
         if len(self.res_history) > 0:
             self.last_r = self.res_history[-1]
@@ -340,8 +413,8 @@ class GLFrame(wx.Frame):
         if owner != None:
             glColor(player_colors[owner])
             glBegin(GL_LINES)
-            glVertex(x1, y1, 1.0)
-            glVertex(x2, y2, 1.0)
+            glVertex(x1, y1, 0.7)
+            glVertex(x2, y2, 0.7)
             glEnd()
         
     def DrawNode(self, x, y, node):
@@ -381,29 +454,68 @@ player_colors = [(0.0, 0.0, 1.0),
                  (1.0, 1.0, 1.0),
                  (1.0, 1.0, 0.0)]
 
+def main(args):
+    from sys import exit
+    from optparse import OptionParser
+    import logging
+    
+    js_logger = logging.getLogger("")
+    filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
+    rec_file = "recs/" + filename + ".rec"
+    log_file = "logs/" + filename + ".log"
+    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
+    
+    parser = OptionParser()
+    parser.add_option("-a", "--addr", default = "doff.csbnet.se:8880")
+    parser.add_option("-s", "--seat", type="int", default = 1)
+    parser.add_option("-g", "--game", default = None)
+    parser.add_option("-n", "--nick", default = None)
+    parser.add_option("-w", "--wait", action="store_true", default = False)
+    parser.add_option("-o", "--outfile", default = rec_file)
+    parser.add_option("-r", "--record", action="store_true", default = True)
+    parser.add_option("-p", "--play", action="store_true", default = False)
+    
+    (options, args) = parser.parse_args()
+    
+    print options
+    
+    if ":" not in options.addr:
+        print "try using host:port"
+        sys.exit(-1)
+    host, port = options.addr.split(":")
+    
+    lclient = None
+    if options.record or options.play:
+        lclient = VCRclient.VCRClient(options.outfile, not options.play)
+    else:
+        lclient = client.Client()
+    
+    if not lclient.connect((host, int(port))):
+        print("Could not connect to: {0}".format(options.addr))
+        exit(-1)
+    lclient.setup(options.game, not options.wait, options.seat, options.nick)
+    
+    app = wx.PySimpleApp(redirect=False)
+    frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700), client=lclient, vcr= (options.record or options.play))
+    frame.Show()
+
+    app.MainLoop()
+    app.Destroy()
+
+
 if __name__ == '__main__':
     import sys
     import os
     import time
+    
 
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
     
-    #logging.disable(logging.INFO)
-    js_logger = logging.getLogger("")
-    logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
-    js_logger.addHandler(client.logconsole)
-    
     try:
-        app = wx.PySimpleApp(redirect=False)
-        frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700))
-        frame.Show()
-
-        app.MainLoop()
-        app.Destroy()
-            
-            
+        main(sys.argv[1:])
     except:
         import pdb
         import traceback
