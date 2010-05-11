@@ -2,6 +2,10 @@ import client
 import pickle
 from copy import deepcopy
 
+class DummyAgent:
+    def __init__(self, resources):
+        self.resources = resources
+
 class VCRClient(client.Client):
     def __init__(self, playbackFile = "vcrclient.rec", record = False):
         client.Client.__init__(self)
@@ -53,13 +57,17 @@ class VCRClient(client.Client):
             if self.stats['TURN_ACTIVE'] != self.current_turn:
                 self.current_turn = self.stats['TURN_ACTIVE']
                 #print("Recording data... (Turn {0})".format(self.current_turn))
-                self.record_data['frames'].append({'game': deepcopy(self.game), 'resources': deepcopy(self.resources)})
+                self.record_data['frames'].append({'game': deepcopy(self.game), 'agentresources': deepcopy(self.agent.resources), 'resources': deepcopy(self.resources)})
             
             if res:
-                print("Recording over, saving to file: {0}".format(self.playbackFile))
+                # Record the last "frame" also
+                self.record_data['frames'].append({'game': deepcopy(self.game), 'agentresources': deepcopy(self.agent.resources), 'resources': deepcopy(self.resources)})
+                    
+                print("Recording over, saving to file: {0}...".format(self.playbackFile))
                 output = open(self.playbackFile, 'wb')
                 pickle.dump(self.record_data, output)
                 output.close()
+                print("Saved: {0}".format(self.playbackFile))
                 
             return res
         else:
@@ -77,6 +85,7 @@ class VCRClient(client.Client):
             
             # Setup frame data
             if frame < len(self.record_data['frames']):
+                self.agent = DummyAgent(self.record_data['frames'][frame]['agentresources'])
                 self.game = self.record_data['frames'][frame]['game']
                 self.resources = self.record_data['frames'][frame]['resources']
             #else:
