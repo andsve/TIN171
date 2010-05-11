@@ -3,6 +3,7 @@ from messages import *
 from utils import cprint
 from planner import *
 from jsettlers_utils import pieceToType
+from jsettlers_utils import elementIdToType
 
 dice_props = {}
 dice_props[0]  = 0.0
@@ -215,7 +216,7 @@ class Agent:
         good_nodes = []
         for (k,n) in self.game.buildableNodes.nodes.items():
             if (n):
-                self.debug_print("Trying see if build is possible on {0}".format(hex(k)))
+                #self.debug_print("Trying see if build is possible on {0}".format(hex(k)))
                 #self.debug_print("Sure build here man!")
                 
                 # look up node in gameboard
@@ -311,11 +312,12 @@ class Agent:
                     self.stats[key] += int(message.value)
                 
         if name == "ResourceCountMessage":
-            items = self.resources.items()
-            self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
-            for res, val in items[1:]:
-                if res != "UNKNOWN":
-                    self.debug_print("                {0} = {1}".format(res, val))
+            pass
+            #items = self.resources.items()
+            #self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
+            #for res, val in items[1:]:
+            #    if res != "UNKNOWN":
+            #        self.debug_print("                {0} = {1}".format(res, val))
 
         # updates the number of devcards left
         if name == "DevCardCountMessage":
@@ -363,6 +365,24 @@ class Agent:
                     
         # Setup state 1    
         if self.gamestate == 1 and name == "TurnMessage" and message.playernum == self.playernum:
+
+            # analysis of game board
+            probs = {}
+            probs["CLAY"] = 0
+            probs["ORE"] = 0
+            probs["SHEEP"] = 0
+            probs["WHEAT"] = 0
+            probs["WOOD"]= 0
+
+            for t in self.game.boardLayout.tiles:
+                if self.game.boardLayout.tiles[t].resource != 0:    
+                    probs[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] += dice_props[self.game.boardLayout.tiles[t].number]
+
+            self.debug_print("Resources have probabilities:")
+            for (r,v) in probs.items():
+                self.debug_print("                             {0} = {1}".format(r,v))
+
+            
             """new_settlement_place = self.find_buildable_node()"""
             # change the resource_list to see which kind of resources are taken
             new_settlement_place = self.find_first_settlement() #new function
@@ -748,6 +768,13 @@ class Agent:
     def roll_dices(self):
         response = RollDiceMessage(self.gamename)
         self.client.send_msg(response)
+
+        items = self.resources.items()
+        self.debug_print("Have resources: {0} = {1}".format(items[0][0], items[0][1]))
+
+        for res, val in items[1:]:
+            if res != "UNKNOWN":
+                self.debug_print("                {0} = {1}".format(res, val))
 
         self.bought["roadcard"] = False
         self.bought["resourcecard"] = False
