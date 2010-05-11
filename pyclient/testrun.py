@@ -94,6 +94,15 @@ if __name__ == '__main__':
         for i in range(num_games):
             tprint("{0}: {1}".format(i+1, res[i]))
             
+        tprint("--- Statistics ---")
+        for x in range(0, 12):
+            tprint("{0}p - {1}".format(x, res.count(x)))
+            
+        winratio = (res.count(10) + res.count(11)) / float(len(res))
+        average = float(sum(res))/len(res)
+        median = sorted(res)[len(res)/2]
+        tprint("Win ratio: {0}, Average: {1}, Median: {2}".format(winratio, average, median))
+            
         try:
             import pylab
             data = map(lambda x: 1 if x == None else x, res)
