@@ -223,9 +223,11 @@ class GLFrame(wx.Frame):
                 if i == self.client.game.longest_road:
                     bonus_lst[i] += 2
                     s.append("LR")
-                elif i == self.client.game.largest_army:
+                
+                if i == self.client.game.largest_army:
                     bonus_lst[i] += 2
                     s.append("LA")
+                
                 if len(s) > 0:
                     bonus_str[i] = "(" + ",".join(s) + ")"
         
