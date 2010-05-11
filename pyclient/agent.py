@@ -152,6 +152,14 @@ class Agent:
         rares["WHEAT"] = []
         rares["WOOD"] = []
 
+        resource_matrix = []
+        resource_matrix.append([[],[],[],[],[],[]])
+        resource_matrix.append([[],[],[],[],[],[]])
+        resource_matrix.append([[],[],[],[],[],[]])
+        resource_matrix.append([[],[],[],[],[],[]])
+        resource_matrix.append([[],[],[],[],[],[]])
+        resource_matrix.append([[],[],[],[],[],[]])
+
         for n in self.game.buildableNodes.nodes:
 
             if self.game.buildableNodes.nodes[n]:
@@ -163,24 +171,47 @@ class Agent:
                 t2 = self.game.boardLayout.nodes[n].t2
                 t3 = self.game.boardLayout.nodes[n].t3
 
+                if t1:
+                    if t2 and self.game.boardLayout.tiles[t2].resource != 0:
+                        if self.game.boardLayout.tiles[t1].resource != 0 and self.game.boardLayout.tiles[t1].resource != self.game.boardLayout.tiles[t2].resource:
+                            resource_matrix[self.game.boardLayout.tiles[t1].resource][self.game.boardLayout.tiles[t2].resource].append(n)
+                            resource_matrix[self.game.boardLayout.tiles[t2].resource][self.game.boardLayout.tiles[t1].resource].append(n)
+                        if t3 and self.game.boardLayout.tiles[t3].resource != 0 and self.game.boardLayout.tiles[t2].resource != self.game.boardLayout.tiles[t3].resource:
+                            resource_matrix[self.game.boardLayout.tiles[t3].resource][self.game.boardLayout.tiles[t2].resource].append(n)
+                            resource_matrix[self.game.boardLayout.tiles[t2].resource][self.game.boardLayout.tiles[t3].resource].append(n)
+                    if t3 and self.game.boardLayout.tiles[t3].resource != 0 and self.game.boardLayout.tiles[t1].resource != 0 and self.game.boardLayout.tiles[t1].resource != self.game.boardLayout.tiles[t3].resource:
+                        resource_matrix[self.game.boardLayout.tiles[t3].resource][self.game.boardLayout.tiles[t1].resource].append(n)
+                        resource_matrix[self.game.boardLayout.tiles[t1].resource][self.game.boardLayout.tiles[t3].resource].append(n)
+                    
                 if t1 and t2 and t3 and self.game.boardLayout.tiles[t1].resource != 0 and self.game.boardLayout.tiles[t2].resource != 0 and self.game.boardLayout.tiles[t3].resource != 0:
                     for t in [t1,t2,t3]:
-                        if n not in rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] and dice_props[self.game.boardLayout.tiles[t].number] > 0.06:
+                        if n not in rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] and dice_props[self.game.boardLayout.tiles[t].number] > 0.03:
                             rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]].append(n)
 
                 for t in [t1,t2,t3]:
 
-                    if t and self.game.boardLayout.tiles[t].resource != 0 and dice_props[self.game.boardLayout.tiles[t].number] > 0.06:
+                    if t and self.game.boardLayout.tiles[t].resource != 0 and dice_props[self.game.boardLayout.tiles[t].number] > 0.03:
                         tempScore += dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
                         tempList[self.game.boardLayout.tiles[t].resource] = 1
 
                 node_score[n] = tempScore * (tempList[1] + tempList[2] + tempList[3] + tempList[4] + tempList[5])
 
+        for i in resource_matrix:
+            self.debug_print(i)
+            
         for (r,l) in rares.items():
             self.debug_print("Rares: {0} = {1}".format(r,l))
             length = len(l) / 1.0
             for n in l:
-                node_score[n] += 20.0 / length
+                node_score[n] += 10.0 / length
+
+        for i in resource_matrix:
+            for j in i:
+                if len(j) > 0:
+                    length = len(j) / 1.0
+                    for n in j:
+                        node_score[n] += 20.0 / length
+                
 
         bestNode = None
         highest = 0
@@ -210,7 +241,7 @@ class Agent:
 
                 for t in [t1,t2,t3]:
 
-                    if t and self.game.boardLayout.tiles[t].resource != 0 and dice_props[self.game.boardLayout.tiles[t].number] > 0.06:
+                    if t and self.game.boardLayout.tiles[t].resource != 0 and dice_props[self.game.boardLayout.tiles[t].number] > 0.03:
                         tempScore += dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource] + ((1 - max(tempList[self.game.boardLayout.tiles[t].resource],resource_list[self.game.boardLayout.tiles[t].resource])) * 10)
                         tempList[self.game.boardLayout.tiles[t].resource] = 1
 
