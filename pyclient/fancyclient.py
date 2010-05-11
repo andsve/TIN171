@@ -212,25 +212,30 @@ class GLFrame(wx.Frame):
         
         # Calculate bonus
         bonus_lst = [0, 0, 0, 0]
+        bonus_str = ["", "", "", "", ""]
         for i in range(4):
             if self.client.game:
-                bonus = 2 if i == self.client.game.longest_road else 0
-                bonus += 2 if i == self.client.game.largest_army else 0
-                bonus_lst[i] += bonus
-            
+                s = []
+                if i == self.client.game.longest_road:
+                    bonus_lst[i] += 2
+                    s.append("LR")
+                elif i == self.client.game.largest_army:
+                    bonus_lst[i] += 2
+                    s.append("LA")
+                if len(s) > 0:
+                    bonus_str[i] = "(" + ",".join(s) + ")"
         
         # Display player info
         self.DrawText(0.01, -0.05, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
         if self.client.agent:
             self.DrawText(1.2, -0.05, "Agent score: {0}".format(bonus_lst[self.client.seat_num] + self.client.agent.resources["VICTORY_CARDS"] + self.client.game.vp[int(self.client.seat_num)]))
+            if self.vcr:
+                self.DrawText(1.20, -0.01, "Showing turn: {0}".format(self.playback_frame))
             
-            self.DrawText(1.2, 0.3, "'Public' scores:")
+            self.DrawText(1.2, 0.5, "'Public' scores:")
             for i in range(4):
                 prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
-                self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i] + bonus_lst[i]))
-        
-        if self.vcr:
-            self.DrawText(1.20, 0.35, "Showing turn: {0}".format(self.playback_frame))
+                self.DrawText(1.20, 0.55+i*0.04, prefix + "Player {0}: {1} {2}".format(i, self.client.game.vp[i] + bonus_lst[i], bonus_str[i]))
         
         # Resources
         res_lut = ["Clay", "Ore", "Sheep", "Wheat", "Wood"]
@@ -252,6 +257,19 @@ class GLFrame(wx.Frame):
                 self.DrawText(rposx + rsize * 1.2, rposy + rsize / 1.5, "{0}: {1}".format(res_lut[i], self.client.game.resources[res_lut[i].upper()]))
             
             rposy += rsize * 1.1
+            
+        # Development cards
+        dev_lut = [("Monopoly", "MONOPOLY_CARDS")
+                  ,("Discovery", "RESOURCE_CARDS")
+                  ,("Road", "ROAD_CARDS")
+                  ,("VP", "VICTORY_CARDS")
+                  ,("Knight", "KNIGHT_CARDS")
+                  ,("Army", "NUMKNIGHTS")]
+                  
+        for i, card in enumerate(dev_lut):
+            if self.client.game and self.client.game.resources:
+                self.DrawText(rposx + rsize * 1.2, rposy + rsize / 1.5, "{0}: {1}".format(card[0], self.client.game.resources[card[1]]))
+                rposy += rsize * 1.1
         
         if len(self.res_history) > 0:
             self.last_r = self.res_history[-1]
