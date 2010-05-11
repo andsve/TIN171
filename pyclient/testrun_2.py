@@ -9,11 +9,11 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 7
+total_threads = 10
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 200
+num_games = 100
 
 # Score results are saved in this list
 res = []
@@ -86,12 +86,21 @@ if __name__ == '__main__':
         # Display results
         tprint("------------------------------------")
         tprint("Results from {0} games...\n".format(len(res)))
+        for x in range(0, 12):
+            tprint("{0}p - {1}".format(x, res.count(x)))
+            
+        average = float(sum(res))/len(res)
+        median = sorted(res)[len(res)/2]
+        tprint("Average: {0}, Median: {1}".format(average, median))
 
             
         try:
             import pylab
             tprint("{0}/{1} tests failed.".format(res.count(0), len(res)))
-            pylab.hist(res, bins=10, range=(0, 11), histtype="bar", align="left")
+            pylab.hist(res, bins=12, range=(0, 11), histtype="bar", align="mid")
+
+            xmin, xmax, ymin, ymax = pylab.axis()
+            pylab.axis([2, 12, ymin, ymax])
             pylab.show()
         except ImportError:
             tprint("Install numpy and matplotlib for sweet graphs!")
