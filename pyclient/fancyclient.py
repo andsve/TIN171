@@ -1,3 +1,6 @@
+import sys
+sys.path += ['.']
+
 try:
     import wx
     from wx import glcanvas
@@ -15,7 +18,6 @@ import VCRclient
 import logging
 from jsettlers_utils import hex_grid, roads_around_hex2
 
-
 #class PApp(wx.PySimpleApp):
 #    def OnIdle(self, evt):
 #        print("SEPPPPPPPPPPPPPE")
@@ -32,16 +34,12 @@ class GLFrame(wx.Frame):
         self.score = None
         
         self.vcr = vcr
+        self.running = True
         
         # Setup bot client
         #self.client = client.Client()
         #self.client = VCRclient.VCRClient()
         self.client = client
-        if not self.client.connect(("doff.csbnet.se", int(8880))):
-            print("Could not connect to: {0}".format("doff.csbnet.se"))
-            exit(-1)
-        
-        self.client.setup(None, True, 1, None)
         self.render = True
         
         # Resource history
@@ -100,6 +98,8 @@ class GLFrame(wx.Frame):
             if self.vcr:
                 self.playback_frame = 0
                 self.client.reset_playback()
+        elif keycode == ord('P'):
+            self.running = not self.running
 
     #
     # Canvas Proxy Methods
@@ -169,7 +169,7 @@ class GLFrame(wx.Frame):
         
     def OnIdle(self, evt):
         # Update client, and draw if needed
-        if self.render:
+        if self.render and self.running:
             if self.vcr:
                 self.score = self.client.run_update(self.playback_frame)
             else:
@@ -229,6 +229,10 @@ class GLFrame(wx.Frame):
                 if len(s) > 0:
                     bonus_str[i] = "(" + ",".join(s) + ")"
         
+        # Paused?
+        if not self.running:
+            self.DrawText(0.65, 0.9, "GAME PAUSED", (1.0, 0.0, 0.0))
+        
         # Display player info
         self.DrawText(0.01, -0.05, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
         if self.client.agent:
@@ -237,8 +241,22 @@ class GLFrame(wx.Frame):
                 self.DrawText(1.20, -0.01, "Showing turn: {0}".format(self.playback_frame))
             
             self.DrawText(1.2, 0.5, "'Public' scores:")
+            rposx = 1.2
+            rposy = 0.53
+            rsize = 0.035
+            rsizew = 0.045
             for i in range(4):
-                prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                glColor(player_colors[i])
+                glBegin(GL_QUADS)
+                glVertex(rposx, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy+rsize, 1.0)
+                glVertex(rposx, rposy+rsize, 1.0)
+                glEnd()
+                rposy += rsize * 1.1
+                prefix = " > " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                if self.client.stats["ACTIVE_PLAYER"] == i:
+                    self.DrawText(1.201, 0.552+i*0.04, " >", (1.0, 1.0, 1.0))
                 self.DrawText(1.20, 0.55+i*0.04, prefix + "Player {0}: {1} {2}".format(i, self.client.game.vp[i] + bonus_lst[i], bonus_str[i]))
         
         # Resources
@@ -439,15 +457,21 @@ def main(args):
     from optparse import OptionParser
     import logging
     
+    js_logger = logging.getLogger("")
+    filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
+    rec_file = "recs/" + filename + ".rec"
+    log_file = "logs/" + filename + ".log"
+    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     parser = OptionParser()
-    parser.add_option("-a", "--addr", default = "localhost:8880")
+    parser.add_option("-a", "--addr", default = "doff.csbnet.se:8880")
     parser.add_option("-s", "--seat", type="int", default = 1)
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)
     parser.add_option("-w", "--wait", action="store_true", default = False)
-    parser.add_option("-o", "--outfile", default = "vcrclient.rec")
-    parser.add_option("-r", "--record", action="store_true", default = False)
+    parser.add_option("-o", "--outfile", default = rec_file)
+    parser.add_option("-r", "--record", action="store_true", default = True)
     parser.add_option("-p", "--play", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
@@ -459,10 +483,16 @@ def main(args):
         sys.exit(-1)
     host, port = options.addr.split(":")
     
+    lclient = None
     if options.record or options.play:
         lclient = VCRclient.VCRClient(options.outfile, not options.play)
     else:
         lclient = client.Client()
+    
+    if not lclient.connect((host, int(port))):
+        print("Could not connect to: {0}".format(options.addr))
+        exit(-1)
+    lclient.setup(options.game, not options.wait, options.seat, options.nick)
     
     app = wx.PySimpleApp(redirect=False)
     frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700), client=lclient, vcr= (options.record or options.play))
@@ -481,11 +511,6 @@ if __name__ == '__main__':
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
-    
-    #logging.disable(logging.INFO)
-    js_logger = logging.getLogger("")
-    logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
-    js_logger.addHandler(client.logconsole)
     
     try:
         main(sys.argv[1:])
