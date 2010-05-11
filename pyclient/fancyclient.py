@@ -34,6 +34,7 @@ class GLFrame(wx.Frame):
         self.score = None
         
         self.vcr = vcr
+        self.running = True
         
         # Setup bot client
         #self.client = client.Client()
@@ -102,6 +103,8 @@ class GLFrame(wx.Frame):
             if self.vcr:
                 self.playback_frame = 0
                 self.client.reset_playback()
+        elif keycode == ord('P'):
+            self.running = not self.running
 
     #
     # Canvas Proxy Methods
@@ -171,7 +174,7 @@ class GLFrame(wx.Frame):
         
     def OnIdle(self, evt):
         # Update client, and draw if needed
-        if self.render:
+        if self.render and self.running:
             if self.vcr:
                 self.score = self.client.run_update(self.playback_frame)
             else:
@@ -230,6 +233,10 @@ class GLFrame(wx.Frame):
                     s.append("LA")
                 if len(s) > 0:
                     bonus_str[i] = "(" + ",".join(s) + ")"
+        
+        # Paused?
+        if not self.running:
+            self.DrawText(0.65, 0.9, "GAME PAUSED", (1.0, 0.0, 0.0))
         
         # Display player info
         self.DrawText(0.01, -0.05, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
