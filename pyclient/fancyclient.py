@@ -455,6 +455,12 @@ def main(args):
     from optparse import OptionParser
     import logging
     
+    js_logger = logging.getLogger("")
+    filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
+    rec_file = "recs/" + filename + ".rec"
+    log_file = "logs/" + filename + ".log"
+    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     parser = OptionParser()
     parser.add_option("-a", "--addr", default = "localhost:8880")
@@ -462,8 +468,8 @@ def main(args):
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)
     parser.add_option("-w", "--wait", action="store_true", default = False)
-    parser.add_option("-o", "--outfile", default = "vcrclient.rec")
-    parser.add_option("-r", "--record", action="store_true", default = False)
+    parser.add_option("-o", "--outfile", default = rec_file)
+    parser.add_option("-r", "--record", action="store_true", default = True)
     parser.add_option("-p", "--play", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
@@ -497,11 +503,6 @@ if __name__ == '__main__':
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
-    
-    #logging.disable(logging.INFO)
-    js_logger = logging.getLogger("")
-    logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
-    js_logger.addHandler(client.logconsole)
     
     try:
         main(sys.argv[1:])
