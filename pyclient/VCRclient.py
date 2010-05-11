@@ -22,7 +22,7 @@ class VCRClient(client.Client):
         
         # Load recorded data
         print("VCRClient - Playback mode")
-        print("Reading playback data...")
+        #print("Reading playback data...")
         pkl_file = open(self.playbackFile, 'rb')
         self.record_data = pickle.load(pkl_file)
         pkl_file.close()
@@ -52,7 +52,7 @@ class VCRClient(client.Client):
             # Record data!
             if self.stats['TURN_ACTIVE'] != self.current_turn:
                 self.current_turn = self.stats['TURN_ACTIVE']
-                print("Recording data... (Turn {0})".format(self.current_turn))
+                #print("Recording data... (Turn {0})".format(self.current_turn))
                 self.record_data['frames'].append({'game': deepcopy(self.game), 'resources': deepcopy(self.resources)})
             
             if res:
