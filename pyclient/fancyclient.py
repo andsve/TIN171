@@ -1,3 +1,6 @@
+import sys
+sys.path += ['.']
+
 try:
     import wx
     from wx import glcanvas
@@ -14,7 +17,6 @@ import client
 import VCRclient
 import logging
 from jsettlers_utils import hex_grid, roads_around_hex2
-
 
 #class PApp(wx.PySimpleApp):
 #    def OnIdle(self, evt):
@@ -237,8 +239,22 @@ class GLFrame(wx.Frame):
                 self.DrawText(1.20, -0.01, "Showing turn: {0}".format(self.playback_frame))
             
             self.DrawText(1.2, 0.5, "'Public' scores:")
+            rposx = 1.2
+            rposy = 0.53
+            rsize = 0.035
+            rsizew = 0.045
             for i in range(4):
-                prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                glColor(player_colors[i])
+                glBegin(GL_QUADS)
+                glVertex(rposx, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy+rsize, 1.0)
+                glVertex(rposx, rposy+rsize, 1.0)
+                glEnd()
+                rposy += rsize * 1.1
+                prefix = " > " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                if self.client.stats["ACTIVE_PLAYER"] == i:
+                    self.DrawText(1.201, 0.552+i*0.04, " >", (1.0, 1.0, 1.0))
                 self.DrawText(1.20, 0.55+i*0.04, prefix + "Player {0}: {1} {2}".format(i, self.client.game.vp[i] + bonus_lst[i], bonus_str[i]))
         
         # Resources
