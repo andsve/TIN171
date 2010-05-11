@@ -182,15 +182,24 @@ class GLFrame(wx.Frame):
                               res, id)
                 i += 1
         
+        # Calculate bonus
+        bonus_lst = [0, 0, 0, 0]
+        for i in range(4):
+            if self.client.game:
+                bonus = 2 if i == self.client.game.longest_road else 0
+                bonus += 2 if i == self.client.game.largest_army else 0
+                bonus_lst[i] += bonus
+            
+        
         # Display player info
         self.DrawText(0.01, -0.05, "Player: {0}, Game: {1}, Seat: {2}".format(self.client.nickname, self.client.gamename, self.client.seat_num))
         if self.client.agent:
-            self.DrawText(1.2, -0.05, "Agent score: {0}".format(self.client.agent.resources["VICTORY_CARDS"] + self.client.game.vp[int(self.client.seat_num)]))
+            self.DrawText(1.2, -0.05, "Agent score: {0}".format(bonus_lst[self.client.seat_num] + self.client.agent.resources["VICTORY_CARDS"] + self.client.game.vp[int(self.client.seat_num)]))
             
             self.DrawText(1.2, 0.3, "'Public' scores:")
             for i in range(4):
                 prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
-                self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i]))
+                self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i] + bonus_lst[i]))
         
         # Resources
         res_lut = ["Clay", "Ore", "Sheep", "Wheat", "Wood"]

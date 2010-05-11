@@ -229,9 +229,15 @@ class Client:
                 logging.info("The game is over. And I am {0}".format(self.nickname))
                 logging.info("Victory points: {0}".format(self.game.vp))
                 logging.info("Victory cards: {0}".format(self.agent.resources["VICTORY_CARDS"]))
+                logging.info("Longest road: {0}, Largest army: {1}".format(self.game.longest_road, self.game.largest_army))
                 
-                points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(self.seat_num)]
-                logging.info("I got {0} points!".format(points))
+                # bonus for having the longest road or the largest army
+                bonus = 0
+                bonus += 2 if int(self.seat_num) == int(self.game.longest_road) else 0
+                bonus += 2 if int(self.seat_num) == int(self.game.largest_army) else 0
+                
+                points = self.agent.resources["VICTORY_CARDS"] + self.game.vp[int(self.seat_num)] + bonus
+                logging.info("I got {0} points! (bonus: {1})".format(points, bonus))
                 
                 for k,v in self.stats.items():
                     logging.info("[{0}] {1}".format(k, v))

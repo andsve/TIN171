@@ -18,8 +18,8 @@ class Game:
         
         # keep track of victory points for all players
         self.vp = {0: 0, 1: 0, 2: 0, 3: 0}
-        self.longest_road = None
-        self.largest_army = None
+        self.longest_road = -1
+        self.largest_army = -1
         
         self.boardLayout = None
         
@@ -83,19 +83,12 @@ class Game:
         
         # Count longest round points
         elif id == "LongestRoadMessage" and message.playernum >= 0:
-            if (self.longest_road):
-                self.vp[self.longest_road] -= 2
-            
-            self.longest_road = message.playernum
-            self.vp[self.longest_road] += 2
+            self.longest_road = int(message.playernum)
+
         
         # Keep track of largest army message
         elif id == "LargestArmyMessage" and message.playernum >= 0:
-            if (self.largest_army):
-                self.vp[self.largest_army] -= 2
-            
-            self.largest_army = message.playernum
-            self.vp[self.largest_army] += 2
+            self.largest_army = int(message.playernum)
         
         elif id == "BoardLayoutMessage":
             # Set game board
