@@ -438,7 +438,7 @@ def main(args):
     host, port = options.addr.split(":")
     
     if options.record or options.play:
-        lclient = client.VCRClient(options.outfile, not options.play)
+        lclient = VCRclient.VCRClient(options.outfile, not options.play)
     else:
         lclient = client.Client()
     
