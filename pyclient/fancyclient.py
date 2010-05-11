@@ -37,11 +37,6 @@ class GLFrame(wx.Frame):
         #self.client = client.Client()
         #self.client = VCRclient.VCRClient()
         self.client = client
-        if not self.client.connect(("doff.csbnet.se", int(8880))):
-            print("Could not connect to: {0}".format("doff.csbnet.se"))
-            exit(-1)
-        
-        self.client.setup(None, True, 1, None)
         self.render = True
         
         # Resource history
@@ -441,7 +436,7 @@ def main(args):
     
     
     parser = OptionParser()
-    parser.add_option("-a", "--addr", default = "localhost:8880")
+    parser.add_option("-a", "--addr", default = "doff.csbnet.se:8880")
     parser.add_option("-s", "--seat", type="int", default = 1)
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)
@@ -463,6 +458,10 @@ def main(args):
         lclient = VCRclient.VCRClient(options.outfile, not options.play)
     else:
         lclient = client.Client()
+        if not lclient.connect((host, int(port))):
+            print("Could not connect to: {0}".format(options.addr))
+            exit(-1)
+        lclient.setup(options.game, not options.wait, options.seat, options.nick)
     
     app = wx.PySimpleApp(redirect=False)
     frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700), client=lclient, vcr= (options.record or options.play))

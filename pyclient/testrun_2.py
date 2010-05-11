@@ -9,7 +9,7 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 1
+total_threads = 5
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
