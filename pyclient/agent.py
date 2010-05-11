@@ -21,7 +21,7 @@ dice_props[12] = 0.0278
 
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
-resource_weight = [0,35,15,25,25,35]
+resource_weight = [0,45,25,25,25,35]
 total_highest = 0
 
 best_resource = [""]
@@ -272,14 +272,14 @@ class Agent:
             self.debug_print("Rares: {0} = {1}".format(r,l))
             length = len(l) / 1.0
             for n in l:
-                node_score[n] += 10.0 / length
+                node_score[n] += 5.0 / length
 
         for i in resource_matrix:
             for j in i:
                 if len(j) > 0:
                     length = len(j) / 1.0
                     for n in j:
-                        node_score[n] += 20.0 / length
+                        node_score[n] += 10.0 / length
                 
 
         bestNode = None
