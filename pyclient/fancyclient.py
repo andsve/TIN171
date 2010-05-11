@@ -11,6 +11,7 @@ except ImportError:
     raise ImportError, "Required dependency OpenGL not present"
 
 import client
+import VCRclient
 import logging
 from jsettlers_utils import hex_grid, roads_around_hex2
 
@@ -24,14 +25,18 @@ class GLFrame(wx.Frame):
 
     def __init__(self, parent, id, title, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE,
-                 name='frame'):
+                 name='frame', client = None, vcr = False):
         
         self.w = size[0]
         self.h = size[1]
         self.score = None
         
+        self.vcr = vcr
+        
         # Setup bot client
-        self.client = client.Client()
+        #self.client = client.Client()
+        #self.client = VCRclient.VCRClient()
+        self.client = client
         if not self.client.connect(("doff.csbnet.se", int(8880))):
             print("Could not connect to: {0}".format("doff.csbnet.se"))
             exit(-1)
@@ -42,6 +47,9 @@ class GLFrame(wx.Frame):
         # Resource history
         self.res_history = []
         self.last_r = [0, 0, 0, 0, 0]
+        
+        # Playback
+        self.playback_frame = 0
         
         #
         # Forcing a specific style on the window.
@@ -64,14 +72,30 @@ class GLFrame(wx.Frame):
         self.canvas.Bind(wx.EVT_ERASE_BACKGROUND, self.processEraseBackgroundEvent)
         self.canvas.Bind(wx.EVT_SIZE, self.processSizeEvent)
         self.canvas.Bind(wx.EVT_PAINT, self.processPaintEvent)
+        
         self.Bind(wx.EVT_IDLE, self.OnIdle)
-        #app.Bind(wx.EVT_INTERNAL_IDLE, self.processPaintEvent)
+        self.canvas.Bind(wx.EVT_KEY_DOWN, self.EventKeyDown)
+        
         
         # Start client thread
         #t = ThreadClient("testnick", "doff.csbnet.se", 8880, self.OnDraw)
         #t.start()
         wx.CallAfter(self.OnDraw, None, None)
+     
+
+    def EventKeyDown(self, evt):
+        keycode = evt.GetKeyCode()
         
+        if (self.playback_frame == -1):
+            self.playback_frame = 0
+          
+        if keycode == wx.WXK_ESCAPE:
+            wx.Window.Destroy(self)
+            
+        elif keycode == wx.WXK_LEFT:
+            self.playback_frame -= 1
+        elif keycode == wx.WXK_RIGHT:
+            self.playback_frame += 1
 
     #
     # Canvas Proxy Methods
@@ -142,7 +166,11 @@ class GLFrame(wx.Frame):
     def OnIdle(self, evt):
         # Update client, and draw if needed
         if self.render:
-            self.score = self.client.run_update()
+            if self.vcr:
+                self.score = self.client.run_update(self.playback_frame)
+            else:
+                self.score = self.client.run_update()
+                
             if self.score != None:
                 self.render = False
         self.OnDraw()
@@ -200,6 +228,9 @@ class GLFrame(wx.Frame):
             for i in range(4):
                 prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
                 self.DrawText(1.20, 0.35+i*0.04, prefix + "Player {0}: {1}".format(i, self.client.game.vp[i] + bonus_lst[i]))
+        
+        if self.vcr:
+            self.DrawText(1.20, 0.35, "Showing turn: {0}".format(self.playback_frame))
         
         # Resources
         res_lut = ["Clay", "Ore", "Sheep", "Wheat", "Wood"]
@@ -381,10 +412,49 @@ player_colors = [(0.0, 0.0, 1.0),
                  (1.0, 1.0, 1.0),
                  (1.0, 1.0, 0.0)]
 
+def main(args):
+    from sys import exit
+    from optparse import OptionParser
+    import logging
+    
+    
+    parser = OptionParser()
+    parser.add_option("-a", "--addr", default = "localhost:8880")
+    parser.add_option("-s", "--seat", type="int", default = 1)
+    parser.add_option("-g", "--game", default = None)
+    parser.add_option("-n", "--nick", default = None)
+    parser.add_option("-w", "--wait", action="store_true", default = False)
+    parser.add_option("-o", "--outfile", default = "vcrclient.rec")
+    parser.add_option("-r", "--record", action="store_true", default = False)
+    parser.add_option("-p", "--play", action="store_true", default = False)
+    
+    (options, args) = parser.parse_args()
+    
+    print options
+    
+    if ":" not in options.addr:
+        print "try using host:port"
+        sys.exit(-1)
+    host, port = options.addr.split(":")
+    
+    if options.record or options.play:
+        lclient = client.VCRClient(options.outfile, not options.play)
+    else:
+        lclient = client.Client()
+    
+    app = wx.PySimpleApp(redirect=False)
+    frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700), client=lclient, vcr= (options.record or options.play))
+    frame.Show()
+
+    app.MainLoop()
+    app.Destroy()
+
+
 if __name__ == '__main__':
     import sys
     import os
     import time
+    
 
     if os.name == 'nt':
         os.system("mode 80,60")
@@ -396,14 +466,7 @@ if __name__ == '__main__':
     js_logger.addHandler(client.logconsole)
     
     try:
-        app = wx.PySimpleApp(redirect=False)
-        frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700))
-        frame.Show()
-
-        app.MainLoop()
-        app.Destroy()
-            
-            
+        main(sys.argv[1:])
     except:
         import pdb
         import traceback

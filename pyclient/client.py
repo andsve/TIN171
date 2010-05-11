@@ -128,7 +128,7 @@ class Client:
                 r += self.client.recv(size - len(r))
                 if len(r) >= size:
                     break
-            return r    
+            return r
         
         try:
             highByte = ord(recvwait(1))
