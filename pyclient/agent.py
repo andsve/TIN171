@@ -22,6 +22,9 @@ dice_props[12] = 0.0278
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
 resource_weight = [0,35,15,25,25,35]
+total_highest = 0
+
+best_resource = [""]
 
 class Agent:
     def __init__(self, nickname, stats, gamename, game, client, resources,nodes,roads):
@@ -138,8 +141,74 @@ class Agent:
         #3 = Sheep
         #4 = Wheat
         #5 = Wood
-        resource_weight = [0,35,15,25,25,35]
+        resource_weight = [0,30,15,25,25,30]
         return resource_weight[_type]
+
+    def find_best_resource_spot(self, b_resource):
+        # Traverse map, if the node belongs to the best resource, then calculate the weight.
+        # The harbor has really high priority.
+        best_spot = None
+        best_weight = 0
+        for b_r in b_resource:
+            node_score = {}
+            for n in self.game.buildableNodes.nodes:
+                if self.game.buildableNodes.nodes[n]:
+                    tempScore = 0
+                    t1 = self.game.boardLayout.nodes[n].t1
+                    t2 = self.game.boardLayout.nodes[n].t2
+                    t3 = self.game.boardLayout.nodes[n].t3
+                    for t in [t1,t2,t3]:
+                        if t and self.game.boardLayout.tiles[t].resource != 0:
+                            if elementIdToType[str(self.game.boardLayout.tiles[t].resource)] == b_r:
+                                tempScore += dice_props[self.game.boardLayout.tiles[t].number] * 50 # really high weight for this kinda resource
+                            else:
+                                tempScore += 0.5 * dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
+                    node_score[n] = tempScore
+            #Find the best node
+            bestNode = None
+            highest = 0
+            for n in node_score:
+                self.debug_print("Node {0} has {1} score.".format(hex(n),node_score[n]))
+                if node_score[n] > highest:
+                    highest = node_score[n]
+                    bestNode = n
+            if highest > best_weight:
+                best_weight = highest
+                best_spot = bestNode
+            best_resource[0] = b_r
+        return best_spot
+    
+    def find_best_resource_harbor(self, b_r):
+    #depends on the best resource, find the specific harbor, otherwise, chase for a 3:1 harbor
+        node_score = {}
+        for n in self.game.buildableNodes.nodes:
+            if self.game.buildableNodes.nodes[n]:
+                tempScore = 0
+                self.debug_print("The type of the harbor is {0}".format(self.game.boardLayout.nodes[n].harbor))
+                if 0 < self.game.boardLayout.nodes[n].harbor < 6:
+                    if elementIdToType[str(self.game.boardLayout.nodes[n].harbor)]== b_r:
+                        tempScore += 10
+                elif self.game.boardLayout.nodes[n].harbor == 6:
+                    tempScore += 5 #take the 3:1 harbor
+                else:
+                    t1 = self.game.boardLayout.nodes[n].t1
+                    t2 = self.game.boardLayout.nodes[n].t2
+                    t3 = self.game.boardLayout.nodes[n].t3
+                    for t in [t1,t2,t3]:
+                        if t and self.game.boardLayout.tiles[t].resource != 0:
+                            tempScore += 0.2 * dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
+                node_score[n] = tempScore
+        #Find the best node
+        bestNode = None
+        highest = 0
+        for n in node_score:
+            self.debug_print("Node {0} has {1} score.".format(hex(n),node_score[n]))
+            if node_score[n] > highest:
+                highest = node_score[n]
+                bestNode = n
+        return bestNode
+
+        
 
     def find_first_settlement(self):        
 
@@ -378,14 +447,44 @@ class Agent:
                 if self.game.boardLayout.tiles[t].resource != 0:    
                     probs[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] += dice_props[self.game.boardLayout.tiles[t].number]
 
-            self.debug_print("Resources have probabilities:")
-            for (r,v) in probs.items():
-                self.debug_print("                             {0} = {1}".format(r,v))
-
             
-            """new_settlement_place = self.find_buildable_node()"""
+            self.debug_print("Resources have probabilities:")
+            psum = 0
+            for (r,v) in probs.items():
+                #if r == "CLAY" or r == "ORE":
+                    #probs[r] = v/3 * 4
+                    #v = v/3 * 4
+                psum += v
+                self.debug_print("                             {0} = {1}".format(r,v))
+                
+            self.debug_print("The sum of probability of all tiles is {0}".format(psum))
+
+            rgood = []
+            rbad = []
+            # Find the worst resource
+            # If the worst one exists, then drop it, try to get it through trading            
+            for (r,v) in probs.items():
+                if(v < 0.25):
+                    self.debug_print("The worst resource is {0}, the probability is {1}".format(r,v))
+                    rbad.append(r)
+            
+            # Find the best resource
+            # If the best one exists, then chase for it, and also the harbor.
+            for (r,v) in probs.items():
+                if(v > 0.35):
+                    self.debug_print("The best resource is {0}, the probability is {1}".format(r,v))
+                    rgood.append(r)
+
+            if len(rbad) > 0:
+                if len(rgood) > 0:
+                    self.debug_print("Use the function of Best resource spot!")
+                    new_settlement_place = self.find_best_resource_spot(rgood)
+            else:            
+                new_settlement_place = self.find_first_settlement() #new function
+            
+            
+            
             # change the resource_list to see which kind of resources are taken
-            new_settlement_place = self.find_first_settlement() #new function
             node = self.game.boardLayout.nodes[new_settlement_place]
             if node.t1:
                 t1 = self.game.boardLayout.tiles[node.t1]
@@ -429,7 +528,14 @@ class Agent:
         #(state 3 normally. state 4 if we were the last to play and it's our turn again)
         elif (self.gamestate == 3 and name == "TurnMessage" and int(message.playernum) == int(self.playernum)) or (self.gamestate == 4 and name == "GameStateMessage" and int(message.state) == 10):
             """new_settlement_place = self.find_buildable_node()"""
-            new_settlement_place = self.find_second_settlement() #new function
+            # If we use the best_resource function, than for the second settlement
+            self.debug_print("Best resource is {0}".format(best_resource))
+            if best_resource[0] != "":
+                self.debug_print("Find the harbor")
+                new_settlement_place = self.find_best_resource_harbor(best_resource)
+            else:
+                new_settlement_place = self.find_second_settlement() #new function
+                
             # change the resource_list to see which kind of resources are taken
             """node = self.game.boardLayout.nodes[new_settlement_place]
             if node.t1:

@@ -191,6 +191,7 @@ elementIdToType = {
             '101': 'GAIN',
             '102': 'LOSE' 
     }
+
     
 pieceToType = {
     0: "ROAD",
