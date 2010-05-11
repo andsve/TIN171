@@ -96,6 +96,10 @@ class GLFrame(wx.Frame):
             self.playback_frame -= 1
         elif keycode == wx.WXK_RIGHT:
             self.playback_frame += 1
+        elif keycode == wx.WXK_UP:
+            if self.vcr:
+                self.playback_frame = 0
+                self.client.reset_playback()
 
     #
     # Canvas Proxy Methods

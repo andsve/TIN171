@@ -65,8 +65,13 @@ class VCRClient(client.Client):
         else:
             frame = i
             if i == -1:
+                if self.i >= len(self.record_data['frames']):
+                    self.i = len(self.record_data['frames'])
                 frame = self.i
                 self.i += 1
+            
+            if frame >= len(self.record_data['frames']):
+                frame = len(self.record_data['frames'])
             
             print("Playback frame #{0}...".format(frame))
             
@@ -74,9 +79,10 @@ class VCRClient(client.Client):
             if frame < len(self.record_data['frames']):
                 self.game = self.record_data['frames'][frame]['game']
                 self.resources = self.record_data['frames'][frame]['resources']
-            else:
-                return 9001 # LOL WUT
-            
+            #else:
+            #    return 9001 # LOL WUT
+    def reset_playback(self):
+        self.i = 0
 
 
 
