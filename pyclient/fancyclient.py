@@ -1,3 +1,6 @@
+import sys
+sys.path += ['.']
+
 try:
     import wx
     from wx import glcanvas
@@ -14,7 +17,6 @@ import client
 import VCRclient
 import logging
 from jsettlers_utils import hex_grid, roads_around_hex2
-
 
 #class PApp(wx.PySimpleApp):
 #    def OnIdle(self, evt):
@@ -232,8 +234,22 @@ class GLFrame(wx.Frame):
                 self.DrawText(1.20, -0.01, "Showing turn: {0}".format(self.playback_frame))
             
             self.DrawText(1.2, 0.5, "'Public' scores:")
+            rposx = 1.2
+            rposy = 0.53
+            rsize = 0.035
+            rsizew = 0.045
             for i in range(4):
-                prefix = "-> " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                glColor(player_colors[i])
+                glBegin(GL_QUADS)
+                glVertex(rposx, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy, 1.0)
+                glVertex(rposx+rsizew, rposy+rsize, 1.0)
+                glVertex(rposx, rposy+rsize, 1.0)
+                glEnd()
+                rposy += rsize * 1.1
+                prefix = " > " if self.client.stats["ACTIVE_PLAYER"] == i else "   "
+                if self.client.stats["ACTIVE_PLAYER"] == i:
+                    self.DrawText(1.201, 0.552+i*0.04, " >", (1.0, 1.0, 1.0))
                 self.DrawText(1.20, 0.55+i*0.04, prefix + "Player {0}: {1} {2}".format(i, self.client.game.vp[i] + bonus_lst[i], bonus_str[i]))
         
         # Resources
@@ -434,6 +450,12 @@ def main(args):
     from optparse import OptionParser
     import logging
     
+    js_logger = logging.getLogger("")
+    filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
+    rec_file = "recs/" + filename + ".rec"
+    log_file = "logs/" + filename + ".log"
+    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     parser = OptionParser()
     parser.add_option("-a", "--addr", default = "doff.csbnet.se:8880")
@@ -441,8 +463,8 @@ def main(args):
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)
     parser.add_option("-w", "--wait", action="store_true", default = False)
-    parser.add_option("-o", "--outfile", default = "vcrclient.rec")
-    parser.add_option("-r", "--record", action="store_true", default = False)
+    parser.add_option("-o", "--outfile", default = rec_file)
+    parser.add_option("-r", "--record", action="store_true", default = True)
     parser.add_option("-p", "--play", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
@@ -480,11 +502,6 @@ if __name__ == '__main__':
     if os.name == 'nt':
         os.system("mode 80,60")
         os.system("mode con: cols=80 lines=900")
-    
-    #logging.disable(logging.INFO)
-    js_logger = logging.getLogger("")
-    logging.basicConfig(filename="robot-output.{0}.log".format(time.strftime("%H%M%S")),filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
-    js_logger.addHandler(client.logconsole)
     
     try:
         main(sys.argv[1:])
