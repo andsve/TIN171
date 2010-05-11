@@ -89,9 +89,10 @@ if __name__ == '__main__':
         for x in range(0, 12):
             tprint("{0}p - {1}".format(x, res.count(x)))
             
+        winratio = (res.count(10) + res.count(11)) / float(len(res))
         average = float(sum(res))/len(res)
         median = sorted(res)[len(res)/2]
-        tprint("Average: {0}, Median: {1}".format(average, median))
+        tprint("Win ratio: {0}, Average: {1}, Median: {2}".format(winratio, average, median))
 
             
         try:
