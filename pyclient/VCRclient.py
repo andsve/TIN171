@@ -22,7 +22,7 @@ class VCRClient(client.Client):
         
         # Load recorded data
         print("VCRClient - Playback mode")
-        print("Reading playback data...")
+        #print("Reading playback data...")
         pkl_file = open(self.playbackFile, 'rb')
         self.record_data = pickle.load(pkl_file)
         pkl_file.close()
@@ -52,7 +52,7 @@ class VCRClient(client.Client):
             # Record data!
             if self.stats['TURN_ACTIVE'] != self.current_turn:
                 self.current_turn = self.stats['TURN_ACTIVE']
-                print("Recording data... (Turn {0})".format(self.current_turn))
+                #print("Recording data... (Turn {0})".format(self.current_turn))
                 self.record_data['frames'].append({'game': deepcopy(self.game), 'resources': deepcopy(self.resources)})
             
             if res:
@@ -65,8 +65,13 @@ class VCRClient(client.Client):
         else:
             frame = i
             if i == -1:
+                if self.i >= len(self.record_data['frames']):
+                    self.i = len(self.record_data['frames'])
                 frame = self.i
                 self.i += 1
+            
+            if frame >= len(self.record_data['frames']):
+                frame = len(self.record_data['frames'])
             
             print("Playback frame #{0}...".format(frame))
             
@@ -74,9 +79,10 @@ class VCRClient(client.Client):
             if frame < len(self.record_data['frames']):
                 self.game = self.record_data['frames'][frame]['game']
                 self.resources = self.record_data['frames'][frame]['resources']
-            else:
-                return 9001 # LOL WUT
-            
+            #else:
+            #    return 9001 # LOL WUT
+    def reset_playback(self):
+        self.i = 0
 
 
 
@@ -84,6 +90,15 @@ def main(args):
     from sys import exit
     from optparse import OptionParser
     import logging
+    import time
+    import client
+    
+    js_logger = logging.getLogger("")
+    filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
+    rec_file = "recs/" + filename + ".rec"
+    log_file = "logs/" + filename + ".log"
+    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     
     parser = OptionParser()
@@ -92,7 +107,7 @@ def main(args):
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)
     parser.add_option("-w", "--wait", action="store_true", default = False)
-    parser.add_option("-r", "--recordfile", default = "vcrclient.rec")
+    parser.add_option("-r", "--recordfile", default = rec_file)
     parser.add_option("-p", "--play", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
