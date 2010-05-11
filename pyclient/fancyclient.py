@@ -483,14 +483,16 @@ def main(args):
         sys.exit(-1)
     host, port = options.addr.split(":")
     
+    lclient = None
     if options.record or options.play:
         lclient = VCRclient.VCRClient(options.outfile, not options.play)
     else:
         lclient = client.Client()
-        if not lclient.connect((host, int(port))):
-            print("Could not connect to: {0}".format(options.addr))
-            exit(-1)
-        lclient.setup(options.game, not options.wait, options.seat, options.nick)
+    
+    if not lclient.connect((host, int(port))):
+        print("Could not connect to: {0}".format(options.addr))
+        exit(-1)
+    lclient.setup(options.game, not options.wait, options.seat, options.nick)
     
     app = wx.PySimpleApp(redirect=False)
     frame = GLFrame(None, -1, 'Settlers of Awesome', size = (800,700), client=lclient, vcr= (options.record or options.play))
