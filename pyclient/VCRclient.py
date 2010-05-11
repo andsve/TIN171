@@ -90,6 +90,15 @@ def main(args):
     from sys import exit
     from optparse import OptionParser
     import logging
+    import time
+    import client
+    
+    js_logger = logging.getLogger("")
+    filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
+    rec_file = "recs/" + filename + ".rec"
+    log_file = "logs/" + filename + ".log"
+    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     
     parser = OptionParser()
@@ -98,7 +107,7 @@ def main(args):
     parser.add_option("-g", "--game", default = None)
     parser.add_option("-n", "--nick", default = None)
     parser.add_option("-w", "--wait", action="store_true", default = False)
-    parser.add_option("-r", "--recordfile", default = "vcrclient.rec")
+    parser.add_option("-r", "--recordfile", default = rec_file)
     parser.add_option("-p", "--play", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
