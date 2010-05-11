@@ -124,7 +124,7 @@ class GLFrame(wx.Frame):
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_GEQUAL)
         glClearDepth(-1.0)
-        glLineWidth(4.0)
+        glLineWidth(6.0)
 
     def OnReshape(self, width, height):
         """Reshape the OpenGL viewport based on the dimensions of the window."""
