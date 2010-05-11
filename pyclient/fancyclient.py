@@ -411,8 +411,8 @@ class GLFrame(wx.Frame):
         if owner != None:
             glColor(player_colors[owner])
             glBegin(GL_LINES)
-            glVertex(x1, y1, 1.0)
-            glVertex(x2, y2, 1.0)
+            glVertex(x1, y1, 0.7)
+            glVertex(x2, y2, 0.7)
             glEnd()
         
     def DrawNode(self, x, y, node):
