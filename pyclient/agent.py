@@ -175,7 +175,7 @@ class Agent:
             if highest > best_weight:
                 best_weight = highest
                 best_spot = bestNode
-            best_resource[0] = b_r
+                best_resource[0] = b_r
         return best_spot
     
     def find_best_resource_harbor(self, b_r):
@@ -186,10 +186,11 @@ class Agent:
                 tempScore = 0
                 self.debug_print("The type of the harbor is {0}".format(self.game.boardLayout.nodes[n].harbor))
                 if 0 < self.game.boardLayout.nodes[n].harbor < 6:
+                    self.debug_print("Find resource harbor: {0}".format(elementIdToType[str(self.game.boardLayout.nodes[n].harbor)]))
                     if elementIdToType[str(self.game.boardLayout.nodes[n].harbor)]== b_r:
                         tempScore += 10
-                elif self.game.boardLayout.nodes[n].harbor == 6:
-                    tempScore += 5 #take the 3:1 harbor
+               # elif self.game.boardLayout.nodes[n].harbor == 6:
+               #     tempScore += 5 #take the 3:1 harbor
                 else:
                     t1 = self.game.boardLayout.nodes[n].t1
                     t2 = self.game.boardLayout.nodes[n].t2
@@ -584,10 +585,10 @@ class Agent:
         elif (self.gamestate == 3 and name == "TurnMessage" and int(message.playernum) == int(self.playernum)) or (self.gamestate == 4 and name == "GameStateMessage" and int(message.state) == 10):
             """new_settlement_place = self.find_buildable_node()"""
             # If we use the best_resource function, than for the second settlement
-            self.debug_print("Best resource is {0}".format(best_resource))
+            self.debug_print("Best resource is {0}".format(best_resource[0]))
             if best_resource[0] != "":
                 self.debug_print("Find the harbor")
-                new_settlement_place = self.find_best_resource_harbor(best_resource)
+                new_settlement_place = self.find_best_resource_harbor(best_resource[0])
             else:
                 new_settlement_place = self.find_second_settlement() #new function
                 
