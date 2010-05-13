@@ -106,7 +106,11 @@ class Planner:
     
     def make_plan(self, road_card):
         from jsettlers_utils import  elementIdToType, pieceToType
+        
+        # Reset
         self.scores = copy.deepcopy(self.default_scores)
+        self.resource_list = [0,0,0,0,0,0]
+        self.harbor_list = [False,False,False,False,False,False]
 
         (self.longest_start, self.longest_end, self.longest_length) = self.find_longest_road()
         
@@ -164,7 +168,7 @@ class Planner:
             self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
-        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 3.5 or self.resources["SETTLEMENTS"] >= 4)):
+        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 7.5 or self.resources["SETTLEMENTS"] >= 4)):
             self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
@@ -245,7 +249,8 @@ class Planner:
             self.debug_print("Try to connect settlement hubs.")
             for road in self.game.buildableRoads.roads:
                 for road2 in self.game.buildableRoads.roads:
-                    if self.game.buildableRoads.roads[road] and self.game.buildableRoads.roads[road2]:
+                    if self.game.buildableRoads.roads[road] and self.is_road_buildable(road) and self.game.buildableRoads.roads[road2] and self.is_road_buildable(road2):
+                        
                         #self.debug_print("Changing owner for: {0} and {1}".format(hex(road),hex(road2)))
                         self.game.boardLayout.roads[road].owner = int(self.game.playernum)
                         self.game.boardLayout.roads[road2].owner = int(self.game.playernum)
@@ -341,9 +346,10 @@ class Planner:
                         # Add resource score for all resource types
                         temp_score += self.get_resource_score(tile.resource)
                         # Add bonus if we are not getting that resource
-                        temp_score += (1 - self.resource_list[tile.resource]) * 5
+                        temp_score += (1 - self.resource_list[tile.resource]) * 3
 
-                temp_score += (3 - depth)
+                # Penalize building roads to get there
+                temp_score += 2 * (3 - depth)
                 if depth == 0 and road_node.owner == None:
                     temp_score -= 1
 

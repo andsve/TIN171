@@ -9,11 +9,11 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 5
+total_threads = multiprocessing.cpu_count() * 2
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 20
+num_games = 30
 
 # Score results are saved in this list
 res = []
@@ -34,11 +34,9 @@ def save_score(i, v):
 
 def print_stats(res):
     tprint("--- Statistics ---")
+    
     for x in range(2, 11):
         tprint("{0}p - {1}".format(x, res.count(x)))
-        
-    # Change all 11:s to 10:s
-    res = [10 if r == 11 else r for r in res]
         
     winratio = res.count(10) / float(len(res))
     average = float(sum(res))/len(res)
@@ -77,7 +75,7 @@ if __name__ == '__main__':
     
     if os.name == 'nt':
         os.system("mode 80,60")
-        os.system("mode con: cols=80 lines=900")
+        os.system("mode con: cols=80 lines=25")
     
     logging.disable(logging.INFO)
     
@@ -99,6 +97,9 @@ if __name__ == '__main__':
         # Display results
         tprint("------------------------------------")
         tprint("Results from {0} games...\n".format(len(res)))
+
+        # Change all 11:s to 10:s
+        res = [10 if r == 11 else r for r in res]
 
         print_stats(res)
 

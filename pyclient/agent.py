@@ -21,7 +21,7 @@ dice_props[12] = 0.0278
 
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
-resource_weight = [0,45,25,25,25,35]
+resource_weight = [0,55,25,35,35,45]
 total_highest = 0
 
 best_resource = [""]
@@ -60,10 +60,14 @@ class Agent:
         self.bought["resourcecard"] = False
         self.bought["monopolycard"] = False
 
+        self.strategy = None
+
         self.played_knight = False
         self.debug_print("self.played_knight = True (1)")
         self.rob_several = False
         self.debug_print("self.rob_several = False (1)")
+        
+        self.planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
         
         self.output_prefix = "[DEBUG] agent.py ->"
     
@@ -211,7 +215,7 @@ class Agent:
 
         
 
-    def find_first_settlement(self):        
+    def find_first_settlement(self):
 
         node_score = {}
 
@@ -255,7 +259,7 @@ class Agent:
                     
                 if t1 and t2 and t3 and self.game.boardLayout.tiles[t1].resource != 0 and self.game.boardLayout.tiles[t2].resource != 0 and self.game.boardLayout.tiles[t3].resource != 0:
                     for t in [t1,t2,t3]:
-                        if n not in rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] and dice_props[self.game.boardLayout.tiles[t].number] > 0.03:
+                        if n not in rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] and dice_props[self.game.boardLayout.tiles[t].number] > 0.06:
                             rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]].append(n)
 
                 for t in [t1,t2,t3]:
@@ -520,23 +524,24 @@ class Agent:
             # Find the worst resource
             # If the worst one exists, then drop it, try to get it through trading            
             for (r,v) in probs.items():
-                if(v < 0.25):
+                if(v < 0.2):
                     self.debug_print("The worst resource is {0}, the probability is {1}".format(r,v))
                     rbad.append(r)
             
             # Find the best resource
             # If the best one exists, then chase for it, and also the harbor.
             for (r,v) in probs.items():
-                if(v > 0.35):
+                if(v > 0.3):
                     self.debug_print("The best resource is {0}, the probability is {1}".format(r,v))
                     rgood.append(r)
 
-            if len(rbad) > 0:
-                if len(rgood) > 0:
+            if len(rbad) > 0 and len(rgood) > 0:
                     self.debug_print("Use the function of Best resource spot!")
                     new_settlement_place = self.find_best_resource_spot(rgood)
+                    self.strategy = "STRAT1"
             else:            
                 new_settlement_place = self.find_first_settlement() #new function
+                self.strategy = "STRAT2"
             
             
             
@@ -586,7 +591,7 @@ class Agent:
             """new_settlement_place = self.find_buildable_node()"""
             # If we use the best_resource function, than for the second settlement
             self.debug_print("Best resource is {0}".format(best_resource[0]))
-            if best_resource[0] != "":
+            if self.strategy == "STRAT1":
                 self.debug_print("Find the harbor")
                 new_settlement_place = self.find_best_resource_harbor(best_resource[0])
             else:
@@ -739,9 +744,6 @@ class Agent:
     # the default playing method
     # TODO: Intelligent stuff
     def make_play(self):
-
-        planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
-
         # Build with road building
         ENABLE_ROAD_CARD = False
         if ENABLE_ROAD_CARD and self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:
@@ -752,7 +754,7 @@ class Agent:
 
             self.resources["MAY_PLAY_DEVCARD"] = False
             
-            plan = planner.make_plan(True)
+            plan = self.planner.make_plan(True)
 
             if plan:
 
@@ -765,7 +767,7 @@ class Agent:
                 if build_type == 0:
                     self.game.buildableRoads.roads[build_spot] = False
 
-                plan = planner.make_plan(True)
+                plan = self.planner.make_plan(True)
 
                 if plan and build_spot != plan[0]:
 
@@ -777,7 +779,7 @@ class Agent:
                     if build_type == 0:
                         self.game.buildableRoads.roads[build_spot] = False
         
-        plan = planner.make_plan(False)
+        plan = self.planner.make_plan(False)
 
         self.debug_print(plan)
 
@@ -792,7 +794,10 @@ class Agent:
             self.client.send_msg(response)
 
         #cannot afford city. buy developement card.
-        elif self.resources["DEV_CARDS"] > 0 and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
+        elif self.resources["DEV_CARDS"] > 0 \
+            and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) \
+            or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) \
+            and (self.planner.canAffordCard() or self.planner.canAffordWithTrade(3)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
