@@ -492,11 +492,17 @@ class Agent:
             probs["WHEAT"] = 0
             probs["WOOD"]= 0
 
-            for t in self.game.boardLayout.tiles:
+            tile_list = []
+
+            for n in self.game.buildableNodes.nodes:
+                for t in [self.game.boardLayout.nodes[n].t1,self.game.boardLayout.nodes[n].t2,self.game.boardLayout.nodes[n].t3]:
+                    if t and t not in tile_list:
+                        tile_list.append(t)
+                
+            for t in tile_list:
                 if self.game.boardLayout.tiles[t].resource != 0:    
                     probs[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] += dice_props[self.game.boardLayout.tiles[t].number]
 
-            
             self.debug_print("Resources have probabilities:")
             psum = 0
             for (r,v) in probs.items():
