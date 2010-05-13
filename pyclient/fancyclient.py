@@ -18,9 +18,46 @@ import VCRclient
 import logging
 from jsettlers_utils import hex_grid, roads_around_hex2
 
-#class PApp(wx.PySimpleApp):
-#    def OnIdle(self, evt):
-#        print("SEPPPPPPPPPPPPPE")
+"""harbour_tiles = {0x17: (0x27, 0x38), #0x17
+                 0x5b: (0x5a, 0x6b), #0x5b
+                 0x9d: (0x9c, 0xad), #0x9d
+                 0xdd: (0xcd, 0xdc), #0xdd
+                 0xd9: (0xda, 0xc9), #0xd9
+                 0xb5: (0xb6, 0xa5), #0xb5
+                 0x71: (0x83, 0x72), #0x71
+                 0x31: (0x52, 0x43), #0x31
+                 0x13: (0x34, 0x25)} #0x13
+                 """
+
+harbour_tiles = {0x17: (2, 3), #0x17
+                 0x5b: (3, 4), #0x5b
+                 0x9d: (3, 4), #0x9d
+                 0xdd: (4, 5), #0xdd
+                 0xd9: (5, 0), #0xd9
+                 0xb5: (5, 0), #0xb5
+                 0x71: (1, 0), #0x71
+                 0x31: (2, 1), #0x31
+                 0x13: (2, 1)} #0x13
+                 
+def harbour_node_to_pos(x, y, id):
+    sized = 1.0/7.0
+    size2 = sized / 2.0
+    size4 = size2 / 2.0
+    
+    if id == 0:
+        return (x, y-size2)
+    elif id == 1:
+        return (x+size2, y-size4)
+    elif id == 2:
+        return (x+size2, y+size4)
+    elif id == 3:
+        return (x, y+size2)
+    elif id == 4:
+        return (x-size2, y+size4)
+    elif id == 5:
+        return (x-size2, y-size4)
+    else:
+        return (0, 0)
 
 class GLFrame(wx.Frame):
     """A simple class for using OpenGL with wxPython."""
@@ -349,6 +386,44 @@ class GLFrame(wx.Frame):
         
         return (1.0, 1.0, 0.0)
     
+    def DrawHarbour(self, x, y, id):
+        sized = 1.0/7.0
+        size2 = sized / 2.0
+        size4 = size2 / 2.0
+        size8 = size4 / 2.0
+        d = -0.9
+        
+        if not self.client.game.boardLayout:
+            return
+        harbour_type = self.client.game.boardLayout.harbour_tiles[id]
+        if harbour_type == 6:
+            self.DrawText(x-0.02, y+0.01, "3x1")
+            glColor((1.0, 1.0, 1.0))
+        else:
+            glColor(self.TileToColor(harbour_type))
+        glBegin(GL_TRIANGLE_FAN)
+        glVertex(x, y, d)
+        glVertex(x-size4, y-size8, d)
+        glVertex(x, y-size4, d)
+        glVertex(x+size4, y-size8, d)
+        glVertex(x+size4, y+size8, d)
+        glVertex(x, y+size4, d)
+        glVertex(x-size4, y+size8, d)
+        glVertex(x-size4, y-size8, d)
+        glEnd()
+        
+        # draw harbour connections
+        h1 = harbour_node_to_pos(x, y, harbour_tiles[id][0])
+        h2 = harbour_node_to_pos(x, y, harbour_tiles[id][1])
+        glBegin(GL_LINES)
+        glVertex(x, y, d)
+        glVertex(h1[0], h1[1], d)
+        
+        glVertex(x, y, d)
+        glVertex(h2[0], h2[1], d)
+        glEnd()
+        
+    
     def DrawTile(self, x, y, res, id):
         glColor(self.TileToColor(res))
         sized = 1.0/7.0
@@ -368,6 +443,9 @@ class GLFrame(wx.Frame):
         glVertex(x-size2, y+size4, d)
         glVertex(x-size2, y-size4, d)
         glEnd()
+        
+        if id in harbour_tiles:
+            self.DrawHarbour(x, y, id)
         
         number_color = (0.0, 0.0, 0.0)
         if res != -1 and res != 6 and self.client.game.boardLayout.robberpos != None and self.client.game.boardLayout.robberpos == id:

@@ -155,6 +155,10 @@ class Game:
 
                 self.debug_print("{0} has harbor {1}".format(hex(cs[0]),harbor_type))
                 self.debug_print("{0} has harbor {1}".format(hex(cs[1]),harbor_type))
+                
+                # store harbour -> tile information
+                self.boardLayout.harbour_tiles[soc.hex_grid[num]] = int(harbor_type)
+            #print(self.boardLayout.harbour_tiles)
 
             #set the robber location
             self.boardLayout.robberpos = message.robberpos
@@ -356,6 +360,16 @@ class BoardLayout:
                 continue
             nodes = soc.nodes_around_hex(tile)
             self.tiles[tile] = TileNode(tile, *nodes)
+        
+        self.harbour_tiles = {0x17: 6, #0x17
+                              0x5b: 6, #0x5b
+                              0x9d: 6, #0x9d
+                              0xdd: 6, #0xdd
+                              0xd9: 6, #0xd9
+                              0xb5: 6, #0xb5
+                              0x71: 6, #0x71
+                              0x31: 6, #0x31
+                              0x13: 6} #0x13
             
 class BuildableNodes:
 
