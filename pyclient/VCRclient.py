@@ -7,7 +7,12 @@ class DummyAgent:
         self.resources = resources
 
 class VCRClient(client.Client):
-    def __init__(self, playbackFile = "vcrclient.rec", record = False):
+    def __init__(self, playbackFile = "vcrclient.rec", logfile = None, record = False):
+        import logging
+        if logfile:
+            logging.shutdown()
+            logging.basicConfig(filename=logfile, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+        
         client.Client.__init__(self)
         
         self.playbackFile = playbackFile
