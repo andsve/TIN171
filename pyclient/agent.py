@@ -21,7 +21,7 @@ dice_props[12] = 0.0278
 
 resource_list = [0,0,0,0,0,0]#make a list of exist resource
 
-resource_weight = [0,45,25,25,25,35]
+resource_weight = [0,55,25,35,35,45]
 total_highest = 0
 
 best_resource = [""]
@@ -59,6 +59,8 @@ class Agent:
         self.bought["roadcard"] = False
         self.bought["resourcecard"] = False
         self.bought["monopolycard"] = False
+
+        self.strategy = None
 
         self.played_knight = False
         self.debug_print("self.played_knight = True (1)")
@@ -211,7 +213,7 @@ class Agent:
 
         
 
-    def find_first_settlement(self):        
+    def find_first_settlement(self):
 
         node_score = {}
 
@@ -255,7 +257,7 @@ class Agent:
                     
                 if t1 and t2 and t3 and self.game.boardLayout.tiles[t1].resource != 0 and self.game.boardLayout.tiles[t2].resource != 0 and self.game.boardLayout.tiles[t3].resource != 0:
                     for t in [t1,t2,t3]:
-                        if n not in rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] and dice_props[self.game.boardLayout.tiles[t].number] > 0.03:
+                        if n not in rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]] and dice_props[self.game.boardLayout.tiles[t].number] > 0.06:
                             rares[elementIdToType[str(self.game.boardLayout.tiles[t].resource)]].append(n)
 
                 for t in [t1,t2,t3]:
@@ -520,23 +522,24 @@ class Agent:
             # Find the worst resource
             # If the worst one exists, then drop it, try to get it through trading            
             for (r,v) in probs.items():
-                if(v < 0.25):
+                if(v < 0.2):
                     self.debug_print("The worst resource is {0}, the probability is {1}".format(r,v))
                     rbad.append(r)
             
             # Find the best resource
             # If the best one exists, then chase for it, and also the harbor.
             for (r,v) in probs.items():
-                if(v > 0.35):
+                if(v > 0.3):
                     self.debug_print("The best resource is {0}, the probability is {1}".format(r,v))
                     rgood.append(r)
 
-            if len(rbad) > 0:
-                if len(rgood) > 0:
+            if len(rbad) > 0 and len(rgood) > 0:
                     self.debug_print("Use the function of Best resource spot!")
                     new_settlement_place = self.find_best_resource_spot(rgood)
+                    self.strategy = "STRAT1"
             else:            
                 new_settlement_place = self.find_first_settlement() #new function
+                self.strategy = "STRAT2"
             
             
             
@@ -586,7 +589,7 @@ class Agent:
             """new_settlement_place = self.find_buildable_node()"""
             # If we use the best_resource function, than for the second settlement
             self.debug_print("Best resource is {0}".format(best_resource[0]))
-            if best_resource[0] != "":
+            if self.strategy == "STRAT1":
                 self.debug_print("Find the harbor")
                 new_settlement_place = self.find_best_resource_harbor(best_resource[0])
             else:
