@@ -369,10 +369,27 @@ class GLFrame(wx.Frame):
         glVertex(x-size2, y-size4, d)
         glEnd()
         
+        number_color = (0.0, 0.0, 0.0)
+        if res != -1 and res != 6 and self.client.game.boardLayout.robberpos != None and self.client.game.boardLayout.robberpos == id:
+            size8 = size4 / 2.0
+            glColor(number_color)
+            glBegin(GL_TRIANGLE_FAN)
+            glVertex(x, y, d)
+            glVertex(x-size4, y-size8, d)
+            glVertex(x, y-size4, d)
+            glVertex(x+size4, y-size8, d)
+            glVertex(x+size4, y+size8, d)
+            glVertex(x, y+size4, d)
+            glVertex(x-size4, y+size8, d)
+            glVertex(x-size4, y-size8, d)
+            glEnd()
+            number_color = (1.0, 1.0, 1.0)
+        
         # Draw number
         if res != -1 and res != 6 and self.client.game.boardLayout.tiles[id]:
             self.DrawText(x - size4/4.0, y + size4/4.0,
-                          str(self.client.game.boardLayout.tiles[id].number))
+                          str(self.client.game.boardLayout.tiles[id].number),
+                          number_color)
         
         # Draw nodes
         n1 = None
