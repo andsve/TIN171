@@ -67,6 +67,8 @@ class Agent:
         self.rob_several = False
         self.debug_print("self.rob_several = False (1)")
         
+        self.planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
+        
         self.output_prefix = "[DEBUG] agent.py ->"
     
     def debug_print(self, msg):
@@ -742,9 +744,6 @@ class Agent:
     # the default playing method
     # TODO: Intelligent stuff
     def make_play(self):
-
-        planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
-
         # Build with road building
         ENABLE_ROAD_CARD = False
         if ENABLE_ROAD_CARD and self.resources["ROAD_CARDS"] > 0 and self.resources["ROADS"] >= 2 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["roadcard"]:
@@ -755,7 +754,7 @@ class Agent:
 
             self.resources["MAY_PLAY_DEVCARD"] = False
             
-            plan = planner.make_plan(True)
+            plan = self.planner.make_plan(True)
 
             if plan:
 
@@ -768,7 +767,7 @@ class Agent:
                 if build_type == 0:
                     self.game.buildableRoads.roads[build_spot] = False
 
-                plan = planner.make_plan(True)
+                plan = self.planner.make_plan(True)
 
                 if plan and build_spot != plan[0]:
 
@@ -780,7 +779,7 @@ class Agent:
                     if build_type == 0:
                         self.game.buildableRoads.roads[build_spot] = False
         
-        plan = planner.make_plan(False)
+        plan = self.planner.make_plan(False)
 
         self.debug_print(plan)
 
@@ -795,7 +794,10 @@ class Agent:
             self.client.send_msg(response)
 
         #cannot afford city. buy developement card.
-        elif self.resources["DEV_CARDS"] > 0 and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) and (planner.canAffordCard() or planner.canAffordWithTrade(3)):
+        elif self.resources["DEV_CARDS"] > 0 \
+            and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) \
+            or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) \
+            and (self.planner.canAffordCard() or self.planner.canAffordWithTrade(3)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)

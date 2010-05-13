@@ -106,7 +106,11 @@ class Planner:
     
     def make_plan(self, road_card):
         from jsettlers_utils import  elementIdToType, pieceToType
+        
+        # Reset
         self.scores = copy.deepcopy(self.default_scores)
+        self.resource_list = [0,0,0,0,0,0]
+        self.harbor_list = [False,False,False,False,False,False]
 
         (self.longest_start, self.longest_end, self.longest_length) = self.find_longest_road()
         
