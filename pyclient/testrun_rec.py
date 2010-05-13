@@ -1,6 +1,7 @@
 import logging
 import threading
 from VCRclient import *
+import client as aiclient
 import socket
 
 import multiprocessing
@@ -36,14 +37,15 @@ def run_client(i):
     import time
     start_time = time.time()
     tprint("Starting game {0}".format(i))
-    logging.disable(logging.INFO)
+    #logging.disable(logging.INFO)
     h = "doff.csbnet.se"
     p = 8880
     try_num = 1
     score = None
     while not score:
         n = "{0}-{1}".format(socket.gethostname(), i, try_num)
-        client = VCRClient("recs/" + n + ".rec", True)
+        
+        client = VCRClient(playbackFile = "recs/" + n + ".rec", logfile = "logs/" + n + ".log", record = True)
         client.connect((h, p)) 
         client.setup(n, True, 1, n)
         score = client.run()
