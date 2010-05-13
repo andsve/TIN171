@@ -51,6 +51,7 @@ class Planner:
         }
 
         self.resource_list = [0,0,0,0,0,0]
+        self.harbor_list = [False,False,False,False,False,False]
         
         self.scores = {}
 
@@ -116,6 +117,7 @@ class Planner:
             # If we have a certain harbour, raise the score for that resource
             if 0 < node.harbor < 6:
                 self.add_resource_score(node.harbor, 3)
+                self.harbor_list[node.harbor] = True
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
             elif node.harbor == 6:
@@ -211,10 +213,10 @@ class Planner:
                     for tile in tiles:
                         if 0 < tile.resource < 6:
                             # Add resource score for all resource types
-                            temp_score += self.get_resource_score(tile.resource)
-                            
-                            # If it's a harbour (?), add probability assigned to the neighbouring tile.
-                            if 0 < node.harbor < 6:
+                            temp_score += self.probabilities[tile.number]
+
+                            # If we have a harbor of that type
+                            if self.harbor_list[tile.resource]:
                                 temp_score += self.probabilities[tile.number]
 
                     self.cityScore[n] = temp_score
@@ -248,14 +250,14 @@ class Planner:
                         self.game.boardLayout.roads[road].owner = int(self.game.playernum)
                         self.game.boardLayout.roads[road2].owner = int(self.game.playernum)
                         self.roads.append(road)
-                        self.raods.append(road2)
+                        self.roads.append(road2)
 
                         (start, end, tempLength) = self.find_longest_road()
 
                         self.game.boardLayout.roads[road].owner = None
                         self.game.boardLayout.roads[road2].owner = None
                         self.roads.remove(road)
-                        self.raods.remove(road2)
+                        self.roads.remove(road2)
 
                         if tempLength > self.longest_length and tempLength > tempLongestRoad:
                             tempLongestRoad = tempLength
@@ -575,7 +577,7 @@ class Planner:
         longest = copy.deepcopy(visited)
 
         crucial_node = None
-        if len(r) > 1:
+        if len(visited) > 1:
             prev = visited[-2]
             for n in [self.game.boardLayout.roads[prev].n1,self.game.boardLayout.roads[prev].n2]:
                 if n == self.game.boardLayout.roads[r].n1 or n == self.game.boardLayout.roads[r].n2:
