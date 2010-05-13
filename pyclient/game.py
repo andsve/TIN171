@@ -50,6 +50,7 @@ class Game:
             self.update_game(name, inst)
         return (name, inst)
         
+    """
     def create_graph(self):
         import jsettlers_utils as soc
         
@@ -68,7 +69,7 @@ class Game:
             
             # All roads around hex
             roads = soc.roads_around_hex(hex)
-            
+    """
     def update_game(self, id, message):
         import sys
         import jsettlers_utils as soc

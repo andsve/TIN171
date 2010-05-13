@@ -101,6 +101,7 @@ number_dict = {
 def nodes_around_hex(n):
     return [n + v for v in [0x01, 0x12, 0x21, 0x10, -0x01, -0x10]]
     
+"""
 def roads_around_hex(n):
     # / \   n1 n2
     # | |  n0   n3
@@ -112,7 +113,9 @@ def roads_around_hex(n):
             , n + 0x11 + 0x10
             , n + 0x11 - 0x01
             ]
-
+"""
+# I think this one is correct,
+# the one above seem to return wrong roads to the right
 def roads_around_hex2(n):
     # / \   n1 n2
     # | |  n0   n3
