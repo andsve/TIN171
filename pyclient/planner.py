@@ -47,7 +47,7 @@ class Planner:
             ,"SHEEPH": 0
             ,"WHEATH": 0
             ,"OREH":   0
-            ,"3FOR1H": 5
+            ,"3FOR1H": 3
         }
 
         self.resource_list = [0,0,0,0,0,0]
@@ -247,11 +247,15 @@ class Planner:
                         #self.debug_print("Changing owner for: {0} and {1}".format(hex(road),hex(road2)))
                         self.game.boardLayout.roads[road].owner = int(self.game.playernum)
                         self.game.boardLayout.roads[road2].owner = int(self.game.playernum)
+                        self.roads.append(road)
+                        self.raods.append(road2)
 
                         (start, end, tempLength) = self.find_longest_road()
 
                         self.game.boardLayout.roads[road].owner = None
                         self.game.boardLayout.roads[road2].owner = None
+                        self.roads.remove(road)
+                        self.raods.remove(road2)
 
                         if tempLength > self.longest_length and tempLength > tempLongestRoad:
                             tempLongestRoad = tempLength
@@ -262,11 +266,15 @@ class Planner:
         if tempLongestRoad > self.longest_length:
 
             self.game.boardLayout.roads[tempRoad].owner = int(self.game.playernum)
+            self.roads.append(tempRoad)
             (tempStart, tempEnd, tempLength) = self.find_longest_road()
             self.game.boardLayout.roads[tempRoad].owner = None
+            self.roads.remove(tempRoad)
             self.game.boardLayout.roads[tempRoad2].owner = int(self.game.playernum)
+            self.roads.append(tempRoad2)
             (tempStart, tempEnd, tempLength2) = self.find_longest_road()
             self.game.boardLayout.roads[tempRoad2].owner = None
+            self.roads.remove(tempRoad2)
 
             if tempLength >= tempLength2:
                 return (tempRoad, 0)
@@ -565,10 +573,18 @@ class Planner:
 
         nodes = [self.game.boardLayout.roads[r].n1,self.game.boardLayout.roads[r].n2]
         longest = copy.deepcopy(visited)
+
+        crucial_node = None
+        if len(r) > 1:
+            prev = visited[-2]
+            for n in [self.game.boardLayout.roads[prev].n1,self.game.boardLayout.roads[prev].n2]:
+                if n == self.game.boardLayout.roads[r].n1 or n == self.game.boardLayout.roads[r].n2:
+                    crucial_node = n
+                    break
        
         for n in nodes:
-
-            if self.game.boardLayout.nodes[n].owner == None or self.game.boardLayout.nodes[n].owner == int(self.game.playernum):
+            
+            if not crucial_node or n != crucial_node or self.game.boardLayout.nodes[n].owner == None or self.game.boardLayout.nodes[n].owner == int(self.game.playernum):
 
                 if self.game.boardLayout.nodes[n].n1 and self.game.boardLayout.nodes[n].n1 not in visited and self.game.boardLayout.roads[self.game.boardLayout.nodes[n].n1].owner == int(self.game.playernum):
                     new_visited = copy.deepcopy(visited)
