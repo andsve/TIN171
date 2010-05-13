@@ -497,22 +497,18 @@ class Planner:
         logging.info("Can give: {0}".format(", ".join(given_resources)))
         logging.info("Gives...: {0}".format(", ".join("{0}: {1}".format(k,v) for k,v in gives.items())))
 
-        resource_card = 0
-        ENABLE_RESOURCE_CARD = False
-        if ENABLE_RESOURCE_CARD and self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and sum(needed.values()) >= 2 and not self.bought["resourcecard"]:
-            self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
-            logging.info("Got Resource Card")
-            resource_card = 2 # change to 2 when message is implemented
+        def get_resource_index(name):
+            rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
+            for i, n in enumerate(rlist):
+                if n == name:
+                    return i
 
-        if sum(gives.values()) >= sum(needed.values()) - resource_card:
-            def get_resource_index(name):
-                rlist = ("CLAY", "ORE", "SHEEP", "WHEAT", "WOOD")
-                for i, n in enumerate(rlist):
-                    if n == name:
-                        return i
-                                            
-            # use resource card here to get two needed resources
-            if resource_card == 2:
+        ENABLE_RESOURCE_CARD = False
+        if ENABLE_RESOURCE_CARD and self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["resourcecard"]:
+            self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
+            logging.critical("Got Resource Card")
+
+            if sum(needed.values()) >= 2:
                 resources = [0, 0, 0, 0, 0]
                 while sum(resources) < 2:
                     for r,v in needed.items():
@@ -520,13 +516,15 @@ class Planner:
                         if v > 0:
                             resources[ri] += 1
                             needed[r] -= 1
-                logging.critical("Picking some resources.")
-                self.debug_print("May play devcard: {0} (2)".format(self.resources["MAY_PLAY_DEVCARD"]))
-                self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
-                self.resources["MAY_PLAY_DEVCARD"] = False
-                self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
-                    
-            
+            else:
+                resources = [0, 0, 0, 0, 2]
+            logging.critical("Picking some resources.")
+            self.debug_print("May play devcard: {0} (2)".format(self.resources["MAY_PLAY_DEVCARD"]))
+            self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
+            self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
+            self.resources["MAY_PLAY_DEVCARD"] = False
+
+        if sum(gives.values()) >= sum(needed.values()):
             left_to_trade = sum(needed.values())
 
             max_iterations = 10

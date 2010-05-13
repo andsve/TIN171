@@ -6,14 +6,14 @@ import socket
 import multiprocessing
 
 # Timeout before assuming game is dead
-G_TIMEOUT = 60 * 3
+G_TIMEOUT = 60 * 6
 
 # Number of total threads at any time
 total_threads = multiprocessing.cpu_count() * 2
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 30
+num_games = 300
 
 # Score results are saved in this list
 res = []
