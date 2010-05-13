@@ -397,7 +397,7 @@ class GLFrame(wx.Frame):
             return
         harbour_type = self.client.game.boardLayout.harbour_tiles[id]
         if harbour_type == 6:
-            self.DrawText(x-0.02, y+0.01, "3x1")
+            self.DrawText(x-0.02, y+0.01, "3:1")
             glColor((1.0, 1.0, 1.0))
         else:
             glColor(self.TileToColor(harbour_type))
