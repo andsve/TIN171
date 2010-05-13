@@ -195,13 +195,12 @@ class Agent:
                         tempScore += 10
                # elif self.game.boardLayout.nodes[n].harbor == 6:
                #     tempScore += 5 #take the 3:1 harbor
-                else:
-                    t1 = self.game.boardLayout.nodes[n].t1
-                    t2 = self.game.boardLayout.nodes[n].t2
-                    t3 = self.game.boardLayout.nodes[n].t3
-                    for t in [t1,t2,t3]:
-                        if t and self.game.boardLayout.tiles[t].resource != 0:
-                            tempScore += 0.2 * dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
+                t1 = self.game.boardLayout.nodes[n].t1
+                t2 = self.game.boardLayout.nodes[n].t2
+                t3 = self.game.boardLayout.nodes[n].t3
+                for t in [t1,t2,t3]:
+                    if t and self.game.boardLayout.tiles[t].resource != 0:
+                        tempScore += 0.2 * dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
                 node_score[n] = tempScore
         #Find the best node
         bestNode = None
