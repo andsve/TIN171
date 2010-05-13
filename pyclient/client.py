@@ -80,6 +80,8 @@ class Client:
                      , "LATEST_DICE_RESULT": -1
                      }
 
+        self.harbor_list = [False,False,False,False,False,False]
+
     def connect(self, server):
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -116,8 +118,8 @@ class Client:
         if self.gamename == None:
             self.gamename = "game-{1}[{0}]".format(socket.gethostname(), random.randint(0, 99))
         
-        self.game = game.Game(self.nickname, self.stats, self.resources, self.builtnodes, self.builtroads)
-        self.agent = agent.Agent(self.nickname, self.stats, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads)
+        self.game = game.Game(self.nickname, self.stats, self.resources, self.builtnodes, self.builtroads,self.harbor_list)
+        self.agent = agent.Agent(self.nickname, self.stats, self.gamename, self.game, self, self.resources, self.builtnodes, self.builtroads,self.harbor_list)
     
     def run_update(self):
         # hack to make a "wait" recv method

@@ -3,7 +3,7 @@ from messages import *
 from utils import cprint
 
 class Game:
-    def __init__(self, nickname, stats, resources,nodes,roads):
+    def __init__(self, nickname, stats, resources,nodes,roads,harbor_list):
         self.messagetbl = {}
         self.init_parser()
         self.nickname = nickname
@@ -22,6 +22,8 @@ class Game:
         self.largest_army = -1
         
         self.boardLayout = None
+
+        self.harbor_list = harbor_list
         
 
     def debug_print(self, msg):
@@ -175,6 +177,8 @@ class Game:
                 if int(message.playernum) == int(self.playernum):
                     self.resources["SETTLEMENTS"] -= 1
                     self.builtnodes.append(message.coords)
+                    if 0 < self.boardLayout.nodes[message.coords].harbor < 6:
+                        self.harbor_list[self.boardLayout.nodes[message.coords].harbor] = True
 
                 #May not build on built spots
                 self.buildableNodes.nodes[message.coords] = False

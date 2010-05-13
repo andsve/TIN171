@@ -4,7 +4,7 @@ import copy
 import logging
 
 class Planner:
-    def __init__(self, game, stats, gamename, resources, nodes, roads, client, bought):
+    def __init__(self, game, stats, gamename, resources, nodes, roads, client, bought, harbor_list):
 
         self.game = game
         self.gamename = gamename
@@ -51,7 +51,7 @@ class Planner:
         }
 
         self.resource_list = [0,0,0,0,0,0]
-        self.harbor_list = [False,False,False,False,False,False]
+        self.harbor_list = harbor_list
         
         self.scores = {}
 
@@ -121,7 +121,6 @@ class Planner:
             # If we have a certain harbour, raise the score for that resource
             if 0 < node.harbor < 6:
                 self.add_resource_score(node.harbor, 3)
-                self.harbor_list[node.harbor] = True
                 
             # If we have a 3 for 1 harbour: lower the score for building a new one
             elif node.harbor == 6:
@@ -268,9 +267,9 @@ class Planner:
                             tempLongestRoad = tempLength
                             tempRoad = road
                             tempRoad2 = road2
-                            self.debug_print("Found a connection by {0} and {1}.".format(hex(road),hex(road2)))
+                            self.debug_print("Found a connection by {0} and {1} (length: {2}.".format(hex(road),hex(road2),tempLength))
 
-        if tempLongestRoad > self.longest_length:
+        if tempLongestRoad > self.longest_length + 1:
 
             self.game.boardLayout.roads[tempRoad].owner = int(self.game.playernum)
             self.roads.append(tempRoad)
@@ -331,8 +330,7 @@ class Planner:
         
         for n in [n1, n2]:            
             node = self.game.boardLayout.nodes[n]
-            is_buildable = self.game.buildableNodes.nodes[n]
-            if is_buildable:
+            if self.game.buildableNodes.nodes[n]:
                 if 0 < node.harbor < 7:
                     temp_score = self.get_harbour_score(node.harbor)
                 else:
@@ -352,6 +350,18 @@ class Planner:
                 temp_score += 2 * (3 - depth)
                 if depth == 0 and road_node.owner == None:
                     temp_score -= 1
+
+                # Penalize building _towards_ a spot where an opponent has a road and thus might be able to build settlement really soon
+                own_neighbour = False
+                for r in [node.n1,node.n2,node.n3]:
+                    if r and self.game.boardLayout.roads[r].owner == int(self.game.playernum):
+                        own_neighbour = True
+                        break
+
+                if not own_neighbour:
+                    for r in [node.n1,node.n2,node.n3]:
+                        if r and self.game.boardLayout.roads[r].owner and self.game.boardLayout.roads[r].owner != int(self.game.playernum):
+                            temp_score -= 2
 
                 if n not in self.nodeScore or temp_score > self.nodeScore[n]:
                     self.nodeScore[n] = temp_score
@@ -569,7 +579,7 @@ class Planner:
             temp = self.longest_path([r])
 
             if len(temp) > len(longest):
-                longest = copy.deepcopy(temp)
+                longest = copy.deepcopy(temp)        
 
         return(longest[0], longest[-1], len(longest))
 
