@@ -588,7 +588,7 @@ def main(args):
     
     lclient = None
     if options.record or options.play:
-        lclient = VCRclient.VCRClient(options.outfile, not options.play)
+        lclient = VCRclient.VCRClient(playbackFile = options.outfile, record = not options.play)
     else:
         lclient = client.Client()
     
