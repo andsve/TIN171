@@ -558,8 +558,7 @@ def main(args):
     filename = "robot-output.{0}".format(time.strftime("%H%M%S"))
     rec_file = "recs/" + filename + ".rec"
     log_file = "logs/" + filename + ".log"
-    logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
-    js_logger.addHandler(client.logconsole)
+    
     
     parser = OptionParser()
     parser.add_option("-a", "--addr", default = "doff.csbnet.se:8880")
@@ -570,10 +569,17 @@ def main(args):
     parser.add_option("-o", "--outfile", default = rec_file)
     parser.add_option("-r", "--record", action="store_true", default = True)
     parser.add_option("-p", "--play", action="store_true", default = False)
+    parser.add_option("-v", "--verbose", action="store_true", default = False)
     
     (options, args) = parser.parse_args()
     
     print options
+    
+    if options.verbose:
+        logging.basicConfig(filename=log_file, filemode="w",level=logging.DEBUG,format="%(module)s:%(levelname)s: %(message)s")
+    else:
+        logging.basicConfig(filename=log_file, filemode="w",level=logging.CRITICAL,format="%(module)s:%(levelname)s: %(message)s")
+    js_logger.addHandler(client.logconsole)
     
     if ":" not in options.addr:
         print "try using host:port"
