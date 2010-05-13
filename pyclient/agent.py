@@ -27,7 +27,7 @@ total_highest = 0
 best_resource = [""]
 
 class Agent:
-    def __init__(self, nickname, stats, gamename, game, client, resources,nodes,roads):
+    def __init__(self, nickname, stats, gamename, game, client, resources,nodes,roads,harbor_list):
         self.gamestate = 0 # 0 = not started, 1 = setup (settle placements), 2 = game running
         self.game = game
         self.stats = stats
@@ -60,6 +60,8 @@ class Agent:
         self.bought["resourcecard"] = False
         self.bought["monopolycard"] = False
 
+        self.harbor_list = harbor_list
+
         self.strategy = None
 
         self.played_knight = False
@@ -67,7 +69,7 @@ class Agent:
         self.rob_several = False
         self.debug_print("self.rob_several = False (1)")
         
-        self.planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought)
+        self.planner = Planner(self.game, self.stats, self.gamename,self.resources,self.builtnodes,self.builtroads,self.client,self.bought,self.harbor_list)
         
         self.output_prefix = "[DEBUG] agent.py ->"
     
@@ -954,9 +956,23 @@ class Agent:
         # got many settlements out and cities left to build
         if self.resources["SETTLEMENTS"] <= 1 and self.resources["CITIES"] > 0:
 
-            clay = min(self.resources["CLAY"], numcards)
-            wood = min(self.resources["WOOD"], numcards - clay)
-            sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - wood)
+            clay = 0
+            wood = 0
+            sheep = 0
+            if not self.harbor_list[1]:
+                clay = min(self.resources["CLAY"], numcards)
+            if not self.harbor_list[5]:
+                wood = min(self.resources["WOOD"], numcards - clay)
+            if not self.harbor_list[3]:
+                sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - wood)
+
+            if self.harbor_list[1]:
+                clay = min(self.resources["CLAY"], numcards - wood - sheep)
+            if self.harbor_list[5]:
+                wood = min(self.resources["WOOD"], numcards - clay - sheep)
+            if self.harbor_list[3]:
+                sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - wood)
+                
             ore = min(max(self.resources["ORE"] - 3,0), numcards - clay - wood - sheep)
             wheat = min(max(self.resources["WHEAT"] - 2,0), numcards - clay - wood - sheep - ore)
 
@@ -970,11 +986,18 @@ class Agent:
             
         else:
 
-            ore = min(self.resources["ORE"], numcards)           
+            ore = 0
+            
+            if not self.harbor_list[2]:
+                ore = min(self.resources["ORE"], numcards)
+            
             clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
             sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - ore)
             wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
             wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
+
+            if self.harbor_list[2]:
+                ore = min(self.resources["ORE"], numcards - clay - sheep- wheat - wood)
 
             response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
 
