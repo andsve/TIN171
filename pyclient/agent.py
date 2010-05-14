@@ -544,6 +544,14 @@ class Agent:
                 new_settlement_place = self.find_first_settlement() #new function
                 self.strategy = "STRAT2"
             
+            self.stats["FIRST_SETTLEMENT"] = hex(new_settlement_place)
+            rs = [0, 0, 0]
+            rs[0] = self.game.boardLayout.nodes[new_settlement_place].t1
+            rs[1] = self.game.boardLayout.nodes[new_settlement_place].t2
+            rs[2] = self.game.boardLayout.nodes[new_settlement_place].t3
+            rs = filter(lambda v: v != None, rs)
+            self.stats["FIRST_SETTLEMENT_RES"] = [(elementIdToType[str(self.game.boardLayout.tiles[r].resource)] \
+                                                  , self.game.boardLayout.tiles[r].number) for r in rs]
             
             
             # change the resource_list to see which kind of resources are taken
@@ -597,6 +605,16 @@ class Agent:
                 new_settlement_place = self.find_best_resource_harbor(best_resource[0])
             else:
                 new_settlement_place = self.find_second_settlement() #new function
+                
+            self.stats["SECOND_SETTLEMENT"] = hex(new_settlement_place)
+            rs = [0, 0, 0]
+            rs[0] = self.game.boardLayout.nodes[new_settlement_place].t1
+            rs[1] = self.game.boardLayout.nodes[new_settlement_place].t2
+            rs[2] = self.game.boardLayout.nodes[new_settlement_place].t3
+            rs = filter(lambda v: v != None, rs)
+            self.stats["SECOND_SETTLEMENT_RES"] = [(elementIdToType[str(self.game.boardLayout.tiles[r].resource)] \
+                                                  , self.game.boardLayout.tiles[r].number) for r in rs]
+                                                  
                 
             # change the resource_list to see which kind of resources are taken
             """node = self.game.boardLayout.nodes[new_settlement_place]

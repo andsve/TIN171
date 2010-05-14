@@ -4,6 +4,8 @@ from VCRclient import *
 import client as aiclient
 import socket
 
+from testrun_2 import print_stats
+
 import multiprocessing
 
 # Timeout before assuming game is dead
@@ -49,6 +51,11 @@ def run_client(i):
         client.connect((h, p)) 
         client.setup(n, True, 1, n)
         score = client.run()
+        
+        #print client.stats["FIRST_SETTLEMENT"]
+        #print client.stats["FIRST_SETTLEMENT_RES"]
+        #print client.stats["SECOND_SETTLEMENT"]
+        #print client.stats["SECOND_SETTLEMENT_RES"]
 
         if score in (None, -1, 0):
             tprint("Failed game {0}".format(i))
@@ -91,10 +98,10 @@ if __name__ == '__main__':
         for x in range(0, 12):
             tprint("{0}p - {1}".format(x, res.count(x)))
             
-        winratio = (res.count(10) + res.count(11)) / float(len(res))
-        average = float(sum(res))/len(res)
-        median = sorted(res)[len(res)/2]
-        tprint("Win ratio: {0}, Average: {1}, Median: {2}".format(winratio, average, median))
+        # Change all 11:s to 10:s
+        res = [10 if r == 11 else r for r in res]
+
+        print_stats(res)
 
             
         try:
