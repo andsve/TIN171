@@ -52,10 +52,10 @@ def run_client(i):
         client.setup(n, True, 1, n)
         score = client.run()
         
-        #print client.stats["FIRST_SETTLEMENT"]
-        #print client.stats["FIRST_SETTLEMENT_RES"]
-        #print client.stats["SECOND_SETTLEMENT"]
-        #print client.stats["SECOND_SETTLEMENT_RES"]
+        print client.stats["FIRST_SETTLEMENT"]
+        print client.stats["FIRST_SETTLEMENT_RES"]
+        print client.stats["SECOND_SETTLEMENT"]
+        print client.stats["SECOND_SETTLEMENT_RES"]
 
         if score in (None, -1, 0):
             tprint("Failed game {0}".format(i))

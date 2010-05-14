@@ -80,7 +80,23 @@ class Agent:
     #
     # Auxiliary gameboard functions
     #
-    
+    def get_settlement_stats(self, pos):
+        tiles = (self.game.boardLayout.nodes[pos].t1
+                ,self.game.boardLayout.nodes[pos].t2
+                ,self.game.boardLayout.nodes[pos].t3)
+        info = []
+        for tile in tiles:
+            resource_num = str(self.game.boardLayout.tiles[tile].resource)
+            if resource_num in elementIdToType:
+                resource = elementIdToType[resource_num]
+                num = self.game.boardLayout.tiles[tile].number
+                if num in dice_props:
+                    probability = dice_props[num]
+                else:
+                    probability = "?????????????????"
+                info.append((resource, probability))
+        return info
+        
     def calculate_new_settlement_weight(self, node): # add the round number as parameter?
         weight = 0
         w1=0
@@ -544,14 +560,9 @@ class Agent:
                 new_settlement_place = self.find_first_settlement() #new function
                 self.strategy = "STRAT2"
             
+                
             self.stats["FIRST_SETTLEMENT"] = hex(new_settlement_place)
-            rs = [0, 0, 0]
-            rs[0] = self.game.boardLayout.nodes[new_settlement_place].t1
-            rs[1] = self.game.boardLayout.nodes[new_settlement_place].t2
-            rs[2] = self.game.boardLayout.nodes[new_settlement_place].t3
-            rs = filter(lambda v: v != None, rs)
-            self.stats["FIRST_SETTLEMENT_RES"] = [(elementIdToType[str(self.game.boardLayout.tiles[r].resource)] \
-                                                  , self.game.boardLayout.tiles[r].number) for r in rs]
+            self.stats["FIRST_SETTLEMENT_RES"] = self.get_settlement_stats(new_settlement_place)
             
             
             # change the resource_list to see which kind of resources are taken
@@ -607,13 +618,7 @@ class Agent:
                 new_settlement_place = self.find_second_settlement() #new function
                 
             self.stats["SECOND_SETTLEMENT"] = hex(new_settlement_place)
-            rs = [0, 0, 0]
-            rs[0] = self.game.boardLayout.nodes[new_settlement_place].t1
-            rs[1] = self.game.boardLayout.nodes[new_settlement_place].t2
-            rs[2] = self.game.boardLayout.nodes[new_settlement_place].t3
-            rs = filter(lambda v: v != None, rs)
-            self.stats["SECOND_SETTLEMENT_RES"] = [(elementIdToType[str(self.game.boardLayout.tiles[r].resource)] \
-                                                  , self.game.boardLayout.tiles[r].number) for r in rs]
+            self.stats["SECOND_SETTLEMENT_RES"] = self.get_settlement_stats(new_settlement_place)
                                                   
                 
             # change the resource_list to see which kind of resources are taken
