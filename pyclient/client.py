@@ -242,8 +242,17 @@ class Client:
                 logging.info("I got {0} points! (bonus: {1})".format(points, bonus))
                 
                 for k,v in self.stats.items():
-                    logging.info("[{0}] {1}".format(k, v))
-                
+                    logging.info("[{0}] {1}".format(k, v))                   
+
+                f = open("stats.txt", "a")
+                try:
+                    f.write("{0}\n".format(points))
+                    f.write("[{0}] {1}\n".format(self.stats["FIRST_SETTLEMENT_RES"]))
+                    f.write("[{0}] {1}\n".format(self.stats["SECOND_SETTLEMENT_RES"]))
+                    f.write("{0}\n".format(self.harbor_list))
+                finally:
+                    f.close()
+                    
                 # TODO: Count our longest road?
                 # ?
                 

@@ -92,10 +92,12 @@ class Agent:
                     resource = elementIdToType[resource_num]
                     num = self.game.boardLayout.tiles[tile].number
                     if num in dice_props:
-                        probability = dice_props[num]
+                        #probability = dice_props[num]
+                        info.append((resource, num))
                     else:
-                        probability = "?????????????????"
-                    info.append((resource, probability))
+                        #probability = "?????????????????"
+                        info.append((resource, "???"))
+                    #info.append((resource, probability))
         return info
         
     def calculate_new_settlement_weight(self, node): # add the round number as parameter?
