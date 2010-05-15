@@ -555,7 +555,10 @@ class Agent:
                     self.debug_print("The best resource is {0}, the probability is {1}".format(r,v))
                     rgood.append(r)
 
-            if len(rbad) > 0 and len(rgood) > 0:
+            if self.strategy == "RANDOM":
+                pass
+            
+            elif len(rbad) > 0 and len(rgood) > 0:
                     self.debug_print("Use the function of Best resource spot!")
                     new_settlement_place = self.find_best_resource_spot(rgood)
                     self.strategy = "STRAT1"
