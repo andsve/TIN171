@@ -12,11 +12,11 @@ import multiprocessing
 G_TIMEOUT = 60 * 3
 
 # Number of total threads at any time
-total_threads = 10
+total_threads = 1
 num_simul = multiprocessing.Semaphore(total_threads)
 
 # Total number of games to run
-num_games = 20
+num_games = 1
 
 # Score results are saved in this list
 res = []

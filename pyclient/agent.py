@@ -1,4 +1,5 @@
 import logging
+import random
 from messages import *
 from utils import cprint
 from planner import *
@@ -62,7 +63,9 @@ class Agent:
 
         self.harbor_list = harbor_list
 
-        self.strategy = None
+        #self.strategy = None
+        #self.strategy = "BEST_PROBS"
+        self.strategy = "RANDOM"
 
         self.played_knight = False
         self.debug_print("self.played_knight = True (1)")
@@ -351,7 +354,64 @@ class Agent:
                 bestNode = n
                 
         return bestNode
-    
+
+    def random_settlement(self):
+
+        good_nodes = []
+
+        for n in self.game.buildableNodes.nodes:
+
+            if self.game.buildableNodes.nodes[n]:
+
+                t1 = 0
+                t2 = 0
+                t3 = 0
+
+                if self.game.boardLayout.nodes[n].t1:
+                    t1 = 1
+                if self.game.boardLayout.nodes[n].t2:
+                    t2 = 1
+                if self.game.boardLayout.nodes[n].t3:
+                    t3 = 1
+
+                # only consider nodes with 2 or 3 adjacent tiles
+                if t1 + t2 + t3 >= 2:
+                    good_nodes.append(n)
+
+        return random.choice(good_nodes)
+
+    def best_probabilites_settlement(self):
+
+        node_score = {}
+
+        for n in self.game.buildableNodes.nodes:
+
+            if self.game.buildableNodes.nodes[n]:
+
+                t1 = self.game.boardLayout.nodes[n].t1
+                t2 = self.game.boardLayout.nodes[n].t2
+                t3 = self.game.boardLayout.nodes[n].t3
+
+                tempScore = 0
+
+                for t in [t1,t2,t3]:
+
+                    if t and self.game.boardLayout.tiles[t].resource != 0:
+                        tempScore += dice_props[self.game.boardLayout.tiles[t].number]
+
+                node_score[n] = tempScore
+
+
+        bestNode = None
+        highest = 0
+
+        for n in node_score:
+            if node_score[n] > highest:
+                highest = node_score[n]
+                bestNode = n
+                
+        return bestNode
+
     def find_buildable_node(self):
         # Returns the best buildable new node!
         
@@ -556,7 +616,10 @@ class Agent:
                     rgood.append(r)
 
             if self.strategy == "RANDOM":
-                pass
+                new_settlement_place = self.random_settlement()
+
+            elif self.strategy == "BEST_PROBS":
+                new_settlement_place = self.best_probabilites_settlement()
             
             elif len(rbad) > 0 and len(rgood) > 0:
                     self.debug_print("Use the function of Best resource spot!")
@@ -617,7 +680,11 @@ class Agent:
             """new_settlement_place = self.find_buildable_node()"""
             # If we use the best_resource function, than for the second settlement
             self.debug_print("Best resource is {0}".format(best_resource[0]))
-            if self.strategy == "STRAT1":
+            if self.strategy == "RANDOM":
+                new_settlement_place = self.random_settlement()
+            elif self.strategy == "BEST_PROBS":
+                new_settlement_place = self.best_probabilites_settlement()
+            elif self.strategy == "STRAT1":
                 self.debug_print("Find the harbor")
                 new_settlement_place = self.find_best_resource_harbor(best_resource[0])
             else:
