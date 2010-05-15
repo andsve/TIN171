@@ -247,8 +247,8 @@ class Client:
                 f = open("stats.txt", "a")
                 try:
                     f.write("{0}\n".format(points))
-                    f.write("[{0}] {1}\n".format(self.stats["FIRST_SETTLEMENT_RES"]))
-                    f.write("[{0}] {1}\n".format(self.stats["SECOND_SETTLEMENT_RES"]))
+                    f.write("[{0}] {1}\n".format(self.stats["FIRST_SETTLEMENT"], self.stats["FIRST_SETTLEMENT_RES"]))
+                    f.write("[{0}] {1}\n".format(self.stats["SECOND_SETTLEMENT"], self.stats["SECOND_SETTLEMENT_RES"]))
                     f.write("{0}\n".format(self.harbor_list))
                 finally:
                     f.close()
