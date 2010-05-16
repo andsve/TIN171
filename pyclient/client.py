@@ -80,7 +80,7 @@ class Client:
                      , "LATEST_DICE_RESULT": -1
                      }
 
-        self.harbor_list = [False,False,False,False,False,False]
+        self.harbor_list = [0,0,0,0,0,0]
 
     def connect(self, server):
         try:
@@ -216,7 +216,7 @@ class Client:
                 self.send_msg(messages.GameTextMsgMessage(self.gamename, self.nickname, message.message))
                 logging.critical(message.message)
                 logging.critical(a.resources)
-                pdb.set_trace()
+                #pdb.set_trace()
                 self.client.close()
                 return -1
                 # Blah blah

@@ -112,7 +112,6 @@ class Planner:
         # Reset
         self.scores = copy.deepcopy(self.default_scores)
         self.resource_list = [0,0,0,0,0,0]
-        self.harbor_list = [False,False,False,False,False,False]
         self.roads_until_settlement = None
 
         (self.longest_start, self.longest_end, self.longest_length) = self.find_longest_road()
@@ -230,7 +229,7 @@ class Planner:
                             temp_score += self.probabilities[tile.number]
 
                             # If we have a harbor of that type
-                            if self.harbor_list[tile.resource]:
+                            if self.harbor_list[tile.resource] == 1:
                                 temp_score += self.probabilities[tile.number]
 
                     self.cityScore[n] = temp_score
@@ -282,7 +281,8 @@ class Planner:
         tempLongestRoad = 0
         tempRoad = None
         tempRoad2 = None
-        if road_card or (self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.resources["CLAY"] >= 2 and self.resources["WOOD"] >= 2):
+        #if road_card or (self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.resources["CLAY"] >= 2 and self.resources["WOOD"] >= 2):
+        if road_card or (self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and ((self.resources["CLAY"] >= 1 and self.resources["WOOD"] >= 1) or (sum(self.harbor_list) > 0 and self.canAffordWithTrade(0)))):
             self.debug_print("Try to connect settlement hubs.")
             for road in self.game.buildableRoads.roads:
                 for road2 in self.game.buildableRoads.roads:
@@ -362,7 +362,7 @@ class Planner:
         increase_longest = i_l
 
         if increase_longest == 0 and (self.longest_length == 1 or self.increases_longest(road)):
-            increase_longest = 2
+            increase_longest = 1
 
         if not self.is_road_buildable(road):
             return None
@@ -386,7 +386,7 @@ class Planner:
                         temp_score += (1 - self.resource_list[tile.resource]) * 3
 
                 # Penalize building roads to get there
-                temp_score += 2 * (3 - depth)
+                temp_score += 4 * (3 - depth)
                 if depth == 0 and road_node.owner == None:
                     temp_score -= 1
 
@@ -428,22 +428,26 @@ class Planner:
 
         import copy
 
-        tempParents = [r for r in copy.deepcopy(parents) if self.is_road_buildable(r)]
+        tempParents = [r for r in copy.deepcopy(parents) if self.is_road_buildable(r)]     
 
-        if depth > 3:
-            return None
-                         
+        i = 0
+        max = len(tempParents)
         for r in tempParents:
 
             if self.game.buildableRoads.roads[r] and self.increases_longest(r):
                 return(r,0)
 
-        for r in tempParents:
+            if i >= max:
+                depth += 1
+                max = len(tempParents)
 
-            if self.game.buildableRoads.roads[r]:
-                return(r,0)
-            
-        for r in tempParents:
+                for r in tempParents:
+                    if self.game.buildableRoads.roads[r]:
+                        return(r,0)
+
+                if depth > 3:
+                    return None 
+            i += 1
 
             if depth < 3 and self.game.boardLayout.roads[r].owner == None:
 
@@ -454,25 +458,23 @@ class Planner:
                 r2 = self.game.boardLayout.nodes[n1].n2
                 r3 = self.game.boardLayout.nodes[n1].n3
 
-                if r1 and r1 not in parents:
-                    parents.append(r1)
-                if r2 and r2 not in parents:
-                    parents.append(r2)
-                if r3 and r3 not in parents:
-                    parents.append(r3)
+                if r1 and r1 not in tempParents:
+                    tempParents.append(r1)
+                if r2 and r2 not in tempParents:
+                    tempParents.append(r2)
+                if r3 and r3 not in tempParents:
+                    tempParents.append(r3)
 
                 r1 = self.game.boardLayout.nodes[n2].n1
                 r2 = self.game.boardLayout.nodes[n2].n2
                 r3 = self.game.boardLayout.nodes[n2].n3
 
-                if r1 and r1 not in parents:
-                    parents.append(r1)
-                if r2 and r2 not in parents:
-                    parents.append(r2)
-                if r3 and r3 not in parents:
-                    parents.append(r3)
-
-        return self.findClosestBuildableRoad(parents, depth + 1)
+                if r1 and r1 not in tempParents:
+                    tempParents.append(r1)
+                if r2 and r2 not in tempParents:
+                    tempParents.append(r2)
+                if r3 and r3 not in tempParents:
+                    tempParents.append(r3)
 
     def canAffordWithTrade(self,_type):
 
@@ -639,7 +641,8 @@ class Planner:
        
         for n in nodes:
             
-            if not crucial_node or n != crucial_node or self.game.boardLayout.nodes[n].owner == None or self.game.boardLayout.nodes[n].owner == int(self.game.playernum):
+            #if not crucial_node or n != crucial_node or self.game.boardLayout.nodes[n].owner == None or self.game.boardLayout.nodes[n].owner == int(self.game.playernum):
+             if not crucial_node or n != crucial_node:
 
                 if self.game.boardLayout.nodes[n].n1 and self.game.boardLayout.nodes[n].n1 not in visited and self.game.boardLayout.roads[self.game.boardLayout.nodes[n].n1].owner == int(self.game.playernum):
                     new_visited = copy.deepcopy(visited)

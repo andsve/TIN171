@@ -951,7 +951,7 @@ class Agent:
         #   or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) \
         #   and (self.planner.canAffordCard() or self.planner.canAffordWithTrade(3)):
 
-        elif self.resources["DEV_CARDS"] > 0 and (self.planner.canAffordCard() or (self.total_resources() >= 7 and self.planner.canAffordWithTrade(3))):
+        elif self.resources["DEV_CARDS"] > 0 and (self.planner.canAffordCard() or (self.total_resources() >= 6 and self.planner.canAffordWithTrade(3))):
 
         #elif self.resources["DEV_CARDS"] > 0 and self.total_resources() > 9 and self.planner.canAffordCard():
 
@@ -1116,18 +1116,18 @@ class Agent:
             clay = 0
             wood = 0
             sheep = 0
-            if not self.harbor_list[1]:
+            if self.harbor_list[1] == 0:
                 clay = min(self.resources["CLAY"], numcards)
-            if not self.harbor_list[5]:
+            if self.harbor_list[5] == 0:
                 wood = min(self.resources["WOOD"], numcards - clay)
-            if not self.harbor_list[3]:
+            if self.harbor_list[3] == 0:
                 sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - wood)
 
-            if self.harbor_list[1]:
+            if self.harbor_list[1] == 1:
                 clay = min(self.resources["CLAY"], numcards - wood - sheep)
-            if self.harbor_list[5]:
+            if self.harbor_list[5] == 1:
                 wood = min(self.resources["WOOD"], numcards - clay - sheep)
-            if self.harbor_list[3]:
+            if self.harbor_list[3] == 1:
                 sheep = min(max(self.resources["SHEEP"] - 1,0), numcards - clay - wood)
                 
             ore = min(max(self.resources["ORE"] - 3,0), numcards - clay - wood - sheep)
@@ -1145,7 +1145,7 @@ class Agent:
 
             ore = 0
             
-            if not self.harbor_list[2]:
+            if self.harbor_list[2] == 0:
                 ore = min(self.resources["ORE"], numcards)
             
             clay = min(max(self.resources["CLAY"] - 1,0), numcards - ore)
@@ -1153,7 +1153,7 @@ class Agent:
             wheat = min(max(self.resources["WHEAT"] - 1,0), numcards - clay - ore - sheep)
             wood = min(max(self.resources["WOOD"] - 1,0), numcards - clay - ore - sheep - wheat)
 
-            if self.harbor_list[2]:
+            if self.harbor_list[2] == 1:
                 ore = min(self.resources["ORE"], numcards - clay - sheep- wheat - wood)
 
             response = DiscardMessage(self.gamename, clay, ore, sheep, wheat, wood, 0)
