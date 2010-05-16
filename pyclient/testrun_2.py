@@ -75,7 +75,7 @@ if __name__ == '__main__':
     
     if os.name == 'nt':
         os.system("mode 80,60")
-        os.system("mode con: cols=80 lines=25")
+        os.system("mode con: cols=80 lines=250")
     
     logging.disable(logging.INFO)
     

@@ -554,6 +554,14 @@ class Planner:
                 if n == name:
                     return i
 
+        ENABLE_MONOPOLY_CARD = False
+        if ENABLE_MONOPOLY_CARD and self.resources["MONOPOLY_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["monopolycard"]:
+            self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 3))
+            self.client.send_msg(MonopolyPickMessage(self.gamename, 1))
+            logging.critical("Playing monopoly card")
+            self.resources["MAY_PLAY_DEVCARD"] = False
+            return False
+
         ENABLE_RESOURCE_CARD = False
         if ENABLE_RESOURCE_CARD and self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] and not self.bought["resourcecard"]:
             self.debug_print("May play devcard: {0} (1)".format(self.resources["MAY_PLAY_DEVCARD"]))
@@ -574,6 +582,7 @@ class Planner:
             self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
             self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
             self.resources["MAY_PLAY_DEVCARD"] = False
+            return False
 
         if sum(gives.values()) >= sum(needed.values()):
             left_to_trade = sum(needed.values())
@@ -592,13 +601,14 @@ class Planner:
                 for gres in given_resources:
                     if gives[gres] > 0 and left_to_trade > 0:
                         for nres in needed_resources:
-                            if needed[nres] > 0 and left_to_trade > 0:
+                            if needed[nres] > 0:
                                 give = [0, 0, 0, 0, 0]
                                 get  = [0, 0, 0, 0, 0]
                                 give[get_resource_index(gres)] = trade_cost[gres]
                                 get[get_resource_index(nres)] = 1
-
+                                self.stats["LATEST_TRADE"] = (give, get,  self.resources)
                                 self.client.send_msg(BankTradeMessage(self.gamename, give, get))
+                                self.resources[gres] -= trade_cost[gres]
                                 needed[nres] -= 1
                                 break
                         gives[gres] -= 1

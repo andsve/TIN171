@@ -811,7 +811,6 @@ class Agent:
                 self.resources["MAY_PLAY_DEVCARD"] = False
                 self.played_knight = True
                 self.debug_print("self.played_knight = True (2)")
-
             else:            
                 # Roll Dices
                 self.roll_dices()
@@ -960,8 +959,22 @@ class Agent:
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
 
-        else:        
-        
+        else:
+            if True and self.resources["MONOPOLY_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] \
+                 and not self.bought["monopolycard"]:
+                #logging.critical("Playing monopoly card")
+                self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 3))
+                self.client.send_msg(MonopolyPickMessage(self.gamename, 1))
+                self.resources["MAY_PLAY_DEVCARD"] = False
+
+            elif True and self.resources["RESOURCE_CARDS"] > 0 and self.resources["MAY_PLAY_DEVCARD"] \
+                 and not self.bought["resourcecard"] and not self.bought["monopolycard"]:
+                #logging.critical("Playing discovery card")
+                resources = [1, 0, 0, 0, 1]
+                self.client.send_msg(PlayDevCardRequestMessage(self.gamename, 2))
+                self.client.send_msg(DiscoveryPickMessage(self.gamename, resources))
+                self.resources["MAY_PLAY_DEVCARD"] = False
+
             response = EndTurnMessage(self.gamename)
             self.client.send_msg(response)
             self.gamestate = 7

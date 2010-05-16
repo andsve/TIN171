@@ -78,7 +78,7 @@ class Client:
                      , "TURN_COUNT": 0
                      , "TURN_ACTIVE": 0
                      , "LATEST_DICE_RESULT": -1
-                     }
+                     , "LATEST_TRADE": None}
 
         self.harbor_list = [0,0,0,0,0,0]
 
@@ -215,6 +215,7 @@ class Client:
             elif "can't" in message.message:
                 self.send_msg(messages.GameTextMsgMessage(self.gamename, self.nickname, message.message))
                 logging.critical(message.message)
+                logging.critical("LATEST TRADE: {0}".format(self.stats["LATEST_TRADE"]))
                 logging.critical(a.resources)
                 #pdb.set_trace()
                 self.client.close()
