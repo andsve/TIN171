@@ -393,7 +393,7 @@ class GLFrame(wx.Frame):
         size8 = size4 / 2.0
         d = -0.9
         
-        if not self.client.game.boardLayout:
+        if not self.client.game or not self.client.game.boardLayout:
             return
         harbour_type = self.client.game.boardLayout.harbour_tiles[id]
         if harbour_type == 6:

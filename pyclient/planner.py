@@ -58,6 +58,8 @@ class Planner:
         self.longest_start = None
         self.longest_end = None
         self.longest_length = 0
+
+        self.roads_until_settlement = None
         
     def get_resource_name(self, name, is_harbour = False):
         if is_harbour:
@@ -111,6 +113,7 @@ class Planner:
         self.scores = copy.deepcopy(self.default_scores)
         self.resource_list = [0,0,0,0,0,0]
         self.harbor_list = [False,False,False,False,False,False]
+        self.roads_until_settlement = None
 
         (self.longest_start, self.longest_end, self.longest_length) = self.find_longest_road()
         
@@ -167,7 +170,7 @@ class Planner:
             self.debug_print("No good spots found!")      
 
         # Find out how to build to that node
-        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 7.5 or self.resources["SETTLEMENTS"] >= 4)):
+        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 7.5 or self.resources["SETTLEMENTS"] == 5)):
             self.debug_print("Best location: {0}".format(hex(best_node.id)))
             
             roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
@@ -175,11 +178,9 @@ class Planner:
                 self.debug_print("Road {0} belongs to: {1}".format(road.id, road.owner))
 
             if not road_card and any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
+                self.roads_until_settlement = 0
                 if self.resources["SETTLEMENTS"] > 0 and self.canAffordSettlement():
                     self.debug_print("Can build settlement, sending...")
-                    return (best_node.id, 1)
-                elif self.resources["SETTLEMENTS"] > 0 and self.canAffordWithTrade(1):
-                    self.debug_print("Can afford s after trade...")
                     return (best_node.id, 1)
                 else:
                     self.debug_print("Cannot afford settlement.")
@@ -189,11 +190,22 @@ class Planner:
                     self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
 
             elif not any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
+
+                for r in roads:
+                    for n in [r.n1,r.n2]:   
+                        if n != best_node:
+                            for r2 in [self.game.boardLayout.nodes[n].n1,self.game.boardLayout.nodes[n].n2,self.game.boardLayout.nodes[n].n3]:
+                                if r2 and self.game.boardLayout.roads[r2].owner and int(self.game.boardLayout.roads[r2].owner) == int(self.game.playernum):
+                                    self.roads_until_settlement = 1
+                                    break
+                        if self.roads_until_settlement == 1:
+                            break
+
+                    if self.roads_until_settlement == 1:
+                        break
+
                 if road_card or (self.resources["ROADS"] > 0 and self.canAffordRoad()):
                     self.debug_print("Can build road, sending...")
-                    return self.findClosestBuildableRoad([road.id for road in roads], 0)
-                elif self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
-                    self.debug_print("Can afford road after trade...")
                     return self.findClosestBuildableRoad([road.id for road in roads], 0)
                 else:
                     self.debug_print("Cannot afford road.")
@@ -201,7 +213,6 @@ class Planner:
                     self.debug_print("Clay: {0}".format(self.resources["CLAY"]))                
 
         # Cannot afford settlement and shouldn't/cannot build road. Try upgrading to city.
-
         if not road_card and self.resources["CITIES"] > 0:
             self.cityScore = {}
 
@@ -226,25 +237,52 @@ class Planner:
 
             if len(self.cityScore) > 0:
                 cityList = sorted(self.cityScore.items(), cmp=lambda a,b: int(1000*b[1]) - int(1000*a[1]))
-                (bestNode, score) = cityList[0]
+                (bestCity, score) = cityList[0]
 
-                if bestNode:
+                if bestCity:
                     if self.canAffordCity():
                         self.debug_print("Can build city, sending...")
-                        return (bestNode, 2)
+                        return (bestCity, 2)
                     elif self.canAffordWithTrade(2):
                         self.debug_print("Can afford city after trade...")
-                        return (bestNode, 2)
+                        return (bestCity, 2)
                     else:
                         self.debug_print("Cannot afford city.")
                         self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
                         self.debug_print("Ore: {0}".format(self.resources["ORE"]))
 
+        # try to trade to build settlement/road
+        if best_node and ((road_card or self.resources["SETTLEMENTS"] > 0) and (best_score >= 7.5 or self.resources["SETTLEMENTS"] >= 4)):
+            
+            roads = [self.game.boardLayout.roads[r] for r in [best_node.n1, best_node.n2, best_node.n3] if r != None]
+            for road in roads:
+                self.debug_print("Road {0} belongs to: {1}".format(road.id, road.owner))
+
+            if not road_card and any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
+                if self.resources["SETTLEMENTS"] > 0 and self.canAffordWithTrade(1):
+                    self.debug_print("Can afford s after trade...")
+                    return (best_node.id, 1)
+                else:
+                    self.debug_print("Cannot afford settlement.")
+                    self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
+                    self.debug_print("Clay: {0}".format(self.resources["CLAY"]))
+                    self.debug_print("Sheep: {0}".format(self.resources["SHEEP"]))
+                    self.debug_print("Wheat: {0}".format(self.resources["WHEAT"]))
+
+            elif not any(r.owner and int(r.owner) == int(self.game.playernum) for r in roads):
+                if self.resources["ROADS"] > 0 and self.canAffordWithTrade(0):
+                    self.debug_print("Can afford road after trade...")
+                    return self.findClosestBuildableRoad([road.id for road in roads], 0)
+                else:
+                    self.debug_print("Cannot afford road.")
+                    self.debug_print("Wood: {0}".format(self.resources["WOOD"]))
+                    self.debug_print("Clay: {0}".format(self.resources["CLAY"]))         
+
         # try and build to build the longest road
         tempLongestRoad = 0
         tempRoad = None
         tempRoad2 = None
-        if road_card or (self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.canAffordRoad()):
+        if road_card or (self.resources["ROADS"] > 0 and self.resources["SETTLEMENTS"] <= 4 and self.resources["SETTLEMENTS"] + self.resources["CITIES"] <= 5 and self.resources["CLAY"] >= 2 and self.resources["WOOD"] >= 2):
             self.debug_print("Try to connect settlement hubs.")
             for road in self.game.buildableRoads.roads:
                 for road2 in self.game.buildableRoads.roads:
@@ -298,6 +336,7 @@ class Planner:
 
     def canAffordSettlement(self):
         return self.resources["WOOD"] >= 1 and self.resources["CLAY"] >= 1 and self.resources["SHEEP"] >= 1 and self.resources["WHEAT"] >= 1
+
     def canAffordCity(self):
         return self.resources["WHEAT"] >= 2 and self.resources["ORE"] >= 3
 
@@ -361,7 +400,7 @@ class Planner:
                 if not own_neighbour:
                     for r in [node.n1,node.n2,node.n3]:
                         if r and self.game.boardLayout.roads[r].owner and self.game.boardLayout.roads[r].owner != int(self.game.playernum):
-                            temp_score -= 2
+                            temp_score -= 4
 
                 if n not in self.nodeScore or temp_score > self.nodeScore[n]:
                     self.nodeScore[n] = temp_score
@@ -632,7 +671,7 @@ class Planner:
         
         temp = self.longest_path([road])
 
-        if len(temp) >= self.longest_length:
+        if len(temp) > self.longest_length:
             return True
 
         return False

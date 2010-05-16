@@ -63,9 +63,11 @@ class Agent:
 
         self.harbor_list = harbor_list
 
-        #self.strategy = None
+        self.strategy = None
         #self.strategy = "BEST_PROBS"
-        self.strategy = "RANDOM"
+        #self.strategy = "RANDOM"
+
+        self.stats["START_HARBORS"] = [False,False,False,False,False,False,False]
 
         self.played_knight = False
         self.debug_print("self.played_knight = True (1)")
@@ -102,6 +104,9 @@ class Agent:
                         info.append((resource, "???"))
                     #info.append((resource, probability))
         return info
+
+    def total_resources(self):
+        return self.resources["CLAY"] + self.resources["ORE"] + self.resources["SHEEP"] + self.resources["WHEAT"] + self.resources["WOOD"]
         
     def calculate_new_settlement_weight(self, node): # add the round number as parameter?
         weight = 0
@@ -209,6 +214,7 @@ class Agent:
     def find_best_resource_harbor(self, b_r):
     #depends on the best resource, find the specific harbor, otherwise, chase for a 3:1 harbor
         node_score = {}
+        foundHarbor = False
         for n in self.game.buildableNodes.nodes:
             if self.game.buildableNodes.nodes[n]:
                 tempScore = 0
@@ -217,6 +223,7 @@ class Agent:
                     self.debug_print("Find resource harbor: {0}".format(elementIdToType[str(self.game.boardLayout.nodes[n].harbor)]))
                     if elementIdToType[str(self.game.boardLayout.nodes[n].harbor)]== b_r:
                         tempScore += 10
+                        foundHarbor = True
                # elif self.game.boardLayout.nodes[n].harbor == 6:
                #     tempScore += 5 #take the 3:1 harbor
                 t1 = self.game.boardLayout.nodes[n].t1
@@ -227,6 +234,7 @@ class Agent:
                         tempScore += 0.2 * dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource]
                 node_score[n] = tempScore
         #Find the best node
+        #if foundHarbor:
         bestNode = None
         highest = 0
         for n in node_score:
@@ -236,7 +244,7 @@ class Agent:
                 bestNode = n
         return bestNode
 
-        
+        #return self.find_second_settlement()
 
     def find_first_settlement(self):
 
@@ -339,10 +347,19 @@ class Agent:
                 for t in [t1,t2,t3]:
 
                     if t and self.game.boardLayout.tiles[t].resource != 0 and dice_props[self.game.boardLayout.tiles[t].number] > 0.03:
-                        tempScore += dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource] + ((1 - max(tempList[self.game.boardLayout.tiles[t].resource],resource_list[self.game.boardLayout.tiles[t].resource])) * 10)
+                        tempScore += dice_props[self.game.boardLayout.tiles[t].number] * resource_weight[self.game.boardLayout.tiles[t].resource] + ((1 - max(tempList[self.game.boardLayout.tiles[t].resource],resource_list[self.game.boardLayout.tiles[t].resource])) * 20)
                         tempList[self.game.boardLayout.tiles[t].resource] = 1
 
+                # this second spot allows us to get resources for settlement
+                if resource_list[1] + tempList[1] >= 1 and resource_list[3] + tempList[3] >= 1 and resource_list[4] + tempList[4] >= 1 and resource_list[5] + tempList[5] >= 1:
+                    tempScore *= 4
+                
+                # this second spot allows us to get resources for city
+                if resource_list[2] + resource_list[4] < 2 and resource_list[2] + tempList[2] >= 1 and resource_list[4] + tempList[4] >= 1:
+                    tempScore *= 5
+
                 node_score[n] = tempScore * (tempList[1] + tempList[2] + tempList[3] + tempList[4] + tempList[5])
+                #node_score[n] = tempScore
 
         bestNode = None
         highest = 0
@@ -367,11 +384,11 @@ class Agent:
                 t2 = 0
                 t3 = 0
 
-                if self.game.boardLayout.nodes[n].t1:
+                if self.game.boardLayout.nodes[n].t1 and self.game.boardLayout.tiles[self.game.boardLayout.nodes[n].t1].resource != 0:
                     t1 = 1
-                if self.game.boardLayout.nodes[n].t2:
+                if self.game.boardLayout.nodes[n].t2 and self.game.boardLayout.tiles[self.game.boardLayout.nodes[n].t2].resource != 0:
                     t2 = 1
-                if self.game.boardLayout.nodes[n].t3:
+                if self.game.boardLayout.nodes[n].t3 and self.game.boardLayout.tiles[self.game.boardLayout.nodes[n].t3].resource != 0:
                     t3 = 1
 
                 # only consider nodes with 2 or 3 adjacent tiles
@@ -620,6 +637,7 @@ class Agent:
 
             elif self.strategy == "BEST_PROBS":
                 new_settlement_place = self.best_probabilites_settlement()
+                #self.strategy == "STRAT2"
             
             elif len(rbad) > 0 and len(rgood) > 0:
                     self.debug_print("Use the function of Best resource spot!")
@@ -629,9 +647,10 @@ class Agent:
                 new_settlement_place = self.find_first_settlement() #new function
                 self.strategy = "STRAT2"
             
-                
             self.stats["FIRST_SETTLEMENT"] = hex(new_settlement_place)
             self.stats["FIRST_SETTLEMENT_RES"] = self.get_settlement_stats(new_settlement_place)
+            if self.game.boardLayout.nodes[new_settlement_place].harbor > 0:
+                self.stats["START_HARBORS"][int(self.game.boardLayout.nodes[new_settlement_place].harbor)] = True
             
             
             # change the resource_list to see which kind of resources are taken
@@ -662,9 +681,27 @@ class Agent:
             #arbitarly build a first road
             for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r]:
-                    response = PutPieceMessage(self.gamename, self.playernum, 0, r)
-                    self.client.send_msg(response)
-                    break
+                    n1 = self.game.boardLayout.roads[r].n1
+                    n2 = self.game.boardLayout.roads[r].n2
+                    if self.game.boardLayout.nodes[n1].owner == None:
+                        n = n1
+                    else:
+                        n = n2
+
+                    t1 = 0
+                    t2 = 0
+                    t3 = 0
+                    if self.game.boardLayout.nodes[n].t1:
+                        t1 = 1
+                    if self.game.boardLayout.nodes[n].t2:
+                        t2 = 1
+                    if self.game.boardLayout.nodes[n].t3:
+                        t3 = 1
+                    #avoid build road stupidly
+                    if t1 + t2 + t3 >= 2:
+                        response = PutPieceMessage(self.gamename, self.playernum, 0, r)
+                        self.client.send_msg(response)
+                        break
 
         # Confirm PutPiece
         elif self.gamestate == 2 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
@@ -725,9 +762,27 @@ class Agent:
             #must be connected to second settlement
             for r in self.game.buildableRoads.roads:
                 if self.game.buildableRoads.roads[r] and (self.game.boardLayout.roads[r].n1 == self.builtnodes[1] or self.game.boardLayout.roads[r].n2 == self.builtnodes[1]):
-                    response = PutPieceMessage(self.gamename, self.playernum, 0, r)
-                    self.client.send_msg(response)
-                    break
+                    n1 = self.game.boardLayout.roads[r].n1
+                    n2 = self.game.boardLayout.roads[r].n2
+                    if self.game.boardLayout.nodes[n1].owner == None:
+                        n = n1
+                    else:
+                        n = n2
+
+                    t1 = 0
+                    t2 = 0
+                    t3 = 0
+                    if self.game.boardLayout.nodes[n].t1:
+                        t1 = 1
+                    if self.game.boardLayout.nodes[n].t2:
+                        t2 = 1
+                    if self.game.boardLayout.nodes[n].t3:
+                        t3 = 1
+                    #avoid build road stupidly
+                    if t1 + t2 + t3 >= 2:
+                        response = PutPieceMessage(self.gamename, self.playernum, 0, r)
+                        self.client.send_msg(response)
+                        break
 
         # Confirm PutPiece
         elif self.gamestate == 5 and name == "PutPieceMessage" and int(message.playernum) == int(self.playernum):
@@ -749,7 +804,7 @@ class Agent:
             n6 = self.game.boardLayout.tiles[self.game.boardLayout.robberpos].n6
             owners = [self.game.boardLayout.nodes[n1].owner,self.game.boardLayout.nodes[n2].owner,self.game.boardLayout.nodes[n3].owner,self.game.boardLayout.nodes[n4].owner,self.game.boardLayout.nodes[n5].owner,self.game.boardLayout.nodes[n6].owner]
 
-            if self.resources["MAY_PLAY_DEVCARD"] and ((self.resources["KNIGHT_CARDS"] > 0 and int(self.playernum) in owners) or self.resources["KNIGHT_CARDS"] > 1):
+            if self.resources["MAY_PLAY_DEVCARD"] and ((self.resources["KNIGHT_CARDS"] > 0 and (int(self.playernum) in owners or self.resources["NUMKNIGHTS"] == 2)) or self.resources["KNIGHT_CARDS"] > 1):
                 self.debug_print("May play devcard: {0} (3)".format(self.resources["MAY_PLAY_DEVCARD"]))
                 response = PlayDevCardRequestMessage(self.gamename, 0)
                 self.client.send_msg(response)
@@ -891,10 +946,16 @@ class Agent:
             self.client.send_msg(response)
 
         #cannot afford city. buy developement card.
-        elif self.resources["DEV_CARDS"] > 0 \
-            and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) \
-            or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) \
-            and (self.planner.canAffordCard() or self.planner.canAffordWithTrade(3)):
+        #elif self.resources["DEV_CARDS"] > 0 \
+        #   and ((self.resources["SETTLEMENTS"] > 0 and self.resources["SHEEP"] > 1 and self.resources["WHEAT"] > 1) \
+        #   or (self.resources["SETTLEMENTS"] == 0 and self.resources["CITIES"] > 0 and self.resources["WHEAT"] > 3)) \
+        #   and (self.planner.canAffordCard() or self.planner.canAffordWithTrade(3)):
+
+        elif self.resources["DEV_CARDS"] > 0 and (self.planner.canAffordCard() or (self.total_resources() >= 7 and self.planner.canAffordWithTrade(3))):
+
+        #elif self.resources["DEV_CARDS"] > 0 and self.total_resources() > 9 and self.planner.canAffordCard():
+
+        #elif self.resources["DEV_CARDS"] > 0 and self.planner.canAffordCard() and (not self.planner.roads_until_settlement or self.resources["SETTLEMENTS"] == 0 or (self.planner.roads_until_settlement >= 0 and self.resources["WHEAT"] > 1 and self.resources["SHEEP"] > 1)) and (self.resources["SETTLEMENTS"] == 5 or (self.resources["SETTLEMENTS"] <= 5 and self.resources["ORE"] > 3 and self.resources["WHEAT"] > 2)):
 
             response = BuyCardRequestMessage(self.gamename)
             self.client.send_msg(response)
@@ -1049,6 +1110,7 @@ class Agent:
         response = None
 
         # got many settlements out and cities left to build
+        #if (self.resources["SETTLEMENTS"] <= 1 or self.planner.roads_until_settlement >= 0) and self.resources["CITIES"] > 0:
         if self.resources["SETTLEMENTS"] <= 1 and self.resources["CITIES"] > 0:
 
             clay = 0
