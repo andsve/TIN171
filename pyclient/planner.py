@@ -527,7 +527,7 @@ class Planner:
         
         # If we don't have any settlements left to build, don't trade wheat and ore
         keep = set()
-        if self.resources["SETTLEMENTS"] == 0:
+        if self.resources["SETTLEMENTS"] == 0 and _type != 2:
             keep = set(("WHEAT", "ORE"))
 #            given_resources = given_resources - set(("WHEAT", "ORE"))
 #            needed_resources = needed_resources - set(("WHEAT", "ORE"))
